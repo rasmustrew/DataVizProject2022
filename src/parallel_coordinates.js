@@ -5,6 +5,7 @@ export default class ParallelCoordinates {
         let _this = this
         this.data = data;
         this.dimensions = dimensions
+        console.log(dimension_ranges)
 
         let margin = {top: 16, right: 48, bottom: 16, left: 48};
         let width = document.querySelector("#parCoordsDiv").clientWidth - margin.left - margin.right;
@@ -16,6 +17,7 @@ export default class ParallelCoordinates {
         this.background;
 
         dimensions.forEach(function(d) {
+            console.log(dimension_ranges)
             _this.y[d] = d3.scaleLinear()
                 .domain(dimension_ranges[d])
                 .range([height, 0]);
