@@ -1,5 +1,7 @@
+import * as d3 from "d3";
 
-var margin = {top: 16, right: 8, bottom: 16, left: 32},
+
+var margin = {top: 16, right: 48, bottom: 16, left: 48},
     width = document.querySelector("#parCoordsDiv").clientWidth - margin.left - margin.right,
     height = document.querySelector("#parCoordsDiv").clientHeight - margin.top - margin.bottom;
 
@@ -30,14 +32,14 @@ var svg = d3.select("#parCoordsDiv").append("svg")
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .on('mouseleave', function(d) {
-        hoverBox = d3.select("#hoverBox")
+        d3.select("#hoverBox")
             .style("visibility", "hidden")
     });
 var foreground;
 var background;
 var filtered_data;
 
-dimensions = [
+var dimensions = [
     'crime_index', 'traffic_index', 'rent_index', 'groceries_index',
     'restaurant_price_index', 'pollution_index', 'health_care_index', 'quality_of_life_index']
 
@@ -45,7 +47,7 @@ var x = d3.scalePoint().domain(dimensions).range([0, width])
 var y = {}
 
 
-d3.csv("country_indices.csv").then(function (data) {
+d3.csv("../country_indices.csv").then(function (data) {
 
     console.log(data)
     filtered_data = data.filter(row => row["quality_of_life_index"] !== "-1")
@@ -131,7 +133,7 @@ function path(data_point) {
 }
 
 function onHoverLine(mouse_event, data) {
-    hoverBox = d3.select("#hoverBox")
+    d3.select("#hoverBox")
         .style("visibility", "visible")
         .style("top", mouse_event.clientY + 'px')
         .style("left", mouse_event.clientX + 8 + 'px')
