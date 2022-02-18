@@ -44,6 +44,7 @@ dimensions = [
 var x = d3.scalePoint().domain(dimensions).range([0, width])
 var y = {}
 
+
 d3.csv("country_indices.csv").then(function (data) {
 
     console.log(data)
@@ -80,12 +81,16 @@ d3.csv("country_indices.csv").then(function (data) {
         .attr("class", "brush")
         .each(function(d) {
             let range = y[d].range();
-            y[d].brush = d3.brushY().extent([[-8, range[1]], [8, range[0]]]).on("brush", brush)
+            y[d].brush = d3.brushY()
+                .extent([[-8, range[1]], [8, range[0]]])
+                .on("brush", brushed)
             d3.select(this).call(y[d].brush);
+            y[d].svg = this;
         })
         .selectAll("rect")
         .attr("x", -8)
         .attr("width", 16);
+
 
     //Add grey background lines for context.
     background = svg.append("g")
@@ -134,22 +139,30 @@ function onHoverLine(mouse_event, data) {
 }
 
 // Handles a brush event, toggling the display of foreground lines.
-function brush() {
+function brushed(event) {
+    console.log(event)
     console.log("calling brush")
     // active_dimensions is a list of dimensions currently being filtered upon
     var active_dimensions = dimensions.filter(function(dimension) {
-        console.log(y[dimension].brush.extent()())
-        return !y[dimension].brush.brushSelection;
+        return d3.brushSelection(y[dimension].svg) != null;
     });
     console.log(active_dimensions)
     // extents is the corresponding min and max of the filter on each dimensions
-    var extents = active_dimensions.map(function(dimension) { return y[dimension].brush.extent(); });
+    var extents = active_dimensions.map(function(dimension) {
+        let screenspace_selection = d3.brushSelection(y[dimension].svg);
+        console.log(screenspace_selection)
+        let dataspace_selection = screenspace_selection.map(function (screenspace_position) {
+            return y[dimension].invert(screenspace_position)
+        })
+        return dataspace_selection;
+    });
+    console.log(extents)
 
     // return the datapoints where all the filter parameters are within the extents
     var selected = filtered_data.filter(data_point =>
         active_dimensions.every(
             (dimension, index) =>
-                extents[index][0] <= data_point[dimension] && data_point[dimension] <= extents[index][1]
+                extents[index][1] <= data_point[dimension] && data_point[dimension] <= extents[index][0]
         )
     )
     console.log(selected)
