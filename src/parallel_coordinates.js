@@ -7,9 +7,11 @@ export default class ParallelCoordinates {
         this.dimensions = dimensions
         console.log(dimension_ranges)
 
+
         let margin = {top: 16, right: 48, bottom: 16, left: 48};
         let width = document.querySelector("#parCoordsDiv").clientWidth - margin.left - margin.right;
         let height = document.querySelector("#parCoordsDiv").clientHeight - margin.top - margin.bottom;
+        this.screen_range = [0, height];
 
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
         this.y = {}
