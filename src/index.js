@@ -32,8 +32,35 @@ load_data().then((data) => {
         norm_diff_per_dimension[dimension] = summed_diff
         norm_diff += summed_diff
     }
+    console.log(norm_diff_per_dimension)
 
+    let max_diff_per_dimension = {}
+    for (let dimension of data.dimensions) {
+        max_diff_per_dimension[dimension] = 0;
 
+        let sorted_data = []
+
+        for (let i in data.data) {
+            sorted_data.push(parseFloat(data.data[i][dimension]))
+        }
+
+        sorted_data.sort(function (a,b) {return a - b;});
+
+        for (let i = 0; i < sorted_data.length - 1; i++) {
+            let j = i + 1
+            let data_i = sorted_data[i]
+            let data_j = sorted_data[j]
+
+            let screen_i = par_coords.y[dimension](data_i)
+            let screen_j = par_coords.y[dimension](data_j)
+
+            let diff = Math.abs(screen_i - screen_j)
+            max_diff_per_dimension[dimension] = Math.max(max_diff_per_dimension[dimension], diff)
+
+        }
+    }
+
+    console.log(max_diff_per_dimension)
 })
 
 function normalized_diff(i, j, range) {

@@ -19,7 +19,6 @@ export default class ParallelCoordinates {
         this.background;
 
         dimensions.forEach(function(d) {
-            console.log(dimension_ranges)
             _this.y[d] = d3.scaleLinear()
                 .domain(dimension_ranges[d])
                 .range([height, 0]);
