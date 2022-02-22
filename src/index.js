@@ -8,6 +8,7 @@ load_data().then((data) => {
     let indices_ranges = basic_ranges(data.data, data.dimensions)
     console.log(indices_ranges)
     let par_coords = new ParallelCoordinates(data.data, data.dimensions, indices_ranges);
+    let screen_range = par_coords.screen_range;
 
     let norm_diff_per_dimension = {}
     let norm_diff = 0;
@@ -20,7 +21,7 @@ load_data().then((data) => {
                 let data_j = parseFloat(data.data[j][dimension])
                 let data_space_diff = normalized_diff(data_i, data_j, domain_ranges)
 
-                let screen_range = par_coords.screen_range;
+
                 let screen_i = par_coords.y[dimension](data_i)
                 let screen_j = par_coords.y[dimension](data_j)
                 let screen_diff = normalized_diff(screen_i, screen_j, screen_range)
@@ -39,11 +40,9 @@ load_data().then((data) => {
         max_diff_per_dimension[dimension] = 0;
 
         let sorted_data = []
-
         for (let i in data.data) {
             sorted_data.push(parseFloat(data.data[i][dimension]))
         }
-
         sorted_data.sort(function (a,b) {return a - b;});
 
         for (let i = 0; i < sorted_data.length - 1; i++) {
@@ -53,9 +52,8 @@ load_data().then((data) => {
 
             let screen_i = par_coords.y[dimension](data_i)
             let screen_j = par_coords.y[dimension](data_j)
-
-            let diff = Math.abs(screen_i - screen_j)
-            max_diff_per_dimension[dimension] = Math.max(max_diff_per_dimension[dimension], diff)
+            let norm_diff = normalized_diff(screen_i, screen_j, screen_range)
+            max_diff_per_dimension[dimension] = Math.max(max_diff_per_dimension[dimension], norm_diff)
 
         }
     }
