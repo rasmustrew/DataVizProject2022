@@ -33,8 +33,8 @@ export default class ParallelCoordinates {
                 current_offset = (height - proportionate_range[1]) + distance_between
 
                 let axis = d3.scaleLinear()
-                    .domain(dimension_ranges[d])
-                    .range([height, 0]);
+                    .domain(dimension_ranges[d][i])
+                    .range(proportionate_range);
                 // axis.ticks(100)
                 axes.push(axis)
             }
@@ -50,42 +50,6 @@ export default class ParallelCoordinates {
                 d3.select("#hoverBox")
                     .style("visibility", "hidden")
             });
-
-        // // Add a group element for each dimension.
-        let axis_groups = svg.selectAll(".dimension")
-            .data(dimensions)
-            .enter().append("g")
-            .attr("class", "dimension")
-            .attr("transform", function(dimension_name) { return "translate(" + _this.x(dimension_name) + ")"; })
-
-        // Add an axis and title for each dimension.
-        let axes = axis_groups.append("g")
-            .attr("class", "axis")
-            .each(function(d) {d3.select(this).call(d3.axisLeft(_this.y[d])); })
-            .append("text")
-            .style("text-anchor", "middle")
-            .style("font-weight", 400)
-            .style("overflow", "visible")
-            .attr("y", -8)
-            .text(function(dimension_name) {
-                return dimension_name;
-            });
-
-        // Add and store a brush for each axis, allows the dragging selection on each axis.
-        axis_groups.append("g")
-            .attr("class", "brush")
-            .each(function(d) {
-                let range = _this.y[d].range();
-                _this.y[d].brush = d3.brushY()
-                    .extent([[-8, range[1]], [8, range[0]]])
-                    .on("brush", _this.brushed.bind(_this))
-                d3.select(this).call(_this.y[d].brush);
-                _this.y[d].svg = this;
-            })
-            .selectAll("rect")
-            .attr("x", -8)
-            .attr("width", 16);
-
 
         //Add grey background lines for context.
         this.background = svg.append("g")
@@ -110,6 +74,59 @@ export default class ParallelCoordinates {
             .attr("stroke-width", "2px")
             //handle hover and click events
             .on('mouseover', this.onHoverLine.bind(this));
+
+        // Add a group element for each dimension.
+        let axis_groups = svg.selectAll(".dimension")
+            .data(dimensions)
+            .enter().append("g")
+            .attr("class", "dimension")
+            .attr("transform", function(dimension_name) { return "translate(" + _this.x(dimension_name) + ")"; })
+
+        // Add a title for each dimension.
+        axis_groups.append("text")
+            .style("text-anchor", "middle")
+            .style("font-weight", 400)
+            .style("overflow", "visible")
+            .attr("y", -8)
+            .text(function(dimension_name) {
+                return dimension_name;
+            });
+
+        let axes = axis_groups.selectAll(".axis")
+            .data(function(d) {
+                return dimension_ranges[d]
+            })
+            .enter().append("g")
+            .attr("class", "axis")
+            .each(function(range, index) {
+                let dim = this.parentNode.__data__
+                let screen_range = _this.y[dim][index].range()
+                let screen_span = screen_range[0] - screen_range[1]
+                let num_ticks = Math.floor(screen_span / 100.0)
+                let tick_values = [].concat(_this.y[dim][index].domain()[0], _this.y[dim][index].ticks(num_ticks), _this.y[dim][index].domain()[1]);
+                d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values));
+            })
+
+        // Add and store a brush for each axis, allows the dragging selection on each axis.
+        axes.append("g")
+            .attr("class", "brush")
+            .each(function(range, index) {
+                let dim = this.parentNode.parentNode.__data__
+                let screen_range = _this.y[dim][index].range()
+                _this.y[dim][index].brush = d3.brushY()
+                    .extent([[-8, screen_range[1]], [8, screen_range[0]]])
+                    .on("brush", _this.brushed.bind(_this))
+                d3.select(this).call(_this.y[dim][index].brush);
+                _this.y[dim][index].svg = this;
+            })
+            .selectAll("rect")
+            .attr("x", -8)
+            .attr("width", 16);
+
+
+
+
+
     }
 
     // Returns the path for a given data point.
@@ -117,19 +134,23 @@ export default class ParallelCoordinates {
         let dimensions = this.dimensions;
         let _this = this
         let path = d3.path();
-        let first_val = data_point[dimensions[0]]
-        let range_index = _this.dimension_ranges[dimensions[0]].findIndex((range) => {
-            return isValueInRange(first_val, range)
-        })
-        path.moveTo(_this.x(dimensions[0]), _this.y[dimensions[0]][range_index](first_val))
+        let first_val = parseFloat(data_point[dimensions[0]])
+        let y_pos = this.y_position(first_val, dimensions[0])
+
+        path.moveTo(_this.x(dimensions[0]), y_pos)
         dimensions.slice(1).map(function(dimension) {
             let val = data_point[dimension];
-            let range_index = _this.dimension_ranges[dimension].findIndex((range) => {
-                return isValueInRange(val, range)
-            })
-            path.lineTo(_this.x(dimension), _this.y[dimension][range_index](val));
+            let y_pos = _this.y_position.bind(_this)(val, dimension)
+            path.lineTo(_this.x(dimension), y_pos);
         });
         return path
+    }
+
+    y_position(domain_value, dimension) {
+        let range_index = this.dimension_ranges[dimension].findIndex((range) => {
+            return isValueInRange(domain_value, range)
+        })
+        return this.y[dimension][range_index](domain_value)
     }
 
     // Handles a brush event, toggling the display of foreground lines.
@@ -139,34 +160,37 @@ export default class ParallelCoordinates {
         console.log("calling brush")
         // active_dimensions is a list of dimensions currently being filtered upon
         var active_dimensions = this.dimensions.filter(function(dimension) {
-            return d3.brushSelection(_this.y[dimension].svg) != null;
-        });
-        console.log(active_dimensions)
-        // extents is the corresponding min and max of the filter on each dimensions
-        var extents = active_dimensions.map(function(dimension) {
-            let screenspace_selection = d3.brushSelection(_this.y[dimension].svg);
-            console.log(screenspace_selection)
-            let dataspace_selection = screenspace_selection.map(function (screenspace_position) {
-                return _this.y[dimension].invert(screenspace_position)
+            return _this.y[dimension].some((axis) => {
+                return d3.brushSelection(axis.svg) != null
             })
-            return dataspace_selection;
         });
-        console.log(extents)
+
+        // extents is the corresponding min and max of the filter on each axis
+        let extents = {}
+        active_dimensions.forEach(function(dimension) {
+            let dimension_extents = _this.y[dimension].map((axis) => {
+                let screenspace_selection = d3.brushSelection(axis.svg);
+                console.log(screenspace_selection)
+                let dataspace_selection = screenspace_selection.map(function (screenspace_position) {
+                    return axis.invert(screenspace_position)
+                })
+                return dataspace_selection;
+            })
+            extents[dimension] = dimension_extents
+        });
 
         // return the datapoints where all the filter parameters are within the extents
-        var selected = this.data.filter(data_point =>
-            active_dimensions.every(
-                (dimension, index) =>
-                    extents[index][1] <= data_point[dimension] && data_point[dimension] <= extents[index][0]
-            )
-        )
-        console.log(selected)
+        var selected = this.data.filter(data_point => {
+            return active_dimensions.every((dimension, index) => {
+                return extents[dimension].some((extent) => {
+                    let data_float = parseFloat(data_point[dimension])
+                    return extent[1] <= data_float && data_float <= extent[0]
+                })
+            })
+        })
         var selected_iso3 = selected.map(function (data_point) {
             return data_point.iso3
         })
-
-        console.log(selected_iso3)
-
         this.updateParCoords(selected_iso3)
     }
 
@@ -184,7 +208,6 @@ export default class ParallelCoordinates {
                 return 'none'
             }
         });
-
     }
 
     onHoverLine(mouse_event, data) {

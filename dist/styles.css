@@ -84,7 +84,7 @@ svg {
 
 .foreground path {
     fill: none;
-    stroke: steelblue;
+    stroke: rgba(70, 130, 180, 0.4);
 }
 
 .background circle {

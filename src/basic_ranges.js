@@ -10,7 +10,7 @@ export function basic_ranges(data, dimensions) {
             running_min = Math.min(data_point, running_min)
             running_max = Math.max(data_point, running_max)
         }
-        range_map[dimension] = [running_min, running_max]
+        range_map[dimension] = [[running_min, running_max]]
     });
 
     return range_map;
