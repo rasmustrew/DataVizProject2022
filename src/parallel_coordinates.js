@@ -5,6 +5,7 @@ export default class ParallelCoordinates {
         let _this = this
         this.data = data;
         this.dimensions = dimensions
+        this.dimension_ranges = dimension_ranges
         console.log(dimension_ranges)
 
 
@@ -18,11 +19,28 @@ export default class ParallelCoordinates {
         this.foreground;
         this.background;
 
-        dimensions.forEach(function(d) {
-            _this.y[d] = d3.scaleLinear()
-                .domain(dimension_ranges[d])
-                .range([height, 0]);
+        dimensions.forEach((d) => {
+            let axes = []
+            let distance_between = 10
+            let current_offset = 0;
+            for (let i = 0; i < dimension_ranges[d].length; i++) {
+                console.log("offset", current_offset)
+                let range = dimension_ranges[d][i]
+                let range_count = data.filter(value => isValueInRange(value[d], range)).length;
+
+                let range_proportion = range_count / data.length
+                let proportionate_range = getProportionateRange(range_proportion, height, current_offset, dimension_ranges[d].length - 1, distance_between)
+                current_offset = (height - proportionate_range[1]) + distance_between
+
+                let axis = d3.scaleLinear()
+                    .domain(dimension_ranges[d])
+                    .range([height, 0]);
+                // axis.ticks(100)
+                axes.push(axis)
+            }
+            _this.y[d] = axes
         })
+
 
         let svg = d3.select("#parCoordsDiv").append("svg")
             .attr("id", "parcoordsSvg")
@@ -97,14 +115,19 @@ export default class ParallelCoordinates {
     // Returns the path for a given data point.
     path(data_point) {
         let dimensions = this.dimensions;
-        let x = this.x;
-        let y = this.y;
+        let _this = this
         let path = d3.path();
         let first_val = data_point[dimensions[0]]
-        path.moveTo(x(dimensions[0]), y[dimensions[0]](first_val))
+        let range_index = _this.dimension_ranges[dimensions[0]].findIndex((range) => {
+            return isValueInRange(first_val, range)
+        })
+        path.moveTo(_this.x(dimensions[0]), _this.y[dimensions[0]][range_index](first_val))
         dimensions.slice(1).map(function(dimension) {
             let val = data_point[dimension];
-            path.lineTo(x(dimension), y[dimension](val));
+            let range_index = _this.dimension_ranges[dimension].findIndex((range) => {
+                return isValueInRange(val, range)
+            })
+            path.lineTo(_this.x(dimension), _this.y[dimension][range_index](val));
         });
         return path
     }
@@ -171,6 +194,15 @@ export default class ParallelCoordinates {
             .style("left", mouse_event.clientX + 8 + 'px')
             .text(data.name)
     }
+}
+
+function isValueInRange(value, range) {
+    return (value >= range[0]) && (value <= range[1])
+}
+
+function getProportionateRange(proportion, max, offset, number_of_splits, distance_between) {
+    let adjusted_max = max - distance_between * number_of_splits
+    return [max - offset, (max - offset) - proportion * adjusted_max];
 }
 
 

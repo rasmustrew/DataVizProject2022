@@ -54,7 +54,6 @@ load_data().then((data) => {
             let screen_j = par_coords.y[dimension](data_j)
             let norm_diff = normalized_diff(screen_i, screen_j, screen_range)
             max_diff_per_dimension[dimension] = Math.max(max_diff_per_dimension[dimension], norm_diff)
-
         }
     }
 
