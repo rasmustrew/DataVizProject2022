@@ -6,10 +6,9 @@ export default class ParallelCoordinates {
         this.data = data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
-        console.log(dimension_ranges)
-
 
         let margin = {top: 16, right: 48, bottom: 16, left: 48};
+        this.margin = margin
         let width = document.querySelector("#parCoordsDiv").clientWidth - margin.left - margin.right;
         let height = document.querySelector("#parCoordsDiv").clientHeight - margin.top - margin.bottom;
         this.screen_range = [0, height];
@@ -24,7 +23,6 @@ export default class ParallelCoordinates {
             let distance_between = 10
             let current_offset = 0;
             for (let i = 0; i < dimension_ranges[d].length; i++) {
-                console.log("offset", current_offset)
                 let range = dimension_ranges[d][i]
                 let range_count = data.filter(value => isValueInRange(value[d], range)).length;
 
@@ -35,18 +33,20 @@ export default class ParallelCoordinates {
                 let axis = d3.scaleLinear()
                     .domain(dimension_ranges[d][i])
                     .range(proportionate_range);
-                // axis.ticks(100)
                 axes.push(axis)
             }
             _this.y[d] = axes
         })
+        this.draw();
+    }
 
-
+    draw() {
+        let _this = this
         let svg = d3.select("#parCoordsDiv").append("svg")
             .attr("id", "parcoordsSvg")
             .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-            .on('mouseleave', function(d) {
+            .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
+            .on('mouseleave', function (d) {
                 d3.select("#hoverBox")
                     .style("visibility", "hidden")
             });
@@ -55,7 +55,7 @@ export default class ParallelCoordinates {
         this.background = svg.append("g")
             .attr("class", "background")
             .selectAll("path")
-            .data(data)
+            .data(this.data)
             .enter().append("path")
             .attr("d", this.path.bind(this));
 
@@ -63,10 +63,8 @@ export default class ParallelCoordinates {
         this.foreground = svg.append("g")
             .attr("class", "foreground")
             .selectAll("path")
-            .data(data)
+            .data(this.data)
             .enter().append("path")
-            // .attr("stroke", "d00")
-            // .attr("stroke", row => color_continents(row["continent"]))
             .attr("d", this.path.bind(this))
             // make the cursor a pointer when hovering the lines
             .attr("pointer-events", "visiblePainted")
@@ -77,10 +75,12 @@ export default class ParallelCoordinates {
 
         // Add a group element for each dimension.
         let axis_groups = svg.selectAll(".dimension")
-            .data(dimensions)
+            .data(this.dimensions)
             .enter().append("g")
             .attr("class", "dimension")
-            .attr("transform", function(dimension_name) { return "translate(" + _this.x(dimension_name) + ")"; })
+            .attr("transform", function (dimension_name) {
+                return "translate(" + _this.x(dimension_name) + ")";
+            })
 
         // Add a title for each dimension.
         axis_groups.append("text")
@@ -88,17 +88,17 @@ export default class ParallelCoordinates {
             .style("font-weight", 400)
             .style("overflow", "visible")
             .attr("y", -8)
-            .text(function(dimension_name) {
+            .text(function (dimension_name) {
                 return dimension_name;
             });
 
         let axes = axis_groups.selectAll(".axis")
-            .data(function(d) {
-                return dimension_ranges[d]
+            .data(function (d) {
+                return _this.dimension_ranges[d]
             })
             .enter().append("g")
             .attr("class", "axis")
-            .each(function(range, index) {
+            .each(function (range, index) {
                 let dim = this.parentNode.__data__
                 let screen_range = _this.y[dim][index].range()
                 let screen_span = screen_range[0] - screen_range[1]
@@ -110,7 +110,7 @@ export default class ParallelCoordinates {
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         axes.append("g")
             .attr("class", "brush")
-            .each(function(range, index) {
+            .each(function (range, index) {
                 let dim = this.parentNode.parentNode.__data__
                 let screen_range = _this.y[dim][index].range()
                 _this.y[dim][index].brush = d3.brushY()
@@ -122,14 +122,9 @@ export default class ParallelCoordinates {
             .selectAll("rect")
             .attr("x", -8)
             .attr("width", 16);
-
-
-
-
-
     }
 
-    // Returns the path for a given data point.
+// Returns the path for a given data point.
     path(data_point) {
         let dimensions = this.dimensions;
         let _this = this
@@ -156,8 +151,6 @@ export default class ParallelCoordinates {
     // Handles a brush event, toggling the display of foreground lines.
     brushed(event) {
         let _this = this
-        console.log(event)
-        console.log("calling brush")
         // active_dimensions is a list of dimensions currently being filtered upon
         var active_dimensions = this.dimensions.filter(function(dimension) {
             return _this.y[dimension].some((axis) => {
@@ -165,12 +158,14 @@ export default class ParallelCoordinates {
             })
         });
 
-        // extents is the corresponding min and max of the filter on each axis
+        // extents is a double map of the min and max on each axis
         let extents = {}
         active_dimensions.forEach(function(dimension) {
             let dimension_extents = _this.y[dimension].map((axis) => {
                 let screenspace_selection = d3.brushSelection(axis.svg);
-                console.log(screenspace_selection)
+                if (screenspace_selection === null) {
+                    return null
+                }
                 let dataspace_selection = screenspace_selection.map(function (screenspace_position) {
                     return axis.invert(screenspace_position)
                 })
@@ -179,10 +174,13 @@ export default class ParallelCoordinates {
             extents[dimension] = dimension_extents
         });
 
-        // return the datapoints where all the filter parameters are within the extents
+        // return the datapoints that are within the extents. It is only neccesary to be within one of the extents on an axis
         var selected = this.data.filter(data_point => {
             return active_dimensions.every((dimension, index) => {
                 return extents[dimension].some((extent) => {
+                    if (extent === null) {
+                        return false
+                    }
                     let data_float = parseFloat(data_point[dimension])
                     return extent[1] <= data_float && data_float <= extent[0]
                 })
