@@ -37,7 +37,6 @@ export default class ParallelCoordinates {
             }
             _this.y[d] = axes
         })
-        this.draw();
     }
 
     draw() {
@@ -129,7 +128,7 @@ export default class ParallelCoordinates {
         let dimensions = this.dimensions;
         let _this = this
         let path = d3.path();
-        let first_val = parseFloat(data_point[dimensions[0]])
+        let first_val = data_point[dimensions[0]]
         let y_pos = this.y_position(first_val, dimensions[0])
 
         path.moveTo(_this.x(dimensions[0]), y_pos)
@@ -181,25 +180,25 @@ export default class ParallelCoordinates {
                     if (extent === null) {
                         return false
                     }
-                    let data_float = parseFloat(data_point[dimension])
+                    let data_float = data_point[dimension]
                     return extent[1] <= data_float && data_float <= extent[0]
                 })
             })
         })
-        var selected_iso3 = selected.map(function (data_point) {
-            return data_point.iso3
+        var selected_ids = selected.map(function (data_point) {
+            return data_point.name
         })
-        this.updateParCoords(selected_iso3)
+        this.updateParCoords(selected_ids)
     }
 
-    updateParCoords(selected_iso3) {
+    updateParCoords(selected_ids) {
         // If the svg has not finished rendering for the first time yet, just return.
         if (!this.foreground) {
             return
         }
         this.foreground.style("display", function(data_point) {
-            if (selected_iso3.length === 0) return 'none'
-            if (selected_iso3.includes(data_point.iso3)) {
+            if (selected_ids.length === 0) return 'none'
+            if (selected_ids.includes(data_point.name)) {
                 return null
             }
             else {

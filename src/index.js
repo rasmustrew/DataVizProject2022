@@ -21,5 +21,7 @@ load_data().then((data) => {
     let par_coords = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges);
 
     compute_metrics(par_coords)
+
+    par_coords.draw()
 })
 

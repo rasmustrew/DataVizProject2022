@@ -21,8 +21,8 @@ function normalized_screen_data_space_difference(dimensions, data, dimension_ran
         for (let i in data) {
             for (let j = i; j < data.length; j++) {
                 let domain_range = total_range(dimension_ranges[dimension])
-                let data_i = parseFloat(data[i][dimension])
-                let data_j = parseFloat(data[j][dimension])
+                let data_i = data[i][dimension]
+                let data_j = data[j][dimension]
                 let data_space_diff = normalized_diff(data_i, data_j, domain_range)
 
                 let screen_i = par_coords.y_position(data_i, dimension)
@@ -45,7 +45,7 @@ function normalized_max_distance_between_points(dimensions, data, par_coords, sc
 
         let sorted_data = []
         for (let i in data) {
-            sorted_data.push(parseFloat(data[i][dimension]))
+            sorted_data.push(data[i][dimension])
         }
         sorted_data.sort(function (a, b) {
             return a - b;
