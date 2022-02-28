@@ -186,7 +186,7 @@ export default class ParallelCoordinates {
             })
         })
         var selected_ids = selected.map(function (data_point) {
-            return data_point.name
+            return data_point.id
         })
         this.updateParCoords(selected_ids)
     }
@@ -198,7 +198,7 @@ export default class ParallelCoordinates {
         }
         this.foreground.style("display", function(data_point) {
             if (selected_ids.length === 0) return 'none'
-            if (selected_ids.includes(data_point.name)) {
+            if (selected_ids.includes(data_point.id)) {
                 return null
             }
             else {
@@ -212,7 +212,7 @@ export default class ParallelCoordinates {
             .style("visibility", "visible")
             .style("top", mouse_event.clientY + 'px')
             .style("left", mouse_event.clientX + 8 + 'px')
-            .text(data.name)
+            .text(data.id)
     }
 }
 
