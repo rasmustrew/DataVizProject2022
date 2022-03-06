@@ -1,16 +1,23 @@
 import * as d3 from "d3";
 
+export const ScaleType = {
+    Linear: "linear",
+    Log: "Log"
+
+}
+
 export default class ParallelCoordinates {
-    constructor(data, dimensions, dimension_ranges) {
+    constructor(data, dimensions, dimension_ranges, element_id, scale_type) {
         let _this = this
         this.data = data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
+        this.element_id = element_id
 
         let margin = {top: 16, right: 48, bottom: 16, left: 48};
         this.margin = margin
-        let width = document.querySelector("#parCoordsDiv").clientWidth - margin.left - margin.right;
-        let height = document.querySelector("#parCoordsDiv").clientHeight - margin.top - margin.bottom;
+        let width = document.querySelector(element_id).clientWidth - margin.left - margin.right;
+        let height = document.querySelector(element_id).clientHeight - margin.top - margin.bottom;
         this.screen_range = [0, height];
 
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
@@ -28,12 +35,22 @@ export default class ParallelCoordinates {
 
                 let range_proportion = range_count / data.length
                 let proportionate_range = getProportionateRange(range_proportion, height, current_offset, dimension_ranges[d].length - 1, distance_between)
+                console.log(proportionate_range)
                 current_offset = (height - proportionate_range[1]) + distance_between
 
-                let axis = d3.scaleLinear()
-                    .domain(dimension_ranges[d][i])
-                    .range(proportionate_range);
-                axes.push(axis)
+                if (scale_type == ScaleType.Linear) {
+                    let axis = d3.scaleLinear()
+                        .domain(dimension_ranges[d][i])
+                        .range(proportionate_range);
+                    axes.push(axis)
+                } else if (scale_type == ScaleType.Log) {
+                    let axis = d3.scaleLog()
+                        .domain(dimension_ranges[d][i])
+                        .range(proportionate_range);
+                    axes.push(axis)
+                }
+
+
             }
             _this.y[d] = axes
         })
@@ -41,8 +58,8 @@ export default class ParallelCoordinates {
 
     draw() {
         let _this = this
-        let svg = d3.select("#parCoordsDiv").append("svg")
-            .attr("id", "parcoordsSvg")
+        let svg = d3.select(this.element_id).append("svg")
+            .attr("class", "parcoordsSvg")
             .append("g")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
             .on('mouseleave', function (d) {
@@ -112,6 +129,7 @@ export default class ParallelCoordinates {
             .each(function (range, index) {
                 let dim = this.parentNode.parentNode.__data__
                 let screen_range = _this.y[dim][index].range()
+                console.log(screen_range)
                 _this.y[dim][index].brush = d3.brushY()
                     .extent([[-8, screen_range[1]], [8, screen_range[0]]])
                     .on("brush", _this.brushed.bind(_this))

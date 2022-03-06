@@ -71,7 +71,7 @@ svg {
     /*preserve-aspect-ratio: "none";*/
 }
 
-#parcoordsSvg {
+.parcoordsSvg {
     width: 100%;
     height: 100%;
 }
@@ -188,7 +188,23 @@ svg {
     flex-direction: column;
 }
 
-#parCoordsDiv {
+#parCoordsDivTop {
+    /*background-color: green;*/
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    height: 100%;
+}
+
+#parCoordsDivMiddle {
+    /*background-color: green;*/
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    height: 100%;
+}
+
+#parCoordsDivBottom {
     /*background-color: green;*/
     flex-grow: 1;
     flex-shrink: 1;

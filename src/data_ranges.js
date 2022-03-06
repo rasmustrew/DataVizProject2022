@@ -27,3 +27,15 @@ export const hardcoded_numbeo_range = {
     'health_care_index': [[0, 100]],
     'quality_of_life_index': [[0, 200]],//unbounded
 }
+
+export const hardcoded_un_range = {
+    'Surface area (km2)': [[26, 10000], [10000, 17098246]],
+    'Population in thousands (2017)': [[5, 50000], [50000, 1409517]],
+    'Population density (per km2, 2017)': [[0.1, 500], [500, 20821.6]],
+    'GDP: Gross domestic product (million current US$)': [[33, 1000000], [100000, 18036648]],
+    'International trade: Balance (million US$)': [[-796494, -100000], [-100000, 40000], [40000, 530285]],
+    'International trade: Exports (million US$)': [[0, 60000], [60000, 2118981]],
+    'International trade: Imports (million US$)': [[12, 60000], [60000, 2249661]],
+    'GDP growth rate (annual %, const. 2005 prices)': [[-28.1, 0], [0, 10], [10, 26.3]],
+    'GDP per capita (current US$)': [[144.5, 10000], [10000, 45000], [45000, 100160.8]]
+}
