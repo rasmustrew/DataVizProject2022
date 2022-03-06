@@ -134,6 +134,7 @@ export default class ParallelCoordinates {
                 _this.y[dim][index].brush = d3.brushY()
                     .extent([[-8, screen_range[1]], [8, screen_range[0]]])
                     .on("brush", _this.brushed.bind(_this))
+                    .on("end",  _this.brushed.bind(_this))
                 d3.select(this).call(_this.y[dim][index].brush);
                 _this.y[dim][index].svg = this;
             })
