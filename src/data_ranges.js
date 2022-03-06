@@ -39,3 +39,14 @@ export const hardcoded_un_range = {
     'GDP growth rate (annual %, const. 2005 prices)': [[-28.1, 0], [0, 10], [10, 26.3]],
     'GDP per capita (current US$)': [[144.5, 10000], [10000, 45000], [45000, 100160.8]]
 }
+
+export const hardcoded_animals_range = {
+    'Overall Sample Size ': [[0, 850], [850, 1650], [1650, 3406]],
+    'Overall MLE': [[2, 22], [22, 47]],
+    'Overall CI - lower': [[2, 18], [18, 38]],
+    'Overall CI - upper': [[2.5, 20], [20, 53]],
+    'Male Sample Size': [[26, 50], [50, 360], [360, 1425]],
+    'Male MLE': [[2.5, 19], [19, 51.5]],
+    'Male CI - lower': [[2, 18], [18, 41.5]],
+    'Male CI - upper': [[2.5, 25], [25, 55]]
+}

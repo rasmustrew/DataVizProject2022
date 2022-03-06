@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
 export const ScaleType = {
-    Linear: "linear",
+    Linear: "Linear",
     Log: "Log"
 
 }
@@ -38,12 +38,12 @@ export default class ParallelCoordinates {
                 console.log(proportionate_range)
                 current_offset = (height - proportionate_range[1]) + distance_between
 
-                if (scale_type == ScaleType.Linear) {
+                if (scale_type === ScaleType.Linear) {
                     let axis = d3.scaleLinear()
                         .domain(dimension_ranges[d][i])
                         .range(proportionate_range);
                     axes.push(axis)
-                } else if (scale_type == ScaleType.Log) {
+                } else if (scale_type === ScaleType.Log) {
                     let axis = d3.scaleLog()
                         .domain(dimension_ranges[d][i])
                         .range(proportionate_range);
@@ -54,6 +54,7 @@ export default class ParallelCoordinates {
             }
             _this.y[d] = axes
         })
+        console.log(this.y)
     }
 
     draw() {
