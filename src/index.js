@@ -17,13 +17,19 @@ load_periodic_table_data().then((data) => {
     console.log(data)
     let dimension_ranges = simple_ranges(data.data, data.dimensions)
     let dimension_ranges_splits = hardcoded_periodic_table_range
+    console.log(dimension_ranges_splits)
     let par_coords = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges, "#parCoordsDivTop", ScaleType.Linear);
     let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges, "#parCoordsDivTop", ScaleType.Log);
     let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges_splits, "#parCoordsDivBottom", ScaleType.Linear)
-    console.log(dimension_ranges)
-    compute_metrics(par_coords)
-    compute_metrics(par_coords_log)
-    compute_metrics(par_coords_splits)
+
+    let base_metrics = compute_metrics(par_coords)
+    let log_metrics = compute_metrics(par_coords_log)
+    let split_metrics = compute_metrics(par_coords_splits)
+
+    console.log("base: ", base_metrics)
+    console.log("log: ", log_metrics)
+    console.log("split: ", split_metrics)
+
 
     par_coords.draw()
     par_coords_log.draw()

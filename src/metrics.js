@@ -6,18 +6,22 @@ function normalized_diff(i, j, range) {
 }
 
 function total_range(ranges) {
-    let total_range = ranges[0]
+    let total_range = []
+    total_range[0] = ranges[0][0]
+    total_range[1] = ranges[0][1]
     for (let range of ranges) {
         total_range[0] = Math.min(total_range[0], range[0])
-        total_range[1] = Math.min(total_range[1], range[1])
+        total_range[1] = Math.max(total_range[1], range[1])
     }
     return total_range
 }
 
 function normalized_screen_data_space_difference(dimensions, data, dimension_ranges, par_coords, screen_range) {
+    console.log(dimension_ranges)
     let norm_diff_per_dimension = {}
     for (let dimension of dimensions) {
         let summed_diff = 0;
+        let max = 0
         for (let i in data) {
             for (let j = i; j < data.length; j++) {
                 let domain_range = total_range(dimension_ranges[dimension])
@@ -30,7 +34,13 @@ function normalized_screen_data_space_difference(dimensions, data, dimension_ran
                 let screen_diff = normalized_diff(screen_i, screen_j, screen_range)
 
                 let diff = Math.abs(data_space_diff - screen_diff)
+                if (diff >= 1) {
+                    console.log("diff! : ", diff)
+                    console.log(data_space_diff)
+                    console.log(screen_diff)
+                }
                 summed_diff += diff
+                max += 1
             }
         }
         norm_diff_per_dimension[dimension] = summed_diff
@@ -76,4 +86,12 @@ export function compute_metrics(par_coords) {
 
     let max_dist_per_dimension = normalized_max_distance_between_points(dimensions, data, par_coords, screen_range);
     console.log(max_dist_per_dimension)
+
+
+    let norm_diff_sum = Object.values(norm_diff_per_dimension).reduce((sum, current) => sum += current);
+    let max_dist_sum = Object.values(max_dist_per_dimension).reduce((sum, current) => sum += current);
+    return {
+        norm_diff_sum,
+        max_dist_sum
+    }
 }
