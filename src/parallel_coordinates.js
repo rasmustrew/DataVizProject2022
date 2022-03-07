@@ -35,7 +35,6 @@ export default class ParallelCoordinates {
 
                 let range_proportion = range_count / data.length
                 let proportionate_range = getProportionateRange(range_proportion, height, current_offset, dimension_ranges[d].length - 1, distance_between)
-                console.log(proportionate_range)
                 current_offset = (height - proportionate_range[1]) + distance_between
 
                 if (scale_type === ScaleType.Linear) {
@@ -130,7 +129,6 @@ export default class ParallelCoordinates {
             .each(function (range, index) {
                 let dim = this.parentNode.parentNode.__data__
                 let screen_range = _this.y[dim][index].range()
-                console.log(screen_range)
                 _this.y[dim][index].brush = d3.brushY()
                     .extent([[-8, screen_range[1]], [8, screen_range[0]]])
                     .on("brush", _this.brushed.bind(_this))
