@@ -17,7 +17,6 @@ function total_range(ranges) {
 }
 
 function normalized_screen_data_space_difference(dimensions, data, dimension_ranges, par_coords, screen_range) {
-    console.log(dimension_ranges)
     let norm_diff_per_dimension = {}
     for (let dimension of dimensions) {
         let summed_diff = 0;
@@ -34,16 +33,11 @@ function normalized_screen_data_space_difference(dimensions, data, dimension_ran
                 let screen_diff = normalized_diff(screen_i, screen_j, screen_range)
 
                 let diff = Math.abs(data_space_diff - screen_diff)
-                if (diff >= 1) {
-                    console.log("diff! : ", diff)
-                    console.log(data_space_diff)
-                    console.log(screen_diff)
-                }
                 summed_diff += diff
                 max += 1
             }
         }
-        norm_diff_per_dimension[dimension] = summed_diff
+        norm_diff_per_dimension[dimension] = summed_diff / max
     }
     return norm_diff_per_dimension;
 }
@@ -90,8 +84,11 @@ export function compute_metrics(par_coords) {
 
     let norm_diff_sum = Object.values(norm_diff_per_dimension).reduce((sum, current) => sum += current);
     let max_dist_sum = Object.values(max_dist_per_dimension).reduce((sum, current) => sum += current);
+
+    let norm_diff_norm = norm_diff_sum / dimensions.length
+    let max_dist_norm = max_dist_sum / dimensions.length
     return {
-        norm_diff_sum,
-        max_dist_sum
+        norm_diff_norm,
+        max_dist_norm
     }
 }
