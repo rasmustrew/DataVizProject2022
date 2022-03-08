@@ -1,3 +1,4 @@
+import {compute_metrics} from "./metrics";
 
 export function simple_ranges(data, dimensions) {
     let range_map = {};
@@ -14,6 +15,36 @@ export function simple_ranges(data, dimensions) {
     });
 
     return range_map;
+}
+
+// Finds data ranges with 0-1 splits by brute force
+// Input: (dimensions to alter, simple ranges for all dimensions, par coords initialized with simple ranges)
+// Return: (metrics, ranges)
+export function naive_single_split_ranges(dimensions, simple_ranges, par_coords) {
+    if (dimensions.length === 0) {
+        return {
+            metrics: compute_metrics(par_coords),
+            ranges: par_coords.dimension_ranges
+        }
+    }
+
+    let current_dimension = dimensions[0]
+    // console.log(current_dimension)
+    let simple_range = simple_ranges[current_dimension]
+    let percent = 10
+    console.log("step")
+    let one_percent_step = (simple_range[1] - simple_range[0]) / percent
+    let best_so_far = naive_single_split_ranges(dimensions.slice(1), simple_ranges, par_coords)
+    for (let i = 1; i < percent; i += 1) {
+        let single_split_ranges = [[simple_range[1], one_percent_step * i], [one_percent_step * i, simple_range[0]]]
+        par_coords.update_single_dimension_ranges(current_dimension, single_split_ranges)
+        let current_result = naive_single_split_ranges(dimensions.slice(1), simple_ranges, par_coords)
+        if (current_result.metrics.combined > best_so_far.metrics.combined) {
+            best_so_far = current_result
+        }
+    }
+    return best_so_far
+
 }
 
 export const hardcoded_numbeo_range = {

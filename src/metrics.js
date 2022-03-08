@@ -69,6 +69,7 @@ function normalized_max_distance_between_points(dimensions, data, par_coords, sc
     return max_diff_per_dimension;
 }
 
+// weights must be equal length to the amount of metrics
 export function compute_metrics(par_coords) {
     let data = par_coords.data
     let dimensions = par_coords.dimensions
@@ -76,19 +77,19 @@ export function compute_metrics(par_coords) {
     let screen_range = par_coords.screen_range
 
     let norm_diff_per_dimension = normalized_screen_data_space_difference(dimensions, data, dimension_ranges, par_coords, screen_range);
-    console.log(norm_diff_per_dimension)
-
     let max_dist_per_dimension = normalized_max_distance_between_points(dimensions, data, par_coords, screen_range);
-    console.log(max_dist_per_dimension)
 
 
     let norm_diff_sum = Object.values(norm_diff_per_dimension).reduce((sum, current) => sum += current);
     let max_dist_sum = Object.values(max_dist_per_dimension).reduce((sum, current) => sum += current);
 
+    let combined = norm_diff_sum * 1 + max_dist_sum * 1;
+
     let norm_diff_norm = norm_diff_sum / dimensions.length
     let max_dist_norm = max_dist_sum / dimensions.length
     return {
         norm_diff_norm,
-        max_dist_norm
+        max_dist_norm,
+        combined
     }
 }
