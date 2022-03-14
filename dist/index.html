@@ -10,8 +10,31 @@
 
 <body>
 
+
+
     <div id='rightDiv'>
 
+        <div id='headerDiv'>
+            <div id='titleDiv'>Split Parallel Coordinates</div>
+            <div id='metricDiv'>
+                <div id="normDiff">
+                    Norm Diff:
+                    <input type="number" value=1 />
+                </div>
+                <div id="maxDist">
+                    Max Dist:
+                    <input type="number" value=2 />
+                </div>
+                <div id="numSplits">
+                    Num splits:
+                    <input type="number" value=0.1 />
+                </div>
+                <button id="submitDiv" onclick="console.log('blah');window.recompute();">
+                    Recompute
+                </button>
+            </div>
+
+        </div>
         <div id='parCoordsDivTop'></div>
         <div id='parCoordsDivMiddle'></div>
         <div id='parCoordsDivBottom'></div>
