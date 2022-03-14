@@ -16,6 +16,7 @@ console.log("starting")
 load_periodic_table_data().then((data) => {
     console.log(data)
     let weights = [1, 2, 0.1]
+
     let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Linear);
     // let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Log);
 

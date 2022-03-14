@@ -101,12 +101,14 @@ svg {
 .axis path {
     fill: none;
     stroke: #000;
+    stroke-width:2;
     shape-rendering: crispEdges;
 }
 
-.axis text {
+.dimension text {
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
     cursor: move;
+    font-size: 1.1em;
     fill: black;
 }
 
