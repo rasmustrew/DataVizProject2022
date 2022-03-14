@@ -8,9 +8,9 @@ export const ScaleType = {
 
 export default class ParallelCoordinates {
     constructor(data, dimensions, dimension_ranges, element_id, scale_type) {
-        let _this = this
         this.data = data;
         this.dimensions = dimensions
+        this.dimension_ranges = dimension_ranges
 
         this.element_id = element_id
         this.scale_type = scale_type
@@ -33,15 +33,13 @@ export default class ParallelCoordinates {
 
     set_dimension_ranges(dimension_ranges) {
         let _this = this
-        this.dimension_ranges = dimension_ranges
         _this.dimensions.forEach((d) => {
-
             _this.update_single_dimension_ranges(d, dimension_ranges[d])
-
         })
     }
 
     update_single_dimension_ranges(dimension, ranges) {
+        this.dimension_ranges[dimension] = ranges
         let axes = []
         let distance_between = 10
         let current_offset = 0;
@@ -66,6 +64,10 @@ export default class ParallelCoordinates {
             }
         }
         this.y[dimension] = axes
+    }
+
+    delete() {
+        d3.select("svg").remove()
     }
 
     draw() {

@@ -15,25 +15,31 @@ import {load_periodic_table_data} from "./data/load_periodic_table_data";
 console.log("starting")
 load_periodic_table_data().then((data) => {
     console.log(data)
-    let dimension_ranges = simple_ranges(data.data, data.dimensions)
-    let par_coords = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges, "#parCoordsDivTop", ScaleType.Linear);
-    let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges, "#parCoordsDivTop", ScaleType.Log);
+    let weights = [1, 2, 0.1]
+    let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Linear);
+    // let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Log);
 
+     let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddle", ScaleType.Linear)
 
-    let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, dimension_ranges, "#parCoordsDivBottom", ScaleType.Linear)
-    let naive_result = naive_single_split_ranges(data.dimensions, dimension_ranges, par_coords_splits)
+    let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivBottom", ScaleType.Linear)
+    let naive_result = naive_single_split_ranges(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights)
+    par_coords_splits.set_dimension_ranges(naive_result.ranges)
 
-    let base_metrics = compute_metrics(par_coords)
-    let log_metrics = compute_metrics(par_coords_log)
-    // let split_metrics = compute_metrics(par_coords_splits)
+    let base_metrics = compute_metrics(par_coords, par_coords.dimensions, weights)
+    // let log_metrics = compute_metrics(par_coords_log, par_coords.dimensions)
+    let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits, weights)
+    let split_metrics = compute_metrics(par_coords_splits, weights)
 
     console.log("base: ", base_metrics)
-    console.log("log: ", log_metrics)
-    // console.log("split: ", split_metrics)
+    // console.log("log: ", log_metrics)
+    console.log("hardcoded split: ", hardcoded_split_metrics)
+    console.log("split: ", split_metrics)
     console.log(naive_result)
 
     par_coords.draw()
-    par_coords_log.draw()
     par_coords_splits.draw()
+    hardcoded_par_coords_splits.draw()
+    // par_coords_log.draw()
+
 })
 

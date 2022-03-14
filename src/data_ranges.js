@@ -20,31 +20,61 @@ export function simple_ranges(data, dimensions) {
 // Finds data ranges with 0-1 splits by brute force
 // Input: (dimensions to alter, simple ranges for all dimensions, par coords initialized with simple ranges)
 // Return: (metrics, ranges)
-export function naive_single_split_ranges(dimensions, simple_ranges, par_coords) {
-    if (dimensions.length === 0) {
-        return {
-            metrics: compute_metrics(par_coords),
-            ranges: par_coords.dimension_ranges
-        }
-    }
+// export function naive_single_split_ranges(dimensions, simple_ranges, previous_dimension, par_coords) {
+//     if (dimensions.length === 0) {
+//         let cloned_dimensions = [...dimensions]
+//         cloned_dimensions.push(previous_dimension)
+//         return {
+//             metrics: compute_metrics(par_coords, cloned_dimensions),
+//             ranges: par_coords.dimension_ranges
+//         }
+//     }
+//
+//     let current_dimension = dimensions[0]
+//     let simple_range = simple_ranges[current_dimension]
+//     console.log("step")
+//     let percent_step = (simple_range[1] - simple_range[0]) / 10
+//     let best_so_far = naive_single_split_ranges(dimensions.slice(1), simple_ranges, current_dimension, par_coords)
+//     for (let i = 1; i < 10; i += 1) {
+//         let single_split_ranges = [[simple_range[1], percent_step * i], [percent_step * i, simple_range[0]]]
+//         par_coords.update_single_dimension_ranges(current_dimension, single_split_ranges)
+//         let current_result = naive_single_split_ranges(dimensions.slice(1), simple_ranges, current_dimension, par_coords)
+//         if (current_result.metrics.combined > best_so_far.metrics.combined) {
+//             best_so_far = current_result
+//         }
+//     }
+//     return best_so_far
+//
+// }
 
-    let current_dimension = dimensions[0]
-    // console.log(current_dimension)
-    let simple_range = simple_ranges[current_dimension]
-    let percent = 10
-    console.log("step")
-    let one_percent_step = (simple_range[1] - simple_range[0]) / percent
-    let best_so_far = naive_single_split_ranges(dimensions.slice(1), simple_ranges, par_coords)
-    for (let i = 1; i < percent; i += 1) {
-        let single_split_ranges = [[simple_range[1], one_percent_step * i], [one_percent_step * i, simple_range[0]]]
-        par_coords.update_single_dimension_ranges(current_dimension, single_split_ranges)
-        let current_result = naive_single_split_ranges(dimensions.slice(1), simple_ranges, par_coords)
-        if (current_result.metrics.combined > best_so_far.metrics.combined) {
-            best_so_far = current_result
-        }
-    }
-    return best_so_far
+export function naive_single_split_ranges(dimensions, simple_ranges, par_coords, weights) {
 
+    let computed_ranges = {}
+    for (let dimension of dimensions) {
+        par_coords.update_single_dimension_ranges(dimension, simple_ranges[dimension])
+        let metrics_without_split = compute_metrics(par_coords, weights)
+        let current_best_metric = metrics_without_split.combined
+        let current_best_split = simple_ranges[dimension]
+        let one_step = (simple_ranges[dimension][0][1] - simple_ranges[dimension][0][0]) / 100
+        for (let i = 1; i < 100; i++) {
+            let split_pos = simple_ranges[dimension][0][0] + one_step * i
+            let single_split_ranges = [[simple_ranges[dimension][0][0], split_pos], [split_pos, simple_ranges[dimension][0][1]]]
+            par_coords.update_single_dimension_ranges(dimension, single_split_ranges)
+            let metrics = compute_metrics(par_coords, weights)
+            // par_coords.delete()
+            // par_coords.draw()
+            if (metrics.combined < current_best_metric) {
+                current_best_metric = metrics.combined
+                current_best_split = single_split_ranges
+            }
+        }
+        computed_ranges[dimension] = current_best_split
+    }
+    par_coords.set_dimension_ranges(computed_ranges)
+    return {
+        ranges: computed_ranges,
+        metrics: compute_metrics(par_coords, weights)
+    }
 }
 
 export const hardcoded_numbeo_range = {
