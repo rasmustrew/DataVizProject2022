@@ -21,7 +21,7 @@ function norm_screen_data_diff(data, dimension, dimension_ranges, par_coords) {
     let max = 0
     for (let i in data) {
         for (let j = i; j < data.length; j++) {
-            let domain_range = total_range(dimension_ranges)
+            let domain_range = total_range(dimension_ranges[dimension])
             let data_i = data[i][dimension]
             let data_j = data[j][dimension]
             let data_space_diff = normalized_diff(data_i, data_j, domain_range)
@@ -38,13 +38,6 @@ function norm_screen_data_diff(data, dimension, dimension_ranges, par_coords) {
     return summed_diff / max
 }
 
-function normalized_screen_data_space_difference(par_coords) {
-    let norm_diff_per_dimension = {}
-    for (let dimension of par_coords.dimensions) {
-        norm_diff_per_dimension[dimension] = norm_screen_data_diff(par_coords.data, dimension, par_coords.dimension_ranges[dimension], par_coords)
-    }
-    return norm_diff_per_dimension;
-}
 
 function max_diff(data, dimension, par_coords) {
     let max_diff = 0
@@ -70,46 +63,36 @@ function max_diff(data, dimension, par_coords) {
     return max_diff
 }
 
-function normalized_max_distance_between_points(par_coords) {
-    let max_diff_per_dimension = {}
-    for (let dimension of par_coords.dimensions) {
-        max_diff_per_dimension[dimension] = max_diff(par_coords.data, dimension, par_coords)
-    }
-    return max_diff_per_dimension;
-}
 
-function number_of_splits_per_dimension(par_coords) {
-    let num_splits_per_dimension = {}
-    for (let dimension of par_coords.dimensions) {
-        num_splits_per_dimension[dimension] = par_coords.dimension_ranges[dimension].length
+export function compute_metrics_dim(par_coords, dim) {
+    let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
+    let max_dist = max_diff(par_coords.data, dim, par_coords)
+    let num_splits = par_coords.dimension_ranges[dim].length
+
+    return {
+        norm_diff,
+        max_dist,
+        num_splits
     }
-    return num_splits_per_dimension
 }
 
 // weights must be equal length to the amount of metrics
-export function compute_metrics(par_coords, weights) {
-    let norm_diff_per_dimension = normalized_screen_data_space_difference(par_coords);
-    let max_dist_per_dimension = normalized_max_distance_between_points(par_coords);
-    let num_splits_per_dimension = number_of_splits_per_dimension(par_coords);
-
-
-    let norm_diff_sum = Object.values(norm_diff_per_dimension).reduce((sum, current) => sum += current);
-    let max_dist_sum = Object.values(max_dist_per_dimension).reduce((sum, current) => sum += current);
-    let num_splits_sum = Object.values(num_splits_per_dimension).reduce((sum, current) => sum += current);
-
-
-
-
-    let norm_diff_norm = norm_diff_sum / par_coords.dimensions.length
-    let max_dist_norm = max_dist_sum / par_coords.dimensions.length
-    let num_splits_norm =  num_splits_sum / par_coords.dimensions.length
-
-    let combined = norm_diff_norm * weights[0] + max_dist_norm * weights[1] + num_splits_norm * weights[2];
-
-    return {
-        norm_diff_norm,
-        max_dist_norm,
-        num_splits_norm,
-        combined
+export function compute_metrics(par_coords) {
+    let dimensions_metrics = {}
+    for (let dim of par_coords.dimensions) {
+        dimensions_metrics[dim] = compute_metrics_dim(par_coords, dim)
     }
+    return dimensions_metrics
+}
+
+export function compute_total_metric(metrics, weights) {
+    let total = 0;
+    for (let dim_metric of Object.values(metrics)) {
+        for (let metric of Object.keys(dim_metric)) {
+            total += dim_metric[metric] * weights[metric]
+        }
+    }
+
+    return total / Object.values(metrics).length
+
 }

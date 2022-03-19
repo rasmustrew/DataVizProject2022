@@ -1,4 +1,4 @@
-import {compute_metrics} from "./metrics";
+import {compute_metrics, compute_metrics_dim, compute_total_metric} from "./metrics";
 
 export function simple_ranges(data, dimensions) {
     let range_map = {};
@@ -53,18 +53,26 @@ export function naive_single_split_ranges(dimensions, simple_ranges, par_coords,
     for (let dimension of dimensions) {
         par_coords.update_single_dimension_ranges(dimension, simple_ranges[dimension])
         let metrics_without_split = compute_metrics(par_coords, weights)
-        let current_best_metric = metrics_without_split.combined
+        let current_best_metrics = metrics_without_split
+        let current_best_metric = compute_total_metric(metrics_without_split, weights)
         let current_best_split = simple_ranges[dimension]
         let one_step = (simple_ranges[dimension][0][1] - simple_ranges[dimension][0][0]) / 100
         for (let i = 1; i < 100; i++) {
             let split_pos = simple_ranges[dimension][0][0] + one_step * i
             let single_split_ranges = [[simple_ranges[dimension][0][0], split_pos], [split_pos, simple_ranges[dimension][0][1]]]
             par_coords.update_single_dimension_ranges(dimension, single_split_ranges)
-            let metrics = compute_metrics(par_coords, weights)
+            let metrics_dim = compute_metrics_dim(par_coords, dimension)
+            let current_metrics = {}
+            Object.assign(current_metrics, current_best_metrics)
+            current_metrics[dimension] = metrics_dim
+            let current_metric = compute_total_metric(current_metrics, weights)
+            console.log("test")
+            console.log(current_metric)
             // par_coords.delete()
             // par_coords.draw()
-            if (metrics.combined < current_best_metric) {
-                current_best_metric = metrics.combined
+            if (current_metric < current_best_metric) {
+                current_best_metrics = current_metrics
+                current_best_metric = current_metric
                 current_best_split = single_split_ranges
             }
         }

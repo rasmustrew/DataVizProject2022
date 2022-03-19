@@ -22,9 +22,9 @@ function create_par_coords(data) {
         // let weights = [1, 2, 0.1]
 
         let weights = []
-        weights[0] = d3.select("#normDiff input").property("value")
-        weights[1] = d3.select("#maxDist input").property("value")
-        weights[2] = d3.select("#numSplits input").property("value")
+        weights["norm_diff"] = parseFloat(d3.select("#normDiff input").property("value"))
+        weights["max_dist"] = parseFloat(d3.select("#maxDist input").property("value"))
+        weights["num_splits"] = parseFloat(d3.select("#numSplits input").property("value"))
 
         let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Linear);
         // let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Log);
