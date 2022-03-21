@@ -66,8 +66,6 @@ export function naive_single_split_ranges(dimensions, simple_ranges, par_coords,
             Object.assign(current_metrics, current_best_metrics)
             current_metrics[dimension] = metrics_dim
             let current_metric = compute_total_metric(current_metrics, weights)
-            console.log("test")
-            console.log(current_metric)
             // par_coords.delete()
             // par_coords.draw()
             if (current_metric < current_best_metric) {
@@ -125,7 +123,8 @@ export const hardcoded_periodic_table_range = {
     'abundance/universe': [[8e-9, 8e-7], [8e-7, 8e-5], [8e-5, 8e-3], [8e-3, 8e-1], [8e-1, 75]],
     // 'abundance/universe': [[8e-9, 0.1], [0.1, 75]],
     'conductivity/thermal': [[0.00565, 1], [1, 250], [250, 430]],
-    'density/stp': [[0.0899, 5], [5, 22590]],
+    // 'density/stp': [[0.0899, 5], [5, 22590]],
+    'density/stp': [[0.0899, 225], [225, 22590]],
     'ionization_energies/0': [[357.7, 2372.3]],
     'melting_point': [[0.95, 100], [100, 3823]],
     'electron_affinity': [[-116, 348.575]],

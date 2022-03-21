@@ -63,15 +63,41 @@ function max_diff(data, dimension, par_coords) {
     return max_diff
 }
 
+function min_diff(data, dimension, par_coords) {
+    let min_diff = 1
+
+    let sorted_data = []
+    for (let i in data) {
+        sorted_data.push(data[i][dimension])
+    }
+    sorted_data.sort(function (a, b) {
+        return a - b;
+    });
+
+    for (let i = 0; i < sorted_data.length - 1; i++) {
+        let j = i + 1
+        let data_i = sorted_data[i]
+        let data_j = sorted_data[j]
+
+        let screen_i = par_coords.y_position(data_i, dimension)
+        let screen_j = par_coords.y_position(data_j, dimension)
+        let norm_diff = normalized_diff(screen_i, screen_j, par_coords.screen_range)
+        min_diff = Math.min(min_diff, norm_diff)
+    }
+    return -min_diff
+}
+
 
 export function compute_metrics_dim(par_coords, dim) {
     let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
     let max_dist = max_diff(par_coords.data, dim, par_coords)
+    let min_dist = min_diff(par_coords.data, dim, par_coords)
     let num_splits = par_coords.dimension_ranges[dim].length
 
     return {
         norm_diff,
         max_dist,
+        min_dist,
         num_splits
     }
 }
