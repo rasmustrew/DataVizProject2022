@@ -15,7 +15,7 @@ export default class ParallelCoordinates {
         this.element_id = element_id
         this.scale_type = scale_type
 
-        let margin = {top: 16, right: 48, bottom: 16, left: 48};
+        let margin = {top: 24, right: 48, bottom: 16, left: 48};
         this.margin = margin
         let width = document.querySelector(element_id).clientWidth - margin.left - margin.right;
         let height = document.querySelector(element_id).clientHeight - margin.top - margin.bottom;
@@ -38,27 +38,46 @@ export default class ParallelCoordinates {
         })
     }
 
-    update_single_dimension_ranges(dimension, ranges) {
-        this.dimension_ranges[dimension] = ranges
+    update_single_dimension_ranges(dimension, ranges, split_index, has_split) {
+        if (split_index === undefined) {
+            this.dimension_ranges[dimension] = ranges
+        } else {
+            if (has_split) {
+                this.dimension_ranges[dimension] = this.dimension_ranges[dimension].filter((val, index) => {
+                    return !((index === split_index) || (index === (split_index + 1)))
+                })
+            } else {
+                this.dimension_ranges[dimension] = this.dimension_ranges[dimension].filter((val, index) => {
+                    return !(index === split_index)
+                })
+            }
+            this.dimension_ranges[dimension] = [...this.dimension_ranges[dimension]]
+            for (let range_index = ranges.length - 1; range_index >= 0; range_index--) {
+                let range = ranges[range_index]
+                this.dimension_ranges[dimension].splice(split_index, 0, range)
+            }
+        }
+
+        let current_ranges = this.dimension_ranges[dimension];
         let axes = []
         let distance_between = 10
         let current_offset = 0;
-        for (let i = 0; i < ranges.length; i++) {
-            let range = ranges[i]
+        for (let i = 0; i < current_ranges.length; i++) {
+            let range = current_ranges[i]
             let range_count = this.data.filter(value => isValueInRange(value[dimension], range)).length;
 
             let range_proportion = range_count / this.data.length
-            let proportionate_range = getProportionateRange(range_proportion, this.height, current_offset, ranges.length - 1, distance_between)
+            let proportionate_range = getProportionateRange(range_proportion, this.height, current_offset, current_ranges.length - 1, distance_between)
             current_offset = (this.height - proportionate_range[1]) + distance_between
 
             if (this.scale_type === ScaleType.Linear) {
                 let axis = d3.scaleLinear()
-                    .domain(ranges[i])
+                    .domain(current_ranges[i])
                     .range(proportionate_range);
                 axes.push(axis)
             } else if (this.scale_type === ScaleType.Log) {
                 let axis = d3.scaleLog()
-                    .domain(ranges[i])
+                    .domain(current_ranges[i])
                     .range(proportionate_range);
                 axes.push(axis)
             }
@@ -176,6 +195,12 @@ export default class ParallelCoordinates {
         let range_index = this.dimension_ranges[dimension].findIndex((range) => {
             return isValueInRange(domain_value, range)
         })
+        if (this.y[dimension][range_index] == undefined) {
+            console.log(domain_value)
+            console.log(this.dimension_ranges[dimension])
+            console.log(range_index)
+        }
+
         return this.y[dimension][range_index](domain_value)
     }
 

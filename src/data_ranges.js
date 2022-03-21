@@ -51,30 +51,53 @@ export function naive_single_split_ranges(dimensions, simple_ranges, par_coords,
 
     let computed_ranges = {}
     for (let dimension of dimensions) {
-        par_coords.update_single_dimension_ranges(dimension, simple_ranges[dimension])
+        par_coords.update_single_dimension_ranges(dimension, [...simple_ranges[dimension]])
         let metrics_without_split = compute_metrics(par_coords, weights)
         let current_best_metrics = metrics_without_split
         let current_best_metric = compute_total_metric(metrics_without_split, weights)
-        let current_best_split = simple_ranges[dimension]
-        let one_step = (simple_ranges[dimension][0][1] - simple_ranges[dimension][0][0]) / 100
-        for (let i = 1; i < 100; i++) {
-            let split_pos = simple_ranges[dimension][0][0] + one_step * i
-            let single_split_ranges = [[simple_ranges[dimension][0][0], split_pos], [split_pos, simple_ranges[dimension][0][1]]]
-            par_coords.update_single_dimension_ranges(dimension, single_split_ranges)
-            let metrics_dim = compute_metrics_dim(par_coords, dimension)
-            let current_metrics = {}
-            Object.assign(current_metrics, current_best_metrics)
-            current_metrics[dimension] = metrics_dim
-            let current_metric = compute_total_metric(current_metrics, weights)
-            // par_coords.delete()
-            // par_coords.draw()
-            if (current_metric < current_best_metric) {
-                current_best_metrics = current_metrics
-                current_best_metric = current_metric
-                current_best_split = single_split_ranges
+        let current_best_split = [...simple_ranges[dimension]]
+        let split_index = 0
+        let working_range = [...simple_ranges[dimension][0]]
+        for (let k = 0; k < 5; k++) {
+            let has_split = false
+            let one_step = (working_range[1] - working_range[0]) / 100
+            for (let i = 1; i < 100; i++) {
+                let split_pos = working_range[0] + one_step * i
+                let single_split_ranges = [[working_range[0], split_pos], [split_pos, working_range[1]]]
+                par_coords.update_single_dimension_ranges(dimension, single_split_ranges, split_index, has_split)
+                let metrics_dim = compute_metrics_dim(par_coords, dimension)
+                let current_metrics = {}
+                Object.assign(current_metrics, current_best_metrics)
+                current_metrics[dimension] = metrics_dim
+                let current_metric = compute_total_metric(current_metrics, weights)
+                // if (dimension === "density/stp") {
+                //     par_coords.delete()
+                //     par_coords.draw()
+                // }
+                if (current_metric < current_best_metric) {
+                    current_best_metrics = current_metrics
+                    current_best_metric = current_metric
+                    current_best_split = par_coords.dimension_ranges[dimension]
+
+                }
+                has_split = true
             }
+            let biggest_axis = 0
+            let biggest_axis_size = 0
+            for (let axis_index = 0; axis_index < current_best_split.length; axis_index++) {
+                let axis = current_best_split[axis_index]
+                if (axis[1] - axis[0] > biggest_axis_size) {
+                    biggest_axis_size = axis[1] - axis[0]
+                    biggest_axis = axis_index
+                }
+            }
+            split_index = biggest_axis
+            working_range = [...current_best_split[split_index]]
+            computed_ranges[dimension] = current_best_split
+            par_coords.update_single_dimension_ranges(dimension, [...current_best_split])
         }
-        computed_ranges[dimension] = current_best_split
+
+
     }
     par_coords.set_dimension_ranges(computed_ranges)
     return {
@@ -124,7 +147,8 @@ export const hardcoded_periodic_table_range = {
     // 'abundance/universe': [[8e-9, 0.1], [0.1, 75]],
     'conductivity/thermal': [[0.00565, 1], [1, 250], [250, 430]],
     // 'density/stp': [[0.0899, 5], [5, 22590]],
-    'density/stp': [[0.0899, 225], [225, 22590]],
+    // 'density/stp': [[0.0899, 225], [225, 22590]],
+    'density/stp': [[0.0899, 2.25], [2.25, 22590]],
     'ionization_energies/0': [[357.7, 2372.3]],
     'melting_point': [[0.95, 100], [100, 3823]],
     'electron_affinity': [[-116, 348.575]],

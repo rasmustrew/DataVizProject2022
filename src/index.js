@@ -21,7 +21,7 @@ function create_par_coords(data) {
     load_periodic_table_data().then((data) => {
         // let weights = [1, 2, 0.1]
 
-        let weights = []
+        let weights = {}
         weights["norm_diff"] = parseFloat(d3.select("#normDiff input").property("value"))
         weights["max_dist"] = parseFloat(d3.select("#maxDist input").property("value"))
         weights["min_dist"] = parseFloat(d3.select("#minDist input").property("value"))

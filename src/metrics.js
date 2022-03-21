@@ -84,7 +84,8 @@ function min_diff(data, dimension, par_coords) {
         let norm_diff = normalized_diff(screen_i, screen_j, par_coords.screen_range)
         min_diff = Math.min(min_diff, norm_diff)
     }
-    return -min_diff
+
+    return 1-min_diff
 }
 
 
