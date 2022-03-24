@@ -79,6 +79,10 @@ function min_diff(data, dimension, par_coords) {
         let data_i = sorted_data[i]
         let data_j = sorted_data[j]
 
+        if (data_i === data_j) {
+            continue
+        }
+
         let screen_i = par_coords.y_position(data_i, dimension)
         let screen_j = par_coords.y_position(data_j, dimension)
         let norm_diff = normalized_diff(screen_i, screen_j, par_coords.screen_range)
