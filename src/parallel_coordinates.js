@@ -89,7 +89,7 @@ export default class ParallelCoordinates {
         d3.select("svg").remove()
     }
 
-    draw() {
+    draw(histogram, biggest_jumps, histogram_sizes) {
         let _this = this
         let svg = d3.select(this.element_id).append("svg")
             .attr("class", "parcoordsSvg")
@@ -172,6 +172,53 @@ export default class ParallelCoordinates {
             .selectAll("rect")
             .attr("x", -8)
             .attr("width", 16);
+
+        if (histogram) {
+            axes.selectAll(".histogram")
+                .data(function (d) {
+                    let dim = this.parentNode.__data__
+                    return histogram[dim]
+                })
+                .enter().append("rect")
+                .attr("class", "histogram")
+                .attr("y", function (d, index)  {
+                    // assumes simple_range
+                    let dim = this.parentNode.parentNode.__data__
+                    let percent_value = index / histogram[dim].length
+                    let value = percent_value * (_this.dimension_ranges[dim][0][1] - _this.dimension_ranges[dim][0][0]) + _this.dimension_ranges[dim][0][0]
+                    return _this.y_position(value, dim)
+                })
+                .attr("x", 0)
+                .attr("width", function (d, index)  {
+                    return d * 2
+                })
+                .attr("color", "red")
+                .attr("fill", "red")
+                .attr("height", 2)
+        }
+
+        if (biggest_jumps) {
+            axes.selectAll(".biggest_jumps")
+                .data(function (d) {
+                    let dim = this.parentNode.__data__
+                    return biggest_jumps[dim]
+                })
+                .enter().append("rect")
+                .attr("class", "biggest_jumps")
+                .attr("y", function (jump_value, index)  {
+                    // assumes simple_range
+                    let dim = this.parentNode.parentNode.__data__
+                    return _this.y_position(jump_value, dim)
+                })
+                .attr("x", 0)
+                .attr("width", 25)
+                .attr("color", "green")
+                .attr("fill", "green")
+                .attr("height", 2)
+        }
+
+
+
     }
 
 // Returns the path for a given data point.

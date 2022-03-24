@@ -47,7 +47,41 @@ export function simple_ranges(data, dimensions) {
 //
 // }
 
-export function naive_single_split_ranges(dimensions, simple_ranges, par_coords, weights) {
+export function guided_split(dimensions, simple_ranges, par_coords, weights, suggestions) {
+    let computed_ranges = {}
+    for (let dimension of dimensions) {
+        par_coords.update_single_dimension_ranges(dimension, [...simple_ranges[dimension]])
+        let metrics_without_split = compute_metrics(par_coords, weights)
+        let current_best_metrics = metrics_without_split
+        let current_best_metric = compute_total_metric(metrics_without_split, weights)
+        let current_best_split = [...simple_ranges[dimension]]
+
+        for (let suggested_split_pos of suggestions[dimension]) {
+            let single_split_ranges = [[simple_ranges[dimension][0][0], suggested_split_pos], [suggested_split_pos, simple_ranges[dimension][0][1]]]
+            par_coords.update_single_dimension_ranges(dimension, single_split_ranges)
+            let metrics_dim = compute_metrics_dim(par_coords, dimension)
+            let current_metrics = {}
+            Object.assign(current_metrics, current_best_metrics)
+            current_metrics[dimension] = metrics_dim
+            let current_metric = compute_total_metric(current_metrics, weights)
+            if (current_metric < current_best_metric) {
+                current_best_metrics = current_metrics
+                current_best_metric = current_metric
+                current_best_split = par_coords.dimension_ranges[dimension]
+            }
+        }
+
+        computed_ranges[dimension] = current_best_split
+        par_coords.update_single_dimension_ranges(dimension, [...current_best_split])
+    }
+    par_coords.set_dimension_ranges(computed_ranges)
+    return {
+        ranges: computed_ranges,
+        metrics: compute_metrics(par_coords, weights)
+    }
+}
+
+export function naive_multisplit(dimensions, simple_ranges, par_coords, weights) {
 
     let computed_ranges = {}
     for (let dimension of dimensions) {
