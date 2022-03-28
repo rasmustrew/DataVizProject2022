@@ -64,6 +64,10 @@ export function guided_split(dimensions, simple_ranges, par_coords, weights, sug
             Object.assign(current_metrics, current_best_metrics)
             current_metrics[dimension] = metrics_dim
             let current_metric = compute_total_metric(current_metrics, weights)
+            // if (dimension === "density/stp") {
+            //     par_coords.delete()
+            //     par_coords.draw()
+            // }
             if (current_metric < current_best_metric) {
                 current_best_metrics = current_metrics
                 current_best_metric = current_metric

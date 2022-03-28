@@ -38,6 +38,39 @@ function norm_screen_data_diff(data, dimension, dimension_ranges, par_coords) {
     return summed_diff / max
 }
 
+function average_squared_dist(data, dimension, par_coords) {
+
+    let squared_dist_sum = 0
+
+    let sorted_data = []
+    for (let i in data) {
+        sorted_data.push(data[i][dimension])
+    }
+    sorted_data.sort(function (a, b) {
+        return a - b;
+    });
+
+    for (let i = 0; i < sorted_data.length - 1; i++) {
+        let j = i + 1
+        let data_i = sorted_data[i]
+        let data_j = sorted_data[j]
+        if (data_i === data_j) {
+            continue
+        }
+
+        let screen_i = par_coords.y_position(data_i, dimension)
+        let screen_j = par_coords.y_position(data_j, dimension)
+
+        // let squared_dist = Math.pow(screen_i - screen_j, 2)
+        let screen_diff = normalized_diff(screen_i, screen_j, par_coords.screen_range)
+        let squared_dist = 1 / screen_diff
+        squared_dist_sum += squared_dist;
+    }
+
+    let squared_dist_average = squared_dist_sum / sorted_data.length
+    return squared_dist_average
+}
+
 
 function max_diff(data, dimension, par_coords) {
     let max_diff = 0
@@ -92,18 +125,48 @@ function min_diff(data, dimension, par_coords) {
     return 1-min_diff
 }
 
+function histogram_1d_squared_avg(data, dimension, par_coords) {
+    let num_bins = 100;
+    let bins = Array(num_bins).fill(0)
+
+    for (let item of data) {
+        let y_pos = par_coords.y_position(item[dimension], dimension)
+        let percent = y_pos / par_coords.height
+        let bin = Math.floor(percent * (num_bins - 1))
+        bins[bin] += 1
+    }
+
+    let bins_squared = bins.map((val) => {
+        return val * val
+    })
+
+    let bins_squared_sum = bins_squared.reduce((sum, val) => {
+        return sum + val
+    })
+
+    if (dimension === "density/stp") {
+        console.log(bins)
+    }
+    let bins_squared_avg = bins_squared_sum / num_bins
+    return bins_squared_avg
+}
+
 
 export function compute_metrics_dim(par_coords, dim) {
     let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
     let max_dist = max_diff(par_coords.data, dim, par_coords)
     let min_dist = min_diff(par_coords.data, dim, par_coords)
+    let avg_squared_dist = average_squared_dist(par_coords.data, dim, par_coords)
     let num_splits = par_coords.dimension_ranges[dim].length
+    let hist_avg = histogram_1d_squared_avg(par_coords.data, dim, par_coords)
 
     return {
         norm_diff,
         max_dist,
         min_dist,
-        num_splits
+        avg_squared_dist,
+        num_splits,
+        hist_avg
     }
 }
 

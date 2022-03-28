@@ -77,6 +77,8 @@ function create_par_coords() {
         weights["max_dist"] = parseFloat(d3.select("#maxDist input").property("value"))
         weights["min_dist"] = parseFloat(d3.select("#minDist input").property("value"))
         weights["num_splits"] = parseFloat(d3.select("#numSplits input").property("value"))
+        weights["avg_squared_dist"] = parseFloat(d3.select("#avgSquaredDist input").property("value"))
+        weights["hist_avg"] = parseFloat(d3.select("#hist1D input").property("value"))
 
         console.log(simple_ranges(data.data, data.dimensions))
         let simple_ranges_jumps = simple_ranges(data.data, data.dimensions)
@@ -110,10 +112,10 @@ function create_par_coords() {
         // let naive_result = naive_multisplit(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights)
         par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
-        let base_metrics = compute_metrics(par_coords, par_coords.dimensions, weights)
+        let base_metrics = compute_metrics(par_coords, par_coords.dimensions)
         // let log_metrics = compute_metrics(par_coords_log, par_coords.dimensions)
-        let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits, weights)
-        let split_metrics = compute_metrics(par_coords_splits, weights)
+        let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits)
+        let split_metrics = compute_metrics(par_coords_splits)
 
         console.log("base: ", base_metrics)
         // console.log("log: ", log_metrics)
