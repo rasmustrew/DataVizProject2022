@@ -12,6 +12,13 @@ import {compute_metrics} from "./metrics";
 import {load_un_data} from "./data/load_un_data";
 import {load_animal_data} from "./data/load_animal_data";
 import {load_periodic_table_data} from "./data/load_periodic_table_data";
+import {
+    convergence,
+    divergence,
+    number_of_line_crossings,
+    overplotting,
+    screen_histogram_2d
+} from "./pargnostics_benchmarks";
 
 console.log("starting")
 
@@ -126,6 +133,37 @@ function create_par_coords() {
         par_coords.draw(undefined, biggest_jumps)
         par_coords_splits.draw()
         hardcoded_par_coords_splits.draw()
+
+        // let screen_histogram = screen_histogram_2d(par_coords)
+        // let line_crossings = number_of_line_crossings(screen_histogram)
+        // let overplottings = overplotting(screen_histogram)
+        // let convergences = convergence(screen_histogram)
+        // let divergences = divergence(screen_histogram)
+        // console.log(line_crossings)
+        // console.log(overplottings)
+        // console.log(convergences)
+        // console.log(divergences)
+
+        // let screen_histogram_hardcoded = screen_histogram_2d(hardcoded_par_coords_splits)
+        // let line_crossings_hardcoded = number_of_line_crossings(screen_histogram_hardcoded)
+        // let overplottings_hardcoded = overplotting(screen_histogram_hardcoded)
+        // let convergences_hardcoded = convergence(screen_histogram_hardcoded)
+        // let divergences_hardcoded = divergence(screen_histogram_hardcoded)
+        // console.log(line_crossings_hardcoded)
+        // console.log(overplottings_hardcoded)
+        // console.log(convergences_hardcoded)
+        // console.log(divergences_hardcoded)
+
+        // let screen_histogram_computed = screen_histogram_2d(par_coords_splits)
+        // let line_crossings_computed = number_of_line_crossings(screen_histogram_computed)
+        // let overplottings_computed = overplotting(screen_histogram_computed)
+        // let convergences_computed = convergence(screen_histogram_computed)
+        // let divergences_computed = divergence(screen_histogram_computed)
+        // console.log(line_crossings_computed)
+        // console.log(overplottings_computed)
+        // console.log(convergences_computed)
+        // console.log(divergences_computed)
+
 
     })
 
