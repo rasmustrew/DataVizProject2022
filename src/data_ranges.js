@@ -55,19 +55,36 @@ export function guided_split(dimensions, simple_ranges, par_coords, weights, sug
         let current_best_metrics = metrics_without_split
         let current_best_metric = compute_total_metric(metrics_without_split, weights)
         let current_best_split = [...simple_ranges[dimension]]
+        let current_split_point = 0
 
-        for (let suggested_split_pos of suggestions[dimension]) {
-            let single_split_ranges = [[simple_ranges[dimension][0][0], suggested_split_pos], [suggested_split_pos, simple_ranges[dimension][0][1]]]
-            par_coords.update_single_dimension_ranges(dimension, single_split_ranges)
-            let metrics_dim = compute_metrics_dim(par_coords, dimension)
-            let current_metrics = {}
-            Object.assign(current_metrics, current_best_metrics)
-            current_metrics[dimension] = metrics_dim
-            let current_metric = compute_total_metric(current_metrics, weights)
-            if (current_metric < current_best_metric) {
-                current_best_metrics = current_metrics
-                current_best_metric = current_metric
-                current_best_split = par_coords.dimension_ranges[dimension]
+        let current_splits = []
+        let improving = true
+
+        while (improving) {
+            improving = false
+            for (let suggested_split_pos of suggestions[dimension]) {
+                if (current_splits.includes(suggested_split_pos)) {
+                    continue
+                }
+                let ranges = perform_split(simple_ranges[dimension][0], [...current_splits, suggested_split_pos])
+                // let single_split_ranges = [[simple_ranges[dimension][0][0], suggested_split_pos], [suggested_split_pos, simple_ranges[dimension][0][1]]]
+                par_coords.update_single_dimension_ranges(dimension, ranges)
+                let metrics_dim = compute_metrics_dim(par_coords, dimension)
+                let current_metrics = {}
+                Object.assign(current_metrics, current_best_metrics)
+                current_metrics[dimension] = metrics_dim
+                let current_metric = compute_total_metric(current_metrics, weights)
+                if (current_metric < current_best_metric) {
+                    improving = true
+                    current_split_point = suggested_split_pos
+                    current_best_metrics = current_metrics
+                    current_best_metric = current_metric
+                    current_best_split = par_coords.dimension_ranges[dimension]
+                }
+            }
+
+            if (improving) {
+                current_splits.push(current_split_point)
             }
         }
 
@@ -79,6 +96,19 @@ export function guided_split(dimensions, simple_ranges, par_coords, weights, sug
         ranges: computed_ranges,
         metrics: compute_metrics(par_coords, weights)
     }
+}
+
+function perform_split(extent, splits) {
+    splits.sort(function (a, b) {
+        return a - b;
+    });
+    let points = [extent[0], ...splits, extent[1]]
+    let ranges = []
+    for (let i = 0; i < points.length - 1; i++) {
+        let range = [points[i], points[i+1]]
+        ranges.push(range)
+    }
+    return ranges
 }
 
 export function naive_multisplit(dimensions, simple_ranges, par_coords, weights) {
