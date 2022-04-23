@@ -93,6 +93,7 @@ function create_par_coords() {
         let histograms_100 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 100)
         let histograms_1000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000)
         let histograms_10000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000)
+        let histograms_100000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000000)
         let biggest_jumps = {}
         for (let dimension of data.dimensions) {
             let biggest_jumps_10 = find_biggest_histogram_jumps(histograms_10[dimension], 2)
@@ -103,7 +104,9 @@ function create_par_coords() {
             let domain_values_1000 = compute_points_from_histogram_indices(biggest_jumps_1000, simple_ranges_jumps[dimension], 1000)
             let biggest_jumps_10000 = find_biggest_histogram_jumps(histograms_10000[dimension], 5)
             let domain_values_10000 = compute_points_from_histogram_indices(biggest_jumps_10000, simple_ranges_jumps[dimension], 10000)
-            biggest_jumps[dimension] = domain_values_10.concat(domain_values_100).concat(domain_values_1000).concat(domain_values_10000)
+            let biggest_jumps_100000 = find_biggest_histogram_jumps(histograms_100000[dimension], 5)
+            let domain_values_100000 = compute_points_from_histogram_indices(biggest_jumps_100000, simple_ranges_jumps[dimension], 1000000)
+            biggest_jumps[dimension] = domain_values_10.concat(domain_values_100).concat(domain_values_1000).concat(domain_values_10000).concat(domain_values_100000)
         }
         console.log(biggest_jumps)
 
