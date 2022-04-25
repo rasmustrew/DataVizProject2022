@@ -1,8 +1,9 @@
 function normalized_diff(i, j, range) {
     let i_normalized = (i - range[0]) / (range[1] - range[0])
     let j_normalized = (j - range[0]) / (range[1] - range[0])
-    let diff_normalized = Math.abs(i_normalized - j_normalized)
-    return diff_normalized
+    // let diff_normalized = Math.abs(i_normalized - j_normalized)
+    // return diff_normalized
+    return i_normalized - j_normalized
 }
 
 function total_range(ranges) {
@@ -18,7 +19,6 @@ function total_range(ranges) {
 
 function norm_screen_data_diff(data, dimension, dimension_ranges, par_coords) {
     let summed_diff = 0;
-    let max = 0
     for (let i in data) {
         for (let j = i; j < data.length; j++) {
             let domain_range = total_range(dimension_ranges[dimension])
@@ -32,10 +32,9 @@ function norm_screen_data_diff(data, dimension, dimension_ranges, par_coords) {
 
             let diff = Math.abs(data_space_diff - screen_diff)
             summed_diff += diff
-            max += 1
         }
     }
-    return summed_diff / max
+    return summed_diff / (par_coords.data.length * par_coords.data.length)
 }
 
 function average_squared_dist(data, dimension, par_coords) {
@@ -126,7 +125,7 @@ function min_diff(data, dimension, par_coords) {
 }
 
 function histogram_1d_squared_avg(data, dimension, par_coords) {
-    let num_bins = 100;
+    let num_bins = par_coords.height;
     let bins = Array(num_bins).fill(0)
 
     for (let item of data) {
@@ -144,27 +143,18 @@ function histogram_1d_squared_avg(data, dimension, par_coords) {
         return sum + val
     })
 
-    if (dimension === "density/stp") {
-        console.log(bins)
-    }
-    let bins_squared_avg = bins_squared_sum / num_bins
+    let bins_squared_avg = bins_squared_sum / (par_coords.data.length )
     return bins_squared_avg
 }
 
 
 export function compute_metrics_dim(par_coords, dim) {
     let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
-    let max_dist = max_diff(par_coords.data, dim, par_coords)
-    let min_dist = min_diff(par_coords.data, dim, par_coords)
-    let avg_squared_dist = average_squared_dist(par_coords.data, dim, par_coords)
     let num_splits = par_coords.dimension_ranges[dim].length
     let hist_avg = histogram_1d_squared_avg(par_coords.data, dim, par_coords)
 
     return {
         norm_diff,
-        max_dist,
-        min_dist,
-        avg_squared_dist,
         num_splits,
         hist_avg
     }

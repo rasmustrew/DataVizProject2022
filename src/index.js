@@ -19,6 +19,7 @@ import {
     overplotting,
     screen_histogram_2d
 } from "./pargnostics_benchmarks";
+import APC from "./apc";
 
 console.log("starting")
 
@@ -81,10 +82,7 @@ function create_par_coords() {
 
         let weights = {}
         weights["norm_diff"] = parseFloat(d3.select("#normDiff input").property("value"))
-        weights["max_dist"] = parseFloat(d3.select("#maxDist input").property("value"))
-        weights["min_dist"] = parseFloat(d3.select("#minDist input").property("value"))
         weights["num_splits"] = parseFloat(d3.select("#numSplits input").property("value"))
-        weights["avg_squared_dist"] = parseFloat(d3.select("#avgSquaredDist input").property("value"))
         weights["hist_avg"] = parseFloat(d3.select("#hist1D input").property("value"))
 
         console.log(simple_ranges(data.data, data.dimensions))
@@ -111,9 +109,10 @@ function create_par_coords() {
         console.log(biggest_jumps)
 
         let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Linear);
-        // let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Log);
+        let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivMiddleTop", ScaleType.Log);
 
-        let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddle", ScaleType.Linear)
+        // let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddleBottom", ScaleType.Linear)
+        let apc = new APC(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), '#parCoordsDivMiddleBottom')
 
         let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivBottom", ScaleType.Linear)
 
@@ -123,19 +122,21 @@ function create_par_coords() {
         par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
         let base_metrics = compute_metrics(par_coords, par_coords.dimensions)
-        // let log_metrics = compute_metrics(par_coords_log, par_coords.dimensions)
-        let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits)
+        let log_metrics = compute_metrics(par_coords_log, par_coords.dimensions)
+        // let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits)
         let split_metrics = compute_metrics(par_coords_splits)
 
         console.log("base: ", base_metrics)
-        // console.log("log: ", log_metrics)
-        console.log("hardcoded split: ", hardcoded_split_metrics)
+        console.log("log: ", log_metrics)
+        // console.log("hardcoded split: ", hardcoded_split_metrics)
         console.log("split: ", split_metrics)
         console.log(guided_result)
 
         par_coords.draw(undefined, biggest_jumps)
+        par_coords_log.draw()
         par_coords_splits.draw()
-        hardcoded_par_coords_splits.draw()
+        apc.draw()
+        // hardcoded_par_coords_splits.draw()
 
         // let screen_histogram = screen_histogram_2d(par_coords)
         // let line_crossings = number_of_line_crossings(screen_histogram)
@@ -174,7 +175,8 @@ function create_par_coords() {
 
 function destroy_par_coords() {
     d3.select("#parCoordsDivTop svg").remove()
-    d3.select("#parCoordsDivMiddle svg").remove()
+    d3.select("#parCoordsDivMiddleTop svg").remove()
+    d3.select("#parCoordsDivMiddleBottom svg").remove()
     d3.select("#parCoordsDivBottom svg").remove()
 }
 

@@ -1,19 +1,12 @@
 import * as d3 from "d3";
 
-export const ScaleType = {
-    Linear: "Linear",
-    Log: "Log"
-
-}
-
-export default class ParallelCoordinates {
-    constructor(data, dimensions, dimension_ranges, element_id, scale_type) {
+export default class APC {
+    constructor(data, dimensions, dimension_ranges, element_id) {
         this.data = data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
 
         this.element_id = element_id
-        this.scale_type = scale_type
 
         let margin = {top: 24, right: 48, bottom: 16, left: 48};
         this.margin = margin
@@ -23,73 +16,75 @@ export default class ParallelCoordinates {
         this.height = height
         this.width = width;
 
+
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
         this.y = {}
         this.foreground;
         this.background;
 
-        this.set_dimension_ranges(dimension_ranges);
-    }
 
-    set_dimension_ranges(dimension_ranges) {
-        let _this = this
-        _this.dimensions.forEach((d) => {
-            _this.update_single_dimension_ranges(d, dimension_ranges[d])
-        })
-    }
+        let pixel_median = height / 2
+        let quartile_pixel_q1 = pixel_median + height / 20
+        let quartile_pixel_q3 = pixel_median - height / 20
 
-    update_single_dimension_ranges(dimension, ranges, split_index, has_split) {
-        if (split_index === undefined) {
-            this.dimension_ranges[dimension] = ranges
-        } else {
-            if (has_split) {
-                this.dimension_ranges[dimension] = this.dimension_ranges[dimension].filter((val, index) => {
-                    return !((index === split_index) || (index === (split_index + 1)))
-                })
-            } else {
-                this.dimension_ranges[dimension] = this.dimension_ranges[dimension].filter((val, index) => {
-                    return !(index === split_index)
-                })
-            }
-            this.dimension_ranges[dimension] = [...this.dimension_ranges[dimension]]
-            for (let range_index = ranges.length - 1; range_index >= 0; range_index--) {
-                let range = ranges[range_index]
-                this.dimension_ranges[dimension].splice(split_index, 0, range)
-            }
-        }
 
-        let current_ranges = this.dimension_ranges[dimension];
-        let axes = []
-        let distance_between = 10
-        let current_offset = 0;
-        for (let i = 0; i < current_ranges.length; i++) {
-            let range = current_ranges[i]
-            let range_count = this.data.filter(value => isValueInRange(value[dimension], range)).length;
+        let quartiles = this.compute_quartiles()
+        this.quartiles = quartiles
+        console.log(quartiles)
 
-            let range_proportion = range_count / this.data.length
-            let proportionate_range = getProportionateRange(range_proportion, this.height, current_offset, current_ranges.length - 1, distance_between)
-            current_offset = (this.height - proportionate_range[1]) + distance_between
 
-            if (this.scale_type === ScaleType.Linear) {
-                let axis = d3.scaleLinear()
-                    .domain(current_ranges[i])
-                    .range(proportionate_range);
-                axes.push(axis)
-            } else if (this.scale_type === ScaleType.Log) {
-                let axis = d3.scaleSymlog()
-                    .domain(current_ranges[i])
-                    .range(proportionate_range);
-                axes.push(axis)
+        for (let dim of this.dimensions) {
+            let q3_pixel_diff = pixel_median - quartile_pixel_q3
+            let q3_domain_diff = quartiles[dim].q3 - quartiles[dim].median
+            let q3_transform = q3_pixel_diff / q3_domain_diff
+            let q3_domain_max = pixel_median/q3_transform + quartiles[dim].median
+            quartiles[dim].domain_max = q3_domain_max
+
+            let q1_pixel_diff = quartile_pixel_q1 - pixel_median
+            let q1_domain_diff = quartiles[dim].median - quartiles[dim].q1
+            let q1_transform = q1_pixel_diff / q1_domain_diff
+            let q1_domain_min = quartiles[dim].median - pixel_median/q1_transform
+            quartiles[dim].domain_min = q1_domain_min
+            this.y[dim] = {
+                q3: d3.scaleLinear()
+                    .domain([quartiles[dim].median, q3_domain_max])
+                    .range([pixel_median, 0]),
+                q1: d3.scaleLinear()
+                    .domain([q1_domain_min, quartiles[dim].median])
+                    .range([height, pixel_median]),
             }
         }
-        this.y[dimension] = axes
     }
+
+    compute_quartiles() {
+        let quartiles = {}
+        for (let dimension of this.dimensions) {
+            let dim_data = this.data.map((data_point) => data_point[dimension])
+            dim_data.sort(function (a, b) {
+                return a - b;
+            });
+            let median = dim_data[Math.round(dim_data.length/2)]
+            let q1 = dim_data[Math.round(dim_data.length/4)]
+            let q3 = dim_data[Math.round(dim_data.length * (3/4))]
+            let min = dim_data[0]
+            let max = dim_data[dim_data.length - 1]
+            quartiles[dimension] = {
+                min,
+                q1,
+                median,
+                q3,
+                max
+            }
+        }
+        return quartiles
+    }
+
 
     delete() {
         d3.select("svg").remove()
     }
 
-    draw(histogram, biggest_jumps, histogram_sizes) {
+    draw() {
         let _this = this
         let svg = d3.select(this.element_id).append("svg")
             .attr("class", "parcoordsSvg")
@@ -112,7 +107,7 @@ export default class ParallelCoordinates {
         this.foreground = svg.append("g")
             .attr("class", "foreground")
             .selectAll("path")
-            .data(this.data)
+            .data([this.data[45]])
             .enter().append("path")
             .attr("d", this.path.bind(this))
             // make the cursor a pointer when hovering the lines
@@ -142,83 +137,37 @@ export default class ParallelCoordinates {
             });
 
         let axes = axis_groups.selectAll(".axis")
-            .data(function (d) {
-                return _this.dimension_ranges[d]
-            })
+            .data(["q1", "q3"])
             .enter().append("g")
             .attr("class", "axis")
-            .each(function (range, index) {
+            .each(function (axis, index) {
                 let dim = this.parentNode.__data__
-                let screen_range = _this.y[dim][index].range()
-                let screen_span = screen_range[0] - screen_range[1]
-                let num_ticks = Math.floor(screen_span / 100.0)
-                let tick_values = [].concat(_this.y[dim][index].domain()[0], _this.y[dim][index].ticks(num_ticks), _this.y[dim][index].domain()[1]);
-                d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values));
+                let tick_values = []
+                if (axis === 'q1') {
+                    tick_values = [_this.quartiles[dim].domain_min, _this.quartiles[dim].q1, _this.quartiles[dim].median];
+                } else if (axis === 'q3') {
+                    tick_values = [_this.quartiles[dim].q3, _this.quartiles[dim].domain_max];
+                }
+
+                d3.select(this).call(d3.axisLeft().scale(_this.y[dim][axis]).tickValues(tick_values));
             })
 
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         axes.append("g")
             .attr("class", "brush")
-            .each(function (range, index) {
+            .each(function (axis, index) {
                 let dim = this.parentNode.parentNode.__data__
-                let screen_range = _this.y[dim][index].range()
-                _this.y[dim][index].brush = d3.brushY()
+                let screen_range = _this.y[dim][axis].range()
+                _this.y[dim][axis].brush = d3.brushY()
                     .extent([[-8, screen_range[1]], [8, screen_range[0]]])
                     .on("brush", _this.brushed.bind(_this))
                     .on("end",  _this.brushed.bind(_this))
-                d3.select(this).call(_this.y[dim][index].brush);
-                _this.y[dim][index].svg = this;
+                d3.select(this).call(_this.y[dim][axis].brush);
+                _this.y[dim][axis].svg = this;
             })
             .selectAll("rect")
             .attr("x", -8)
             .attr("width", 16);
-
-        if (histogram) {
-            axes.selectAll(".histogram")
-                .data(function (d) {
-                    let dim = this.parentNode.__data__
-                    return histogram[dim]
-                })
-                .enter().append("rect")
-                .attr("class", "histogram")
-                .attr("y", function (d, index)  {
-                    // assumes simple_range
-                    let dim = this.parentNode.parentNode.__data__
-                    let percent_value = index / histogram[dim].length
-                    let value = percent_value * (_this.dimension_ranges[dim][0][1] - _this.dimension_ranges[dim][0][0]) + _this.dimension_ranges[dim][0][0]
-                    return _this.y_position(value, dim)
-                })
-                .attr("x", 0)
-                .attr("width", function (d, index)  {
-                    return d * 2
-                })
-                .attr("color", "red")
-                .attr("fill", "red")
-                .attr("height", 2)
-        }
-
-        if (biggest_jumps) {
-            axes.selectAll(".biggest_jumps")
-                .data(function (d) {
-                    let dim = this.parentNode.__data__
-                    return biggest_jumps[dim]
-                })
-                .enter().append("rect")
-                .attr("class", "biggest_jumps")
-                .attr("y", function (jump_value, index)  {
-                    // assumes simple_range
-                    let dim = this.parentNode.parentNode.__data__
-                    return _this.y_position(jump_value, dim)
-                })
-                .attr("x", 0)
-                .attr("width", 25)
-                .attr("color", "green")
-                .attr("fill", "green")
-                .attr("height", 2)
-        }
-
-
-
     }
 
 // Returns the path for a given data point.
@@ -226,10 +175,11 @@ export default class ParallelCoordinates {
         let dimensions = this.dimensions;
         let _this = this
         let path = d3.path();
+
         let first_val = data_point[dimensions[0]]
         let y_pos = this.y_position(first_val, dimensions[0])
-
         path.moveTo(_this.x(dimensions[0]), y_pos)
+
         dimensions.slice(1).map(function(dimension) {
             let val = data_point[dimension];
             let y_pos = _this.y_position.bind(_this)(val, dimension)
@@ -239,16 +189,14 @@ export default class ParallelCoordinates {
     }
 
     y_position(domain_value, dimension) {
-        let range_index = this.dimension_ranges[dimension].findIndex((range) => {
-            return isValueInRange(domain_value, range)
-        })
-        if (this.y[dimension][range_index] == undefined) {
-            console.log(domain_value)
-            console.log(this.dimension_ranges[dimension])
-            console.log(range_index)
+        let axis;
+        if (domain_value[dimension] >= this.quartiles[dimension].median) {
+            axis = "q3"
+        } else {
+            axis = "q1"
         }
 
-        return this.y[dimension][range_index](domain_value)
+        return this.y[dimension][axis](domain_value)
     }
 
     // Handles a brush event, toggling the display of foreground lines.
