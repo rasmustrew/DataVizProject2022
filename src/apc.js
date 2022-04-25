@@ -24,8 +24,8 @@ export default class APC {
 
 
         let pixel_median = height / 2
-        let quartile_pixel_q1 = pixel_median + height / 20
-        let quartile_pixel_q3 = pixel_median - height / 20
+        let quartile_pixel_q1 = pixel_median + height / 6
+        let quartile_pixel_q3 = pixel_median - height / 6
 
 
         let quartiles = this.compute_quartiles()
@@ -107,7 +107,7 @@ export default class APC {
         this.foreground = svg.append("g")
             .attr("class", "foreground")
             .selectAll("path")
-            .data([this.data[45]])
+            .data(this.data)
             .enter().append("path")
             .attr("d", this.path.bind(this))
             // make the cursor a pointer when hovering the lines
@@ -190,9 +190,10 @@ export default class APC {
 
     y_position(domain_value, dimension) {
         let axis;
-        if (domain_value[dimension] >= this.quartiles[dimension].median) {
+        if (domain_value >= this.quartiles[dimension].median) {
             axis = "q3"
         } else {
+            console.log("q1")
             axis = "q1"
         }
 
