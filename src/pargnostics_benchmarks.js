@@ -105,3 +105,12 @@ export function divergence(histograms_2d) {
     }
     return divergences
 }
+
+export function compute_benchmarks(par_coords) {
+    let screen_histogram = screen_histogram_2d(par_coords)
+    let line_crossings = number_of_line_crossings(screen_histogram)
+    let overplottings = overplotting(screen_histogram)
+    let convergences = convergence(screen_histogram)
+    let divergences = divergence(screen_histogram)
+
+}

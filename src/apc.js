@@ -46,12 +46,19 @@ export default class APC {
             let q1_domain_min = quartiles[dim].median - pixel_median/q1_transform
             quartiles[dim].domain_min = q1_domain_min
             this.y[dim] = {
-                q3: d3.scaleLinear()
-                    .domain([quartiles[dim].median, q3_domain_max])
-                    .range([pixel_median, 0]),
-                q1: d3.scaleLinear()
-                    .domain([q1_domain_min, quartiles[dim].median])
-                    .range([height, pixel_median]),
+                "min-q1": d3.scaleLinear()
+                    .domain([quartiles[dim].min, quartiles[dim].q1])
+                    .range([height, quartile_pixel_q1]),
+                "q1-median": d3.scaleLinear()
+                    .domain([quartiles[dim].q1, quartiles[dim].median])
+                    .range([quartile_pixel_q1, pixel_median]),
+                "median-q3": d3.scaleLinear()
+                    .domain([quartiles[dim].median, quartiles[dim].q3])
+                    .range([pixel_median, quartile_pixel_q3]),
+                "q3-max": d3.scaleLinear()
+                    .domain([quartiles[dim].q3, quartiles[dim].max])
+                    .range([quartile_pixel_q3, 0]),
+
             }
         }
     }
@@ -137,16 +144,20 @@ export default class APC {
             });
 
         let axes = axis_groups.selectAll(".axis")
-            .data(["q1", "q3"])
+            .data(["min-q1", "q1-median", "median-q3", "q3-max"])
             .enter().append("g")
             .attr("class", "axis")
             .each(function (axis, index) {
                 let dim = this.parentNode.__data__
                 let tick_values = []
-                if (axis === 'q1') {
-                    tick_values = [_this.quartiles[dim].domain_min, _this.quartiles[dim].q1, _this.quartiles[dim].median];
-                } else if (axis === 'q3') {
-                    tick_values = [_this.quartiles[dim].q3, _this.quartiles[dim].domain_max];
+                if (axis === 'min-q1') {
+                    tick_values = [_this.quartiles[dim].min];
+                } else if (axis === 'q1-median') {
+                    tick_values = [_this.quartiles[dim].q1];
+                } else if (axis === 'median-q3') {
+                    tick_values = [_this.quartiles[dim].median];
+                } else {
+                    tick_values = [_this.quartiles[dim].q3, _this.quartiles[dim].max];
                 }
 
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][axis]).tickValues(tick_values));
@@ -190,11 +201,14 @@ export default class APC {
 
     y_position(domain_value, dimension) {
         let axis;
-        if (domain_value >= this.quartiles[dimension].median) {
-            axis = "q3"
+        if (domain_value <= this.quartiles[dimension].q1) {
+            axis = "min-q1"
+        } else if (domain_value <= this.quartiles[dimension].median){
+            axis = "q1-median"
+        } else if (domain_value <= this.quartiles[dimension].q3){
+            axis = "median-q3"
         } else {
-            console.log("q1")
-            axis = "q1"
+            axis = "q3-max"
         }
 
         return this.y[dimension][axis](domain_value)

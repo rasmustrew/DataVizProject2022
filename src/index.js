@@ -138,11 +138,7 @@ function create_par_coords() {
         apc.draw()
         // hardcoded_par_coords_splits.draw()
 
-        // let screen_histogram = screen_histogram_2d(par_coords)
-        // let line_crossings = number_of_line_crossings(screen_histogram)
-        // let overplottings = overplotting(screen_histogram)
-        // let convergences = convergence(screen_histogram)
-        // let divergences = divergence(screen_histogram)
+
         // console.log(line_crossings)
         // console.log(overplottings)
         // console.log(convergences)
@@ -167,8 +163,6 @@ function create_par_coords() {
         // console.log(overplottings_computed)
         // console.log(convergences_computed)
         // console.log(divergences_computed)
-
-
     })
 
 }
