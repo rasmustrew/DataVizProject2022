@@ -16,7 +16,7 @@ import {
     convergence,
     divergence,
     number_of_line_crossings,
-    overplotting,
+    overplotting_2d, pretty_print_benchmark, pretty_print_benchmarks,
     screen_histogram_2d
 } from "./pargnostics_benchmarks";
 import APC from "./apc";
@@ -126,11 +126,11 @@ function create_par_coords() {
         // let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits)
         let split_metrics = compute_metrics(par_coords_splits)
 
-        console.log("base: ", base_metrics)
-        console.log("log: ", log_metrics)
+        // console.log("base: ", base_metrics)
+        // console.log("log: ", log_metrics)
         // console.log("hardcoded split: ", hardcoded_split_metrics)
-        console.log("split: ", split_metrics)
-        console.log(guided_result)
+        // console.log("split: ", split_metrics)
+        // console.log(guided_result)
 
         par_coords.draw(undefined, biggest_jumps)
         par_coords_log.draw()
@@ -138,11 +138,15 @@ function create_par_coords() {
         apc.draw()
         // hardcoded_par_coords_splits.draw()
 
+        console.log("PC")
+        pretty_print_benchmarks(par_coords)
+        console.log("symlog")
+        pretty_print_benchmarks(par_coords_log)
+        console.log("andrienko")
+        pretty_print_benchmarks(apc)
+        console.log("SPC")
+        pretty_print_benchmarks(par_coords_splits)
 
-        // console.log(line_crossings)
-        // console.log(overplottings)
-        // console.log(convergences)
-        // console.log(divergences)
 
         // let screen_histogram_hardcoded = screen_histogram_2d(hardcoded_par_coords_splits)
         // let line_crossings_hardcoded = number_of_line_crossings(screen_histogram_hardcoded)

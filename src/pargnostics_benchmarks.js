@@ -25,6 +25,25 @@ export function screen_histogram_2d(par_coords) {
     return histograms_2d
 }
 
+export function screen_histogram_1d(par_coords) {
+    let height = par_coords.height + 1
+
+    let histograms_1d = {}
+
+    for (let dimension of par_coords.dimensions) {
+        let current_histogram = new Array(height).fill(0)
+
+        for (let data_point of par_coords.data) {
+            let y_coordinate = Math.floor(par_coords.y_position(data_point[dimension], dimension))
+
+            y_coordinate= Math.max(y_coordinate, 0)
+            current_histogram[y_coordinate] += 1
+        }
+        histograms_1d[dimension] = current_histogram
+    }
+    return histograms_1d
+}
+
 export function number_of_line_crossings(histograms_2d) {
 
     let line_crossings = {}
@@ -49,7 +68,7 @@ export function number_of_line_crossings(histograms_2d) {
     return line_crossings
 }
 
-export function overplotting(histograms_2d) {
+export function overplotting_2d(histograms_2d) {
     let overplottings = {}
 
     for (let dimension of Object.keys(histograms_2d)) {
@@ -61,6 +80,23 @@ export function overplotting(histograms_2d) {
                 if (histogram[i][j] > 1) {
                     overplotting += histogram[i][j]
                 }
+            }
+        }
+        overplottings[dimension] = overplotting
+    }
+    return overplottings
+}
+
+export function overplotting_1d(histograms_1d) {
+    let overplottings = {}
+
+    for (let dimension of Object.keys(histograms_1d)) {
+        let histogram = histograms_1d[dimension]
+        let overplotting = 0
+
+        for (let i = 0; i < histogram.length; i++) {
+            if (histogram[i] > 1) {
+                overplotting += histogram[i]
             }
         }
         overplottings[dimension] = overplotting
@@ -106,11 +142,27 @@ export function divergence(histograms_2d) {
     return divergences
 }
 
-export function compute_benchmarks(par_coords) {
-    let screen_histogram = screen_histogram_2d(par_coords)
-    let line_crossings = number_of_line_crossings(screen_histogram)
-    let overplottings = overplotting(screen_histogram)
-    let convergences = convergence(screen_histogram)
-    let divergences = divergence(screen_histogram)
 
+
+export function pretty_print_benchmarks(par_coords) {
+    let screen_histograms_1d = screen_histogram_1d(par_coords)
+    let screen_histograms_2d = screen_histogram_2d(par_coords)
+    let line_crossings = number_of_line_crossings(screen_histograms_2d)
+    let overplottings_1d = overplotting_1d(screen_histograms_1d)
+    let overplottings_2d = overplotting_2d(screen_histograms_2d)
+    let convergences = convergence(screen_histograms_2d)
+
+
+    pretty_print_benchmark(line_crossings)
+    pretty_print_benchmark(overplottings_2d)
+    pretty_print_benchmark(convergences)
+    pretty_print_benchmark(overplottings_1d)
+}
+
+export function pretty_print_benchmark(benchmark) {
+    let string = ""
+    for (let value of Object.values(benchmark)) {
+        string += value + ", "
+    }
+    console.log(string)
 }
