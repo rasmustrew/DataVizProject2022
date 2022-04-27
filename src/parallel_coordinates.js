@@ -22,6 +22,7 @@ export default class ParallelCoordinates {
         this.screen_range = [0, height];
         this.height = height
         this.width = width;
+        console.log(height)
 
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
         this.y = {}
@@ -285,7 +286,6 @@ export default class ParallelCoordinates {
         this.highlighted.style("display", function(data_point) {
             if (selected_ids.length === 0) return null
             if (selected_ids.includes(data_point.id)) {
-                console.log("selected: ", data_point.id)
                 return 'unset'
             }
             else {

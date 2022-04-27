@@ -143,7 +143,6 @@ export function divergence(histograms_2d) {
 }
 
 
-
 export function pretty_print_benchmarks(par_coords) {
     let screen_histograms_1d = screen_histogram_1d(par_coords)
     let screen_histograms_2d = screen_histogram_2d(par_coords)

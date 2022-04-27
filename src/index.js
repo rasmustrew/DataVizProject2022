@@ -92,19 +92,22 @@ function create_par_coords() {
         let histograms_1000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000)
         let histograms_10000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000)
         let histograms_100000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000000)
+        let histograms_1000000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000000)
         let biggest_jumps = {}
         for (let dimension of data.dimensions) {
-            let biggest_jumps_10 = find_biggest_histogram_jumps(histograms_10[dimension], 2)
+            let biggest_jumps_10 = find_biggest_histogram_jumps(histograms_10[dimension], 5)
             let domain_values_10 = compute_points_from_histogram_indices(biggest_jumps_10, simple_ranges_jumps[dimension], 10)
-            let biggest_jumps_100 = find_biggest_histogram_jumps(histograms_100[dimension], 5)
+            let biggest_jumps_100 = find_biggest_histogram_jumps(histograms_100[dimension], 10)
             let domain_values_100 = compute_points_from_histogram_indices(biggest_jumps_100, simple_ranges_jumps[dimension], 100)
-            let biggest_jumps_1000 = find_biggest_histogram_jumps(histograms_1000[dimension], 5)
+            let biggest_jumps_1000 = find_biggest_histogram_jumps(histograms_1000[dimension], 10)
             let domain_values_1000 = compute_points_from_histogram_indices(biggest_jumps_1000, simple_ranges_jumps[dimension], 1000)
-            let biggest_jumps_10000 = find_biggest_histogram_jumps(histograms_10000[dimension], 5)
+            let biggest_jumps_10000 = find_biggest_histogram_jumps(histograms_10000[dimension], 10)
             let domain_values_10000 = compute_points_from_histogram_indices(biggest_jumps_10000, simple_ranges_jumps[dimension], 10000)
-            let biggest_jumps_100000 = find_biggest_histogram_jumps(histograms_100000[dimension], 5)
+            let biggest_jumps_100000 = find_biggest_histogram_jumps(histograms_100000[dimension], 10)
             let domain_values_100000 = compute_points_from_histogram_indices(biggest_jumps_100000, simple_ranges_jumps[dimension], 1000000)
-            biggest_jumps[dimension] = domain_values_10.concat(domain_values_100).concat(domain_values_1000).concat(domain_values_10000).concat(domain_values_100000)
+            let biggest_jumps_1000000 = find_biggest_histogram_jumps(histograms_1000000[dimension], 10)
+            let domain_values_1000000 = compute_points_from_histogram_indices(biggest_jumps_1000000, simple_ranges_jumps[dimension], 10000000)
+            biggest_jumps[dimension] = domain_values_10.concat(domain_values_100).concat(domain_values_1000).concat(domain_values_10000).concat(domain_values_100000).concat(domain_values_1000000)
         }
         console.log(biggest_jumps)
 
