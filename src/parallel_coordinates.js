@@ -166,7 +166,15 @@ export default class ParallelCoordinates {
                 let screen_range = _this.y[dim][index].range()
                 let screen_span = screen_range[0] - screen_range[1]
                 let num_ticks = Math.floor(screen_span / 100.0)
-                let tick_values = [].concat(_this.y[dim][index].domain()[0], _this.y[dim][index].ticks(num_ticks), _this.y[dim][index].domain()[1]);
+                let tick_values = []
+                if (index === 0) {
+                    tick_values = [_this.y[dim][index].domain()[0], _this.y[dim][index].domain()[1]];
+                } else if (index === _this.dimension_ranges[dim].length - 1) {
+                    tick_values = [_this.y[dim][index].domain()[1]];
+                } else {
+                    tick_values = [_this.y[dim][index].domain()[1]];
+                }
+
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values));
             })
             .on('mouseover', function(event, data) {
