@@ -122,6 +122,19 @@ export default class ParallelCoordinates {
             //handle hover and click events
             .on('mouseover', this.onHoverLine.bind(this));
 
+        this.highlighted = svg.append("g")
+            .attr("class", "highlighted")
+            .selectAll("path")
+            .data(this.data)
+            .enter().append("path")
+            .attr("d", this.path.bind(this))
+            // make the cursor a pointer when hovering the lines
+            .attr("pointer-events", "visiblePainted")
+            .attr("cursor", "pointer")
+            .attr("stroke-width", "2px")
+            //handle hover and click events
+            .on('mouseover', this.onHoverLine.bind(this));
+
         // Add a group element for each dimension.
         let axis_groups = svg.selectAll(".dimension")
             .data(this.dimensions)
@@ -155,6 +168,13 @@ export default class ParallelCoordinates {
                 let tick_values = [].concat(_this.y[dim][index].domain()[0], _this.y[dim][index].ticks(num_ticks), _this.y[dim][index].domain()[1]);
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values));
             })
+            .on('mouseover', function(event, data) {
+                _this.axisHover.bind(_this)(data, this.parentNode.__data__)
+            }).on('mouseleave', function () {
+                console.log("leaving")
+                _this.highlighted.style("display", null)
+            });
+
 
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         axes.append("g")
@@ -249,6 +269,29 @@ export default class ParallelCoordinates {
         }
 
         return this.y[dimension][range_index](domain_value)
+    }
+
+    axisHover(extent, dimension) {
+        let _this = this
+
+        var selected = this.data.filter(data_point => {
+            let data_float = data_point[dimension]
+            return extent[0] <= data_float && data_float <= extent[1]
+        })
+        var selected_ids = selected.map(function (data_point) {
+            return data_point.id
+        })
+
+        this.highlighted.style("display", function(data_point) {
+            if (selected_ids.length === 0) return null
+            if (selected_ids.includes(data_point.id)) {
+                console.log("selected: ", data_point.id)
+                return 'unset'
+            }
+            else {
+                return null
+            }
+        });
     }
 
     // Handles a brush event, toggling the display of foreground lines.

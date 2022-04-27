@@ -87,6 +87,12 @@ svg {
     stroke: rgba(70, 130, 180, 0.4);
 }
 
+.highlighted path {
+    fill: none;
+    stroke: rgba(255, 130, 180, 0.4);
+    display: none;
+}
+
 .background circle {
     fill: #ddd
 }
