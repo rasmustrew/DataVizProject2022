@@ -58,7 +58,7 @@ function mapping_diff(data, dimension, dimension_ranges, par_coords, linear_par_
 
             let diff = Math.abs(linear_diff - screen_diff)
 
-            let percent_diff = diff / linear_diff
+            let percent_diff = diff / Math.abs(linear_diff)
             summed_diff += percent_diff
         }
     }
