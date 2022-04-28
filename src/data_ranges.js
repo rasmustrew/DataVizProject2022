@@ -170,6 +170,30 @@ export function naive_multisplit(dimensions, simple_ranges, par_coords, weights)
     }
 }
 
+export function extreme_split(data, dimensions) {
+    let data_sorted = [...data]
+
+    let splits = {}
+
+    for (let dimension of dimensions) {
+
+        data_sorted.sort(function (a, b) {
+            return a[dimension] - b[dimension];
+        });
+
+        let splits_dim = []
+        let last_split = data_sorted[0][dimension]
+        for (let i = 0; i < data_sorted.length - 1; i++) {
+            let mean = (data_sorted[i][dimension] + data_sorted[i+1][dimension])/2
+            splits_dim.push([last_split, mean])
+            last_split = mean
+        }
+        splits_dim.push([last_split, data_sorted[data_sorted.length-1][dimension]])
+        splits[dimension] = splits_dim
+    }
+    return splits
+}
+
 export const hardcoded_numbeo_range = {
     'crime_index': [[0, 100]],
     'traffic_index': [[0, 320]],//unbounded max
