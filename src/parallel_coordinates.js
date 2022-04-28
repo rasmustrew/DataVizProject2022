@@ -7,11 +7,12 @@ export const ScaleType = {
 }
 
 export default class ParallelCoordinates {
-    constructor(data, dimensions, dimension_ranges, element_id, scale_type, other_plots) {
+    constructor(data, dimensions, dimension_ranges, element_id, scale_type, other_plots, extreme) {
         this.data = data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
         this.other_plots = other_plots
+        this.extreme = extreme
 
         this.element_id = element_id
         this.scale_type = scale_type
@@ -275,6 +276,20 @@ export default class ParallelCoordinates {
     }
 
     y_position(domain_value, dimension) {
+        if(this.extreme) {
+            let data_sorted = [...this.data]
+            data_sorted.sort(function (a, b) {
+                return a[dimension] - b[dimension];
+            });
+            let index = data_sorted.findIndex((value) => {
+                return domain_value === value[dimension]
+            })
+
+            let p = index/this.data.length
+            let pixel = p * this.height
+            return pixel
+        }
+
         let range_index = this.dimension_ranges[dimension].findIndex((range) => {
             return isValueInRange(domain_value, range)
         })

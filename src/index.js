@@ -6,7 +6,7 @@ import {
     hardcoded_numbeo_range,
     hardcoded_un_range,
     hardcoded_animals_range,
-    hardcoded_periodic_table_range, naive_multisplit, guided_split
+    hardcoded_periodic_table_range, naive_multisplit, guided_split, extreme_split
 } from "./data_ranges";
 import {compute_metrics} from "./metrics";
 import {load_un_data} from "./data/load_un_data";
@@ -112,7 +112,9 @@ function create_par_coords() {
         console.log(biggest_jumps)
 
         let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Linear);
-        let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivMiddleTop", ScaleType.Log);
+        // let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivMiddleTop", ScaleType.Log);
+        console.log("EXTREME")
+        let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivMiddleTop", ScaleType.Linear, undefined, true);
 
         // let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddleBottom", ScaleType.Linear)
         let apc = new APC(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), '#parCoordsDivMiddleBottom')
