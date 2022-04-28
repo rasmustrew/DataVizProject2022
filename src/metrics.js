@@ -37,6 +37,34 @@ function norm_screen_data_diff(data, dimension, dimension_ranges, par_coords) {
     return summed_diff / (par_coords.data.length * par_coords.data.length)
 }
 
+function mapping_diff(data, dimension, dimension_ranges, par_coords, linear_par_coords) {
+    let summed_diff = 0;
+    for (let i in data) {
+        for (let j = i; j < data.length; j++) {
+            let domain_range = total_range(dimension_ranges[dimension])
+            let data_i = data[i][dimension]
+            let data_j = data[j][dimension]
+
+            let linear_i = linear_par_coords.y_position(data_i, dimension)
+            let linear_j = linear_par_coords.y_position(data_j, dimension)
+            let linear_diff = linear_i - linear_j
+            if (linear_diff === 0) {
+                continue
+            }
+
+            let screen_i = par_coords.y_position(data_i, dimension)
+            let screen_j = par_coords.y_position(data_j, dimension)
+            let screen_diff = screen_i - screen_j
+
+            let diff = Math.abs(linear_diff - screen_diff)
+
+            let percent_diff = diff / linear_diff
+            summed_diff += percent_diff
+        }
+    }
+    return summed_diff / (par_coords.data.length * par_coords.data.length)
+}
+
 function average_squared_dist(data, dimension, par_coords) {
 
     let squared_dist_sum = 0
@@ -148,23 +176,24 @@ function histogram_1d_squared_avg(data, dimension, par_coords) {
 }
 
 
-export function compute_metrics_dim(par_coords, dim) {
-    let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
+export function compute_metrics_dim(par_coords, dim, linear_par_coords) {
+    let map_diff = mapping_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords, linear_par_coords)
+    // let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
     let num_splits = par_coords.dimension_ranges[dim].length
     let hist_avg = histogram_1d_squared_avg(par_coords.data, dim, par_coords)
 
     return {
-        norm_diff,
+        norm_diff: map_diff,
         num_splits,
         hist_avg
     }
 }
 
 // weights must be equal length to the amount of metrics
-export function compute_metrics(par_coords) {
+export function compute_metrics(par_coords, linear_par_coords) {
     let dimensions_metrics = {}
     for (let dim of par_coords.dimensions) {
-        dimensions_metrics[dim] = compute_metrics_dim(par_coords, dim)
+        dimensions_metrics[dim] = compute_metrics_dim(par_coords, dim, linear_par_coords)
     }
     return dimensions_metrics
 }

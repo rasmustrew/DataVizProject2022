@@ -47,11 +47,11 @@ export function simple_ranges(data, dimensions) {
 //
 // }
 
-export function guided_split(dimensions, simple_ranges, par_coords, weights, suggestions) {
+export function guided_split(dimensions, simple_ranges, par_coords, weights, suggestions, linear_par_coords) {
     let computed_ranges = {}
     for (let dimension of dimensions) {
         par_coords.update_single_dimension_ranges(dimension, [...simple_ranges[dimension]])
-        let metrics_without_split = compute_metrics(par_coords, weights)
+        let metrics_without_split = compute_metrics(par_coords, linear_par_coords)
         let current_best_metrics = metrics_without_split
         let current_best_metric = compute_total_metric(metrics_without_split, weights)
         let current_best_split = [...simple_ranges[dimension]]
@@ -69,7 +69,7 @@ export function guided_split(dimensions, simple_ranges, par_coords, weights, sug
                 let ranges = perform_split(simple_ranges[dimension][0], [...current_splits, suggested_split_pos])
                 // let single_split_ranges = [[simple_ranges[dimension][0][0], suggested_split_pos], [suggested_split_pos, simple_ranges[dimension][0][1]]]
                 par_coords.update_single_dimension_ranges(dimension, ranges)
-                let metrics_dim = compute_metrics_dim(par_coords, dimension)
+                let metrics_dim = compute_metrics_dim(par_coords, dimension, linear_par_coords)
                 let current_metrics = {}
                 Object.assign(current_metrics, current_best_metrics)
                 current_metrics[dimension] = metrics_dim
@@ -94,7 +94,7 @@ export function guided_split(dimensions, simple_ranges, par_coords, weights, sug
     par_coords.set_dimension_ranges(computed_ranges)
     return {
         ranges: computed_ranges,
-        metrics: compute_metrics(par_coords, weights)
+        metrics: compute_metrics(par_coords, linear_par_coords)
     }
 }
 
@@ -111,12 +111,12 @@ function perform_split(extent, splits) {
     return ranges
 }
 
-export function naive_multisplit(dimensions, simple_ranges, par_coords, weights) {
+export function naive_multisplit(dimensions, simple_ranges, par_coords, weights, linear_par_coords) {
 
     let computed_ranges = {}
     for (let dimension of dimensions) {
         par_coords.update_single_dimension_ranges(dimension, [...simple_ranges[dimension]])
-        let metrics_without_split = compute_metrics(par_coords, weights)
+        let metrics_without_split = compute_metrics(par_coords, weights, linear_par_coords)
         let current_best_metrics = metrics_without_split
         let current_best_metric = compute_total_metric(metrics_without_split, weights)
         let current_best_split = [...simple_ranges[dimension]]
@@ -129,7 +129,7 @@ export function naive_multisplit(dimensions, simple_ranges, par_coords, weights)
                 let split_pos = working_range[0] + one_step * i
                 let single_split_ranges = [[working_range[0], split_pos], [split_pos, working_range[1]]]
                 par_coords.update_single_dimension_ranges(dimension, single_split_ranges, split_index, has_split)
-                let metrics_dim = compute_metrics_dim(par_coords, dimension)
+                let metrics_dim = compute_metrics_dim(par_coords, dimension, linear_par_coords)
                 let current_metrics = {}
                 Object.assign(current_metrics, current_best_metrics)
                 current_metrics[dimension] = metrics_dim
@@ -166,7 +166,7 @@ export function naive_multisplit(dimensions, simple_ranges, par_coords, weights)
     par_coords.set_dimension_ranges(computed_ranges)
     return {
         ranges: computed_ranges,
-        metrics: compute_metrics(par_coords, weights)
+        metrics: compute_metrics(par_coords, weights, linear_par_coords)
     }
 }
 

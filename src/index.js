@@ -119,20 +119,20 @@ function create_par_coords() {
 
         let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivBottom", ScaleType.Linear, [par_coords, par_coords_log, apc])
 
-        let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps)
+        let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps, par_coords)
 
         // let naive_result = naive_multisplit(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights)
         par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
-        let base_metrics = compute_metrics(par_coords, par_coords.dimensions)
-        let log_metrics = compute_metrics(par_coords_log, par_coords.dimensions)
+        let base_metrics = compute_metrics(par_coords, par_coords)
+        let log_metrics = compute_metrics(par_coords_log, par_coords)
         // let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits)
-        let split_metrics = compute_metrics(par_coords_splits)
+        let split_metrics = compute_metrics(par_coords_splits, par_coords)
 
-        // console.log("base: ", base_metrics)
-        // console.log("log: ", log_metrics)
+        console.log("base: ", base_metrics)
+        console.log("log: ", log_metrics)
         // console.log("hardcoded split: ", hardcoded_split_metrics)
-        // console.log("split: ", split_metrics)
+        console.log("split: ", split_metrics)
         // console.log(guided_result)
 
         par_coords.draw()
