@@ -7,10 +7,11 @@ export const ScaleType = {
 }
 
 export default class ParallelCoordinates {
-    constructor(data, dimensions, dimension_ranges, element_id, scale_type) {
+    constructor(data, dimensions, dimension_ranges, element_id, scale_type, other_plots) {
         this.data = data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
+        this.other_plots = other_plots
 
         this.element_id = element_id
         this.scale_type = scale_type
@@ -181,7 +182,13 @@ export default class ParallelCoordinates {
                 _this.axisHover.bind(_this)(data, this.parentNode.__data__)
             }).on('mouseleave', function () {
                 console.log("leaving")
+
                 _this.highlighted.style("display", null)
+                if (_this.other_plots) {
+                    for (let plot of _this.other_plots) {
+                        plot.highlighted.style("display", null)
+                    }
+                }
             });
 
 
@@ -280,26 +287,33 @@ export default class ParallelCoordinates {
         return this.y[dimension][range_index](domain_value)
     }
 
-    axisHover(extent, dimension) {
-        let _this = this
-
-        var selected = this.data.filter(data_point => {
-            let data_float = data_point[dimension]
-            return extent[0] <= data_float && data_float <= extent[1]
-        })
-        var selected_ids = selected.map(function (data_point) {
-            return data_point.id
-        })
-
+    highlight_ids(ids) {
         this.highlighted.style("display", function(data_point) {
-            if (selected_ids.length === 0) return null
-            if (selected_ids.includes(data_point.id)) {
+            if (ids.length === 0) return null
+            if (ids.includes(data_point.id)) {
                 return 'unset'
             }
             else {
                 return null
             }
         });
+    }
+
+    axisHover(extent, dimension) {
+        let selected = this.data.filter(data_point => {
+            let data_float = data_point[dimension]
+            return extent[0] <= data_float && data_float <= extent[1]
+        })
+        let selected_ids = selected.map(function (data_point) {
+            return data_point.id
+        })
+
+        this.highlight_ids(selected_ids)
+        if (this.other_plots) {
+            for (let plot of this.other_plots) {
+                plot.highlight_ids(selected_ids)
+            }
+        }
     }
 
     // Handles a brush event, toggling the display of foreground lines.

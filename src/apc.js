@@ -124,6 +124,19 @@ export default class APC {
             //handle hover and click events
             .on('mouseover', this.onHoverLine.bind(this));
 
+        this.highlighted = svg.append("g")
+            .attr("class", "highlighted")
+            .selectAll("path")
+            .data(this.data)
+            .enter().append("path")
+            .attr("d", this.path.bind(this))
+            // make the cursor a pointer when hovering the lines
+            .attr("pointer-events", "visiblePainted")
+            .attr("cursor", "pointer")
+            .attr("stroke-width", "2px")
+            //handle hover and click events
+            .on('mouseover', this.onHoverLine.bind(this));
+
         // Add a group element for each dimension.
         let axis_groups = svg.selectAll(".dimension")
             .data(this.dimensions)
@@ -197,6 +210,18 @@ export default class APC {
             path.lineTo(_this.x(dimension), y_pos);
         });
         return path
+    }
+
+    highlight_ids(ids) {
+        this.highlighted.style("display", function(data_point) {
+            if (ids.length === 0) return null
+            if (ids.includes(data_point.id)) {
+                return 'unset'
+            }
+            else {
+                return null
+            }
+        });
     }
 
     y_position(domain_value, dimension) {

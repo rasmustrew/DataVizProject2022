@@ -117,7 +117,7 @@ function create_par_coords() {
         // let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddleBottom", ScaleType.Linear)
         let apc = new APC(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), '#parCoordsDivMiddleBottom')
 
-        let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivBottom", ScaleType.Linear)
+        let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivBottom", ScaleType.Linear, [par_coords, par_coords_log, apc])
 
         let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps)
 
