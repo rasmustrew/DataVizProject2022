@@ -47,14 +47,14 @@ function mapping_diff(data, dimension, dimension_ranges, par_coords, linear_par_
 
             let linear_i = linear_par_coords.y_position(data_i, dimension)
             let linear_j = linear_par_coords.y_position(data_j, dimension)
-            let linear_diff = linear_i - linear_j
+            let linear_diff = linear_j - linear_i
             if (linear_diff === 0) {
                 continue
             }
 
             let screen_i = par_coords.y_position(data_i, dimension)
             let screen_j = par_coords.y_position(data_j, dimension)
-            let screen_diff = screen_i - screen_j
+            let screen_diff = screen_j - screen_i
 
             let diff = Math.abs(linear_diff - screen_diff)
 
