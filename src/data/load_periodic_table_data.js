@@ -15,9 +15,11 @@ export async function load_periodic_table_data() {
     let float_dimensions = [
         'ionization_energies/0',
         'abundance/universe',
-        'density/stp',
+
         'conductivity/thermal',
+
         'discovered/year',
+        'density/stp',
     ]
     let id_dimension = "name"
     let error_values = ["", "0"]

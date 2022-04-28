@@ -58,7 +58,7 @@ function mapping_diff(data, dimension, dimension_ranges, par_coords, linear_par_
 
             let diff = Math.abs(linear_diff - screen_diff)
 
-            let percent_diff = diff / Math.abs(linear_diff)
+            let percent_diff = diff / par_coords.height
             summed_diff += percent_diff
         }
     }
@@ -168,10 +168,13 @@ function histogram_1d_squared_avg(data, dimension, par_coords) {
     })
 
     let bins_squared_sum = bins_squared.reduce((sum, val) => {
-        return sum + val
+        if (val > 1) {
+            return sum + val
+        }
+        return sum
     })
 
-    let bins_squared_avg = bins_squared_sum / (par_coords.data.length )
+    let bins_squared_avg = bins_squared_sum / (par_coords.data.length * par_coords.data.length)
     return bins_squared_avg
 }
 
