@@ -18,8 +18,6 @@ export async function load_periodic_table_data() {
         'density/stp',
         'conductivity/thermal',
         'discovered/year',
-
-
     ]
     let id_dimension = "name"
     let error_values = ["", "0"]
