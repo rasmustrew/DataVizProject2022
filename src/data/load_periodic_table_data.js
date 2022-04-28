@@ -2,15 +2,24 @@ import * as d3 from "d3";
 
 export async function load_periodic_table_data() {
     let data = await d3.csv("../data/periodic_table.csv");
+    // let float_dimensions = [
+    //     'boiling_point',
+    //     'abundance/universe',
+    //     'conductivity/thermal',
+    //     'density/stp',
+    //     'ionization_energies/0',
+    //     'melting_point',
+    //     'electron_affinity',
+    //     'discovered/year'
+    // ]
     let float_dimensions = [
-        'boiling_point',
-        'abundance/universe',
-        'conductivity/thermal',
-        'density/stp',
         'ionization_energies/0',
-        'melting_point',
-        'electron_affinity',
-        'discovered/year'
+        'abundance/universe',
+        'density/stp',
+        'conductivity/thermal',
+        'discovered/year',
+
+
     ]
     let id_dimension = "name"
     let error_values = ["", "0"]

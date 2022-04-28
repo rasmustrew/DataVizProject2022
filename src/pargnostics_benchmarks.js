@@ -44,29 +44,85 @@ export function screen_histogram_1d(par_coords) {
     return histograms_1d
 }
 
-export function number_of_line_crossings(histograms_2d) {
+export function number_of_line_crossings(par_coords) {
 
     let line_crossings = {}
+    let crossing_angles = {}
 
-    for (let dimension of Object.keys(histograms_2d)) {
-        let histogram = histograms_2d[dimension]
+    let binning_size = 5
+
+    for (let i = 0; i < par_coords.dimensions.length - 1; i++) {
         let number_of_line_crossings = 0
 
-        for (let i = 0; i < histogram.length; i++) {
-            for (let j = 0; j < histogram.length; j++) {
-                let b_ij = histogram[i][j]
-                for (let k = i+1; k < histogram.length; k++) {
-                    for (let l = j+1; l < histogram.length; l++) {
-                        let b_kl = histogram[k][l]
-                        number_of_line_crossings += b_ij * b_kl
+        let dim_left = par_coords.dimensions[i]
+        let dim_right = par_coords.dimensions[i+1]
+        let crossing_angles_histogram = new Array(91).fill(0)
+
+        for (let data_point_i of par_coords.data) {
+            let x_l = Math.round(par_coords.x(dim_left))
+            let x_r = Math.round(par_coords.x(dim_right))
+            let i_y_l = binning_size * Math.round(par_coords.y_position(data_point_i[dim_left], dim_left) / binning_size)
+            let i_y_r = binning_size * Math.round(par_coords.y_position(data_point_i[dim_right], dim_right) / binning_size)
+
+            let i_a = (i_y_l - i_y_r) / (x_l - x_r)
+            let i_b = i_y_l - i_a * x_l
+
+            for (let data_point_j of par_coords.data) {
+                let j_y_l = binning_size * Math.round(par_coords.y_position(data_point_j[dim_left], dim_left) / binning_size)
+                let j_y_r = binning_size * Math.round(par_coords.y_position(data_point_j[dim_right], dim_right) / binning_size)
+
+                let j_a = (j_y_l - j_y_r) / (x_l - x_r)
+                let j_b = j_y_l - j_a * x_l
+
+                if (i_a - j_a === 0) {
+                    continue
+                }
+                let intersect_x = (j_b - i_b) / (i_a - j_a)
+                let intersect_y = j_a * intersect_x + j_b
+
+                if (((i_y_l >= j_y_l) && (i_y_r >= j_y_r)) || ((j_y_l >= i_y_l) && (j_y_r >= i_y_r))) {
+                } else {
+                    number_of_line_crossings += 1
+                    let crossing_angle = Math.abs(Math.atan((i_a - j_a)/(1 + i_a * j_a)) * (180/Math.PI))
+
+                    if (crossing_angle > 90) {
+                        crossing_angle = 180 - crossing_angle
                     }
+                    crossing_angle = Math.round(crossing_angle)
+                    crossing_angles_histogram[crossing_angle] += 1
                 }
             }
         }
-        line_crossings[dimension] = number_of_line_crossings
+
+        let running_sum = 0
+        let median_index
+        for (let index in crossing_angles_histogram) {
+            running_sum += crossing_angles_histogram[index]
+            if (running_sum >= number_of_line_crossings / 2) {
+                median_index = index
+                break
+            }
+        }
+
+        let running_angle_sum = 0
+        let running_count = 0
+        for (let index in crossing_angles_histogram) {
+            running_angle_sum += index * crossing_angles_histogram[index]
+            running_count += crossing_angles_histogram[index]
+        }
+        let running_angle_mean = running_angle_sum
+
+        // crossing_angles[dim_left] = Math.round(running_angle_mean / running_count)
+        crossing_angles[dim_left] = median_index
+
+        line_crossings[dim_left] = number_of_line_crossings / 2
     }
-    return line_crossings
+    return {
+        crossing_angles,
+        line_crossings,
+    }
 }
+
 
 export function overplotting_2d(histograms_2d) {
     let overplottings = {}
@@ -146,15 +202,18 @@ export function divergence(histograms_2d) {
 export function pretty_print_benchmarks(par_coords) {
     let screen_histograms_1d = screen_histogram_1d(par_coords)
     let screen_histograms_2d = screen_histogram_2d(par_coords)
-    let line_crossings = number_of_line_crossings(screen_histograms_2d)
+    let crossings = number_of_line_crossings(par_coords)
+    let line_crossings = crossings.line_crossings
+    let crossing_angles = crossings.crossing_angles
     let overplottings_1d = overplotting_1d(screen_histograms_1d)
     let overplottings_2d = overplotting_2d(screen_histograms_2d)
-    let convergences = convergence(screen_histograms_2d)
+    // let convergences = convergence(screen_histograms_2d)
 
 
     pretty_print_benchmark(line_crossings)
     pretty_print_benchmark(overplottings_2d)
-    pretty_print_benchmark(convergences)
+    // pretty_print_benchmark(convergences)
+    pretty_print_benchmark(crossing_angles)
     pretty_print_benchmark(overplottings_1d)
 }
 

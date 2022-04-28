@@ -135,7 +135,7 @@ function create_par_coords() {
         // console.log("split: ", split_metrics)
         // console.log(guided_result)
 
-        par_coords.draw(undefined, biggest_jumps)
+        par_coords.draw()
         par_coords_log.draw()
         par_coords_splits.draw()
         apc.draw()
