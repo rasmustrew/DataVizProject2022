@@ -17,17 +17,17 @@
         <div id='headerDiv'>
             <div id='titleDiv'>Split Parallel Coordinates</div>
             <div id='metricDiv'>
-                <div id="normDiff">
-                    Map Diff:
-                    <input type="number" value="0.001"/>
+                <div id="distortion">
+                    Distortion:
+                    <input type="number" value="1.5"/>
                 </div>
-                <div id="numSplits">
-                    Num splits:
-                    <input type="number" value="0.1" />
+                <div id="fragmentation">
+                    Fragmentation:
+                    <input type="number" value="0.005" />
                 </div>
-                <div id="hist1D">
-                    Histogram 1D:
-                    <input type="number" value="15" />
+                <div id="skewness">
+                    Skewness:
+                    <input type="number" value="2" />
                 </div>
                 <button id="submitDiv" onclick="console.log('blah');window.recompute();">
                     Recompute

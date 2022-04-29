@@ -92,7 +92,7 @@ export default class ParallelCoordinates {
         d3.select("svg").remove()
     }
 
-    draw(histogram, biggest_jumps, histogram_sizes) {
+    draw(histogram, biggest_jumps, skewness) {
         let _this = this
         let svg = d3.select(this.element_id).append("svg")
             .attr("class", "parcoordsSvg")
@@ -111,19 +111,43 @@ export default class ParallelCoordinates {
             .enter().append("path")
             .attr("d", this.path.bind(this));
 
-        // Add coloured foreground lines for focus.
-        this.foreground = svg.append("g")
-            .attr("class", "foreground")
-            .selectAll("path")
-            .data(this.data)
-            .enter().append("path")
-            .attr("d", this.path.bind(this))
-            // make the cursor a pointer when hovering the lines
-            .attr("pointer-events", "visiblePainted")
-            .attr("cursor", "pointer")
-            .attr("stroke-width", "2px")
-            //handle hover and click events
-            .on('mouseover', this.onHoverLine.bind(this));
+        if (skewness) {
+            // Add coloured foreground lines for focus.
+            this.foreground = svg.append("g")
+                .attr("class", "foreground")
+                .selectAll("path")
+                .data(this.data)
+                .enter().append("path")
+                .attr("d", this.path.bind(this))
+                // make the cursor a pointer when hovering the lines
+                .attr("pointer-events", "visiblePainted")
+                .attr("cursor", "pointer")
+                .attr("stroke-width", "2px")
+                .style("stroke", (data, index) => {
+                    console.log(index)
+                    console.log(skewness[index])
+                    console.log("rgba(" + (70 * skewness[index]) + ", " + (130 * skewness[index]) + ", " + (180 * skewness[index]) + ", 0.4)")
+                    return "rgba(" + (70 * skewness[index]) + ", " + (130 * skewness[index]) + ", " + (180 * skewness[index]) + ", 0.4)"
+                })
+                //handle hover and click events
+                .on('mouseover', this.onHoverLine.bind(this));
+        } else {
+            // Add coloured foreground lines for focus.
+            this.foreground = svg.append("g")
+                .attr("class", "foreground")
+                .selectAll("path")
+                .data(this.data)
+                .enter().append("path")
+                .attr("d", this.path.bind(this))
+                // make the cursor a pointer when hovering the lines
+                .attr("pointer-events", "visiblePainted")
+                .attr("cursor", "pointer")
+                .attr("stroke-width", "2px")
+                //handle hover and click events
+                .on('mouseover', this.onHoverLine.bind(this));
+
+        }
+
 
         this.highlighted = svg.append("g")
             .attr("class", "highlighted")
@@ -279,7 +303,7 @@ export default class ParallelCoordinates {
         if(this.extreme) {
             let data_sorted = [...this.data]
             data_sorted.sort(function (a, b) {
-                return a[dimension] - b[dimension];
+                return b[dimension] - a[dimension];
             });
             let index = data_sorted.findIndex((value) => {
                 return domain_value === value[dimension]
