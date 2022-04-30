@@ -1,6 +1,7 @@
+let binning_size = 5
 
 export function screen_histogram_2d(par_coords) {
-    let height = par_coords.height + 1
+    let height = Math.floor((par_coords.height + 1)/binning_size)
 
     let histograms_2d = {}
 
@@ -13,8 +14,8 @@ export function screen_histogram_2d(par_coords) {
         let dimension_right = par_coords.dimensions[i+1]
 
         for (let data_point of par_coords.data) {
-            let y_coordinate_left = Math.floor(par_coords.y_position(data_point[dimension_left], dimension_left))
-            let y_coordinate_right = Math.floor(par_coords.y_position(data_point[dimension_right], dimension_right))
+            let y_coordinate_left = Math.floor(par_coords.y_position(data_point[dimension_left], dimension_left) / binning_size)
+            let y_coordinate_right = Math.floor(par_coords.y_position(data_point[dimension_right], dimension_right) / binning_size)
 
             y_coordinate_left = Math.max(y_coordinate_left, 0)
             y_coordinate_right = Math.max(y_coordinate_right, 0)
@@ -26,7 +27,7 @@ export function screen_histogram_2d(par_coords) {
 }
 
 export function screen_histogram_1d(par_coords) {
-    let height = par_coords.height + 1
+    let height = Math.floor((par_coords.height + 1)/binning_size)
 
     let histograms_1d = {}
 
@@ -34,7 +35,7 @@ export function screen_histogram_1d(par_coords) {
         let current_histogram = new Array(height).fill(0)
 
         for (let data_point of par_coords.data) {
-            let y_coordinate = Math.floor(par_coords.y_position(data_point[dimension], dimension))
+            let y_coordinate = Math.floor(par_coords.y_position(data_point[dimension], dimension) / binning_size)
 
             y_coordinate= Math.max(y_coordinate, 0)
             current_histogram[y_coordinate] += 1
@@ -49,7 +50,7 @@ export function number_of_line_crossings(par_coords) {
     let line_crossings = {}
     let crossing_angles = {}
 
-    let binning_size = 5
+
 
     for (let i = 0; i < par_coords.dimensions.length - 1; i++) {
         let number_of_line_crossings = 0

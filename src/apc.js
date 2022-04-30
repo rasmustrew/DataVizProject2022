@@ -1,5 +1,8 @@
 import * as d3 from "d3";
 
+let highlight_colour = "rgba(255, 0, 0, 0.4)"
+let standard_colour = "rgba(70, 130, 180, 0.4)"
+
 export default class APC {
     constructor(data, dimensions, dimension_ranges, element_id) {
         this.data = data;
@@ -176,6 +179,7 @@ export default class APC {
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][axis]).tickValues(tick_values));
             })
 
+
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         axes.append("g")
             .attr("class", "brush")
@@ -192,6 +196,16 @@ export default class APC {
             .selectAll("rect")
             .attr("x", -8)
             .attr("width", 16);
+
+        let selected_ids = []
+        for (let data_point of this.data) {
+            if (data_point["abundance/universe"] > 0.0071) {
+                selected_ids.push(data_point.id)
+            }
+        }
+        console.log(selected_ids)
+
+        this.highlight_ids(selected_ids)
     }
 
 // Returns the path for a given data point.
@@ -213,13 +227,13 @@ export default class APC {
     }
 
     highlight_ids(ids) {
-        this.highlighted.style("display", function(data_point) {
-            if (ids.length === 0) return null
+        this.highlighted.style("stroke", function(data_point) {
+            if (ids.length === 0) return standard_colour
             if (ids.includes(data_point.id)) {
-                return 'unset'
+                return highlight_colour
             }
             else {
-                return null
+                return standard_colour
             }
         });
     }

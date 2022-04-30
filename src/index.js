@@ -111,50 +111,65 @@ function create_par_coords() {
         }
         console.log(biggest_jumps)
 
-        let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivTop", ScaleType.Linear);
-        // let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivMiddleTop", ScaleType.Log);
+        let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
+        let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Log);
         // console.log("EXTREME")
-        let par_coords_extreme = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions),"#parCoordsDivMiddleTop", ScaleType.Linear, undefined, true);
+        let par_coords_extreme = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions),"#single_par_coords", ScaleType.Linear, undefined, true);
 
-        let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddleBottom", ScaleType.Linear)
-        // let apc = new APC(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), '#parCoordsDivMiddleBottom')
+        // let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddleBottom", ScaleType.Linear)
+        let apc = new APC(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), '#single_par_coords')
 
-        let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#parCoordsDivBottom", ScaleType.Linear, [par_coords, par_coords_extreme])
+
+        let par_coords_square_root = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Sqrt);
+
+
+        let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear, [par_coords])
 
         let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps, par_coords, par_coords_extreme)
 
         // let naive_result = naive_multisplit(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights)
         par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
-        let base_metrics = compute_metrics(par_coords, par_coords, par_coords_extreme)
+        // let base_metrics = compute_metrics(par_coords, par_coords, par_coords_extreme)
         // let log_metrics = compute_metrics(par_coords_log, par_coords)
-        let extreme_metrics = compute_metrics(par_coords_extreme, par_coords, par_coords_extreme)
-        let hardcoded_split_metrics = compute_metrics(hardcoded_par_coords_splits, par_coords, par_coords_extreme)
-        let split_metrics = compute_metrics(par_coords_splits, par_coords, par_coords_extreme)
+        // let extreme_metrics = compute_metrics(par_coords_extreme, par_coords, par_coords_extreme)
+        // let square_root_metrics = compute_metrics(par_coords_square_root, par_coords, par_coords_extreme)
+        // let split_metrics = compute_metrics(par_coords_splits, par_coords, par_coords_extreme)
 
-        console.log("base: ", base_metrics)
+
+        // console.log("base: ", base_metrics)
         // console.log("log: ", log_metrics)
-        console.log("hardcoded split: ", hardcoded_split_metrics)
-        console.log("split: ", split_metrics)
-        console.log("extreme: ", extreme_metrics)
+        // console.log("hardcoded split: ", hardcoded_split_metrics)
+        // console.log("split: ", split_metrics)
+        // console.log("extreme: ", extreme_metrics)
         // console.log(guided_result)
 
-        let skewness_hardcoded = plot_diff_individual(par_coords.data, "abundance/universe", hardcoded_par_coords_splits, par_coords_extreme)
+        // let skewness_hardcoded = plot_diff_individual(par_coords.data, "abundance/universe", hardcoded_par_coords_splits, par_coords_extreme)
 
-        par_coords.draw()
-        par_coords_extreme.draw()
-        par_coords_splits.draw()
+        // par_coords.draw()
+        // par_coords_log.draw()
+        // par_coords_square_root.draw()
         // apc.draw()
-        hardcoded_par_coords_splits.draw()
+        par_coords_splits.draw()
+        // par_coords_extreme.draw()
+
+
+
+
+        // hardcoded_par_coords_splits.draw()
 
         console.log("PC")
         pretty_print_benchmarks(par_coords)
         console.log("symlog")
-        pretty_print_benchmarks(par_coords_extreme)
+        pretty_print_benchmarks(par_coords_log)
+        console.log("square root")
+        pretty_print_benchmarks(par_coords_square_root)
         console.log("andrienko")
-        // pretty_print_benchmarks(apc)
+        pretty_print_benchmarks(apc)
         console.log("SPC")
         pretty_print_benchmarks(par_coords_splits)
+        console.log("extreme")
+        pretty_print_benchmarks(par_coords_extreme)
 
 
         // let screen_histogram_hardcoded = screen_histogram_2d(hardcoded_par_coords_splits)

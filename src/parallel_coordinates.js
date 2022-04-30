@@ -2,9 +2,17 @@ import * as d3 from "d3";
 
 export const ScaleType = {
     Linear: "Linear",
-    Log: "Log"
+    Log: "Log",
+    Sqrt: "Sqrt"
 
 }
+
+function is_unique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
+let highlight_colour = "rgba(255, 0, 0, 0.4)"
+let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class ParallelCoordinates {
     constructor(data, dimensions, dimension_ranges, element_id, scale_type, other_plots, extreme) {
@@ -67,9 +75,11 @@ export default class ParallelCoordinates {
         let current_offset = 0;
         for (let i = 0; i < current_ranges.length; i++) {
             let range = current_ranges[i]
-            let range_count = this.data.filter(value => isValueInRange(value[dimension], range)).length;
+            let data_values = this.data.map(value => value[dimension])
+            let unique_data_values = data_values.filter(is_unique)
+            let range_count = unique_data_values.filter(value => isValueInRange(value[dimension], range)).length;
 
-            let range_proportion = range_count / this.data.length
+            let range_proportion = range_count / unique_data_values.length
             let proportionate_range = getProportionateRange(range_proportion, this.height, current_offset, current_ranges.length - 1, distance_between)
             current_offset = (this.height - proportionate_range[1]) + distance_between
 
@@ -80,6 +90,11 @@ export default class ParallelCoordinates {
                 axes.push(axis)
             } else if (this.scale_type === ScaleType.Log) {
                 let axis = d3.scaleSymlog()
+                    .domain(current_ranges[i])
+                    .range(proportionate_range);
+                axes.push(axis)
+            } else if (this.scale_type === ScaleType.Sqrt) {
+                let axis = d3.scaleSqrt()
                     .domain(current_ranges[i])
                     .range(proportionate_range);
                 axes.push(axis)
@@ -203,18 +218,18 @@ export default class ParallelCoordinates {
 
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values));
             })
-            .on('mouseover', function(event, data) {
-                _this.axisHover.bind(_this)(data, this.parentNode.__data__)
-            }).on('mouseleave', function () {
-                console.log("leaving")
-
-                _this.highlighted.style("display", null)
-                if (_this.other_plots) {
-                    for (let plot of _this.other_plots) {
-                        plot.highlighted.style("display", null)
-                    }
-                }
-            });
+            // .on('mouseover', function(event, data) {
+            //     _this.axisHover.bind(_this)(data, this.parentNode.__data__)
+            // }).on('mouseleave', function () {
+            //     console.log("leaving")
+            //
+            //     _this.highlighted.style("stroke", standard_colour)
+            //     if (_this.other_plots) {
+            //         for (let plot of _this.other_plots) {
+            //             plot.highlighted.style("stroke", standard_colour)
+            //         }
+            //     }
+            // });
 
 
         // Add and store a brush for each axis, allows the dragging selection on each axis.
@@ -278,6 +293,16 @@ export default class ParallelCoordinates {
                 .attr("height", 2)
         }
 
+        let selected_ids = []
+        for (let data_point of this.data) {
+            if (data_point["abundance/universe"] > 0.0071) {
+                selected_ids.push(data_point.id)
+            }
+        }
+        console.log(selected_ids)
+
+        this.highlight_ids(selected_ids)
+
 
 
     }
@@ -327,13 +352,13 @@ export default class ParallelCoordinates {
     }
 
     highlight_ids(ids) {
-        this.highlighted.style("display", function(data_point) {
-            if (ids.length === 0) return null
+        this.highlighted.style("stroke", function(data_point) {
+            if (ids.length === 0) return standard_colour
             if (ids.includes(data_point.id)) {
-                return 'unset'
+                return highlight_colour
             }
             else {
-                return null
+                return standard_colour
             }
         });
     }

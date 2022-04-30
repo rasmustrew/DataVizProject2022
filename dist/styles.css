@@ -89,8 +89,7 @@ svg {
 
 .highlighted path {
     fill: none;
-    stroke: rgba(255, 130, 180, 0.4);
-    display: none;
+    stroke: rgba(70, 130, 180, 0.4);
 }
 
 .background circle {
@@ -227,6 +226,13 @@ svg {
     flex-shrink: 1;
     width: 100%;
     height: 100%;
+}
+
+#single_par_coords {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    height: 15%;
 }
 
 #parCoordsLegendDiv {
