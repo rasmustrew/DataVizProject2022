@@ -150,8 +150,8 @@ function create_par_coords() {
         // par_coords_log.draw()
         // par_coords_square_root.draw()
         // apc.draw()
-        par_coords_splits.draw()
-        // par_coords_extreme.draw()
+        // par_coords_splits.draw()
+        par_coords_extreme.draw()
 
 
 

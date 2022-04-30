@@ -77,7 +77,7 @@ export default class ParallelCoordinates {
             let range = current_ranges[i]
             let data_values = this.data.map(value => value[dimension])
             let unique_data_values = data_values.filter(is_unique)
-            let range_count = unique_data_values.filter(value => isValueInRange(value[dimension], range)).length;
+            let range_count = unique_data_values.filter(value => isValueInRange(value, range)).length;
 
             let range_proportion = range_count / unique_data_values.length
             let proportionate_range = getProportionateRange(range_proportion, this.height, current_offset, current_ranges.length - 1, distance_between)

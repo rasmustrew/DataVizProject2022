@@ -1,7 +1,7 @@
 let binning_size = 5
 
 export function screen_histogram_2d(par_coords) {
-    let height = Math.floor((par_coords.height + 1)/binning_size)
+    let height = Math.floor(par_coords.height/binning_size) + 1
 
     let histograms_2d = {}
 
@@ -27,7 +27,7 @@ export function screen_histogram_2d(par_coords) {
 }
 
 export function screen_histogram_1d(par_coords) {
-    let height = Math.floor((par_coords.height + 1)/binning_size)
+    let height = Math.floor(par_coords.height/binning_size) + 1
 
     let histograms_1d = {}
 
