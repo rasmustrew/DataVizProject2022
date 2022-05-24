@@ -15,8 +15,9 @@ let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class ParallelCoordinates {
-    constructor(data, dimensions, dimension_ranges, element_id, scale_type, other_plots, extreme) {
-        this.data = data;
+    constructor(data, sorted_data, dimensions, dimension_ranges, element_id, scale_type, other_plots, extreme) {
+        this.data = data
+        this.sorted_data = sorted_data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
         this.other_plots = other_plots
@@ -75,7 +76,7 @@ export default class ParallelCoordinates {
         let current_offset = 0;
         for (let i = 0; i < current_ranges.length; i++) {
             let range = current_ranges[i]
-            let data_values = this.data.map(value => value[dimension])
+            let data_values = this.sorted_data[dimension]
             let unique_data_values = data_values.filter(is_unique)
             let range_count = unique_data_values.filter(value => isValueInRange(value, range)).length;
 
@@ -327,11 +328,8 @@ export default class ParallelCoordinates {
     y_position(domain_value, dimension) {
         if(this.extreme) {
 
-            let data_values = this.data.map(value => value[dimension])
+            let data_values = this.sorted_data[dimension]
             let unique_data_values = data_values.filter(is_unique)
-            unique_data_values.sort(function (a, b) {
-                return b - a;
-            });
             let index = unique_data_values.findIndex((value) => {
                 return domain_value === value
             })

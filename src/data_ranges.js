@@ -170,25 +170,22 @@ export function naive_multisplit(dimensions, simple_ranges, par_coords, weights,
     }
 }
 
-export function extreme_split(data, dimensions) {
-    let data_sorted = [...data]
+export function extreme_split(sorted_data, dimensions) {
 
     let splits = {}
 
     for (let dimension of dimensions) {
 
-        data_sorted.sort(function (a, b) {
-            return a[dimension] - b[dimension];
-        });
+        let data_values = data_sorted[dimension]
 
         let splits_dim = []
-        let last_split = data_sorted[0][dimension]
-        for (let i = 0; i < data_sorted.length - 1; i++) {
-            let mean = (data_sorted[i][dimension] + data_sorted[i+1][dimension])/2
+        let last_split = data_values[0]
+        for (let i = 0; i < data_values.length - 1; i++) {
+            let mean = (data_values[i] + data_values[i+1])/2
             splits_dim.push([last_split, mean])
             last_split = mean
         }
-        splits_dim.push([last_split, data_sorted[data_sorted.length-1][dimension]])
+        splits_dim.push([last_split, data_values[data_values.length-1]])
         splits[dimension] = splits_dim
     }
     return splits

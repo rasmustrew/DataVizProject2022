@@ -77,122 +77,47 @@ function compute_points_from_histogram_indices(jump_indices, simple_ranges, hist
 }
 
 
-function create_par_coords() {
-    load_periodic_table_data().then((data) => {
+function create_split_pc(data, sorted_data) {
 
-        let weights = {}
-        weights["distortion"] = parseFloat(d3.select("#distortion input").property("value"))
-        weights["fragmentation"] = parseFloat(d3.select("#fragmentation input").property("value"))
-        weights["skewness"] = parseFloat(d3.select("#skewness input").property("value"))
+    let weights = {}
+    weights["distortion"] = parseFloat(d3.select("#distortion input").property("value"))
+    weights["fragmentation"] = parseFloat(d3.select("#fragmentation input").property("value"))
+    weights["skewness"] = parseFloat(d3.select("#skewness input").property("value"))
 
-        console.log(simple_ranges(data.data, data.dimensions))
-        let simple_ranges_jumps = simple_ranges(data.data, data.dimensions)
-        let histograms_10 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10)
-        let histograms_100 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 100)
-        let histograms_1000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000)
-        let histograms_10000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000)
-        let histograms_100000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000000)
-        let histograms_1000000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000000)
-        let biggest_jumps = {}
-        for (let dimension of data.dimensions) {
-            let biggest_jumps_10 = find_biggest_histogram_jumps(histograms_10[dimension], 5)
-            let domain_values_10 = compute_points_from_histogram_indices(biggest_jumps_10, simple_ranges_jumps[dimension], 10)
-            let biggest_jumps_100 = find_biggest_histogram_jumps(histograms_100[dimension], 20)
-            let domain_values_100 = compute_points_from_histogram_indices(biggest_jumps_100, simple_ranges_jumps[dimension], 100)
-            let biggest_jumps_1000 = find_biggest_histogram_jumps(histograms_1000[dimension], 20)
-            let domain_values_1000 = compute_points_from_histogram_indices(biggest_jumps_1000, simple_ranges_jumps[dimension], 1000)
-            let biggest_jumps_10000 = find_biggest_histogram_jumps(histograms_10000[dimension], 20)
-            let domain_values_10000 = compute_points_from_histogram_indices(biggest_jumps_10000, simple_ranges_jumps[dimension], 10000)
-            let biggest_jumps_100000 = find_biggest_histogram_jumps(histograms_100000[dimension], 20)
-            let domain_values_100000 = compute_points_from_histogram_indices(biggest_jumps_100000, simple_ranges_jumps[dimension], 1000000)
-            let biggest_jumps_1000000 = find_biggest_histogram_jumps(histograms_1000000[dimension], 20)
-            let domain_values_1000000 = compute_points_from_histogram_indices(biggest_jumps_1000000, simple_ranges_jumps[dimension], 10000000)
-            biggest_jumps[dimension] = domain_values_10.concat(domain_values_100).concat(domain_values_1000).concat(domain_values_10000).concat(domain_values_100000).concat(domain_values_1000000)
-        }
-        console.log(biggest_jumps)
+    console.log(simple_ranges(data.data, data.dimensions))
+    let simple_ranges_jumps = simple_ranges(data.data, data.dimensions)
+    let histograms_10 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10)
+    let histograms_100 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 100)
+    let histograms_1000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000)
+    let histograms_10000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000)
+    let histograms_100000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000000)
+    let histograms_1000000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000000)
+    let biggest_jumps = {}
+    for (let dimension of data.dimensions) {
+        let biggest_jumps_10 = find_biggest_histogram_jumps(histograms_10[dimension], 5)
+        let domain_values_10 = compute_points_from_histogram_indices(biggest_jumps_10, simple_ranges_jumps[dimension], 10)
+        let biggest_jumps_100 = find_biggest_histogram_jumps(histograms_100[dimension], 20)
+        let domain_values_100 = compute_points_from_histogram_indices(biggest_jumps_100, simple_ranges_jumps[dimension], 100)
+        let biggest_jumps_1000 = find_biggest_histogram_jumps(histograms_1000[dimension], 20)
+        let domain_values_1000 = compute_points_from_histogram_indices(biggest_jumps_1000, simple_ranges_jumps[dimension], 1000)
+        let biggest_jumps_10000 = find_biggest_histogram_jumps(histograms_10000[dimension], 20)
+        let domain_values_10000 = compute_points_from_histogram_indices(biggest_jumps_10000, simple_ranges_jumps[dimension], 10000)
+        let biggest_jumps_100000 = find_biggest_histogram_jumps(histograms_100000[dimension], 20)
+        let domain_values_100000 = compute_points_from_histogram_indices(biggest_jumps_100000, simple_ranges_jumps[dimension], 1000000)
+        let biggest_jumps_1000000 = find_biggest_histogram_jumps(histograms_1000000[dimension], 20)
+        let domain_values_1000000 = compute_points_from_histogram_indices(biggest_jumps_1000000, simple_ranges_jumps[dimension], 10000000)
+        biggest_jumps[dimension] = domain_values_10.concat(domain_values_100).concat(domain_values_1000).concat(domain_values_10000).concat(domain_values_100000).concat(domain_values_1000000)
+    }
+    console.log(biggest_jumps)
 
-        let par_coords = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
-        let par_coords_log = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Log);
-        // console.log("EXTREME")
-        let par_coords_extreme = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions),"#single_par_coords", ScaleType.Linear, undefined, true);
+    let par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
+    let par_coords_extreme = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),"#single_par_coords", ScaleType.Linear, undefined, true);
 
-        // let hardcoded_par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, hardcoded_periodic_table_range," #parCoordsDivMiddleBottom", ScaleType.Linear)
-        let apc = new APC(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), '#single_par_coords')
+    let par_coords_splits = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear, [])
+    let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps, par_coords, par_coords_extreme)
+    par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
-
-        let par_coords_square_root = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Sqrt);
-
-
-        let par_coords_splits = new ParallelCoordinates(data.data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear, [par_coords])
-
-        let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps, par_coords, par_coords_extreme)
-
-        // let naive_result = naive_multisplit(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights)
-        par_coords_splits.set_dimension_ranges(guided_result.ranges)
-
-        // let base_metrics = compute_metrics(par_coords, par_coords, par_coords_extreme)
-        // let log_metrics = compute_metrics(par_coords_log, par_coords)
-        // let extreme_metrics = compute_metrics(par_coords_extreme, par_coords, par_coords_extreme)
-        // let square_root_metrics = compute_metrics(par_coords_square_root, par_coords, par_coords_extreme)
-        // let split_metrics = compute_metrics(par_coords_splits, par_coords, par_coords_extreme)
-
-
-        // console.log("base: ", base_metrics)
-        // console.log("log: ", log_metrics)
-        // console.log("hardcoded split: ", hardcoded_split_metrics)
-        // console.log("split: ", split_metrics)
-        // console.log("extreme: ", extreme_metrics)
-        // console.log(guided_result)
-
-        // let skewness_hardcoded = plot_diff_individual(par_coords.data, "abundance/universe", hardcoded_par_coords_splits, par_coords_extreme)
-
-        // par_coords.draw()
-        // par_coords_log.draw()
-        // par_coords_square_root.draw()
-        // apc.draw()
-        // par_coords_splits.draw()
-        par_coords_extreme.draw()
-
-
-
-
-        // hardcoded_par_coords_splits.draw()
-
-        console.log("PC")
-        pretty_print_benchmarks(par_coords)
-        console.log("symlog")
-        pretty_print_benchmarks(par_coords_log)
-        console.log("square root")
-        pretty_print_benchmarks(par_coords_square_root)
-        console.log("andrienko")
-        pretty_print_benchmarks(apc)
-        console.log("SPC")
-        pretty_print_benchmarks(par_coords_splits)
-        console.log("extreme")
-        pretty_print_benchmarks(par_coords_extreme)
-
-
-        // let screen_histogram_hardcoded = screen_histogram_2d(hardcoded_par_coords_splits)
-        // let line_crossings_hardcoded = number_of_line_crossings(screen_histogram_hardcoded)
-        // let overplottings_hardcoded = overplotting(screen_histogram_hardcoded)
-        // let convergences_hardcoded = convergence(screen_histogram_hardcoded)
-        // let divergences_hardcoded = divergence(screen_histogram_hardcoded)
-        // console.log(line_crossings_hardcoded)
-        // console.log(overplottings_hardcoded)
-        // console.log(convergences_hardcoded)
-        // console.log(divergences_hardcoded)
-
-        // let screen_histogram_computed = screen_histogram_2d(par_coords_splits)
-        // let line_crossings_computed = number_of_line_crossings(screen_histogram_computed)
-        // let overplottings_computed = overplotting(screen_histogram_computed)
-        // let convergences_computed = convergence(screen_histogram_computed)
-        // let divergences_computed = divergence(screen_histogram_computed)
-        // console.log(line_crossings_computed)
-        // console.log(overplottings_computed)
-        // console.log(convergences_computed)
-        // console.log(divergences_computed)
-    })
-
+    return par_coords_splits
 }
 
 function destroy_par_coords() {
@@ -209,5 +134,47 @@ export function recompute_par_coords() {
 }
 window.recompute = recompute_par_coords
 
-create_par_coords()
+
+
+let sorted_data = {}
+load_periodic_table_data().then((data) => {
+    for (let dimension of data.dimensions) {
+        let data_values = data.data.map(value => value[dimension])
+        data_values.sort(function (a, b) {
+            return b - a;
+        });
+        sorted_data[dimension] = data_values
+    }
+
+    let single_par_coord = "split"
+    let par_coords;
+    switch (single_par_coord) {
+        case "simple":
+            par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
+            break
+        case "symlog":
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Log);
+            break
+        case "extreme":
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),"#single_par_coords", ScaleType.Linear, undefined, true);
+            break
+        case "apc":
+            par_coords = new APC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), '#single_par_coords')
+            break
+        case "sqrt":
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Sqrt);
+            break
+        case "hardcoded":
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, hardcoded_periodic_table_range," #single_par_coords", ScaleType.Linear)
+            break
+        case "split":
+            par_coords = create_split_pc(data, sorted_data)
+    }
+
+    par_coords.draw()
+    console.log("Benchmarks:")
+    pretty_print_benchmarks(par_coords)
+
+    // create_par_coords(data, sorted_data)
+})
 

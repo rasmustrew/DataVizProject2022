@@ -4,7 +4,8 @@ let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class APC {
-    constructor(data, dimensions, dimension_ranges, element_id) {
+    constructor(data, sorted_data, dimensions, dimension_ranges, element_id) {
+        this.sorted_data = sorted_data
         this.data = data;
         this.dimensions = dimensions
         this.dimension_ranges = dimension_ranges
