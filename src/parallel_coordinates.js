@@ -326,15 +326,17 @@ export default class ParallelCoordinates {
 
     y_position(domain_value, dimension) {
         if(this.extreme) {
-            let data_sorted = [...this.data]
-            data_sorted.sort(function (a, b) {
-                return b[dimension] - a[dimension];
+
+            let data_values = this.data.map(value => value[dimension])
+            let unique_data_values = data_values.filter(is_unique)
+            unique_data_values.sort(function (a, b) {
+                return b - a;
             });
-            let index = data_sorted.findIndex((value) => {
-                return domain_value === value[dimension]
+            let index = unique_data_values.findIndex((value) => {
+                return domain_value === value
             })
 
-            let p = index/this.data.length
+            let p = index/(unique_data_values.length - 1)
             let pixel = p * this.height
             return pixel
         }
