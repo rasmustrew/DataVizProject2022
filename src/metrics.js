@@ -175,7 +175,7 @@ export function plot_diff_individual(data, dimension, par_coords, other_par_coor
 export function compute_metrics_dim(par_coords, dim, linear_par_coords, extreme_par_coords) {
     // let map_diff = mapping_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords, linear_par_coords)
     // let norm_diff = norm_screen_data_diff(par_coords.data, dim, par_coords.dimension_ranges, par_coords)
-    let fragmentation = Math.pow(par_coords.dimension_ranges[dim].length - 1, 2)
+    let fragmentation = Math.pow(par_coords.dimension_ranges[dim].length - 1, 1)
     // let hist_avg = histogram_1d_squared_avg(par_coords.data, dim, par_coords)
 
     let distortion = plot_diff(par_coords.data, dim, par_coords, linear_par_coords)

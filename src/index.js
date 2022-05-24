@@ -162,7 +162,7 @@ function create_par_coords(data, sorted_data) {
 }
 
 window.recompute = recompute_par_coords
-let single_par_coord = "simple"
+let single_par_coord = "split"
 
 
 let sorted_data = {}
