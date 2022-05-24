@@ -121,36 +121,21 @@ function create_split_pc(data, sorted_data) {
 }
 
 function destroy_par_coords() {
-    d3.select("#parCoordsDivTop svg").remove()
-    d3.select("#parCoordsDivMiddleTop svg").remove()
-    d3.select("#parCoordsDivMiddleBottom svg").remove()
-    d3.select("#parCoordsDivBottom svg").remove()
+    d3.select(".par_coords svg").remove()
+    d3.select("#single_par_coords svg").remove()
 }
 
 export function recompute_par_coords() {
     console.log("RECOMPUTING")
     destroy_par_coords()
-    create_par_coords()
+    create_par_coords(data, sorted_data)
 }
-window.recompute = recompute_par_coords
 
-
-
-let sorted_data = {}
-load_periodic_table_data().then((data) => {
-    for (let dimension of data.dimensions) {
-        let data_values = data.data.map(value => value[dimension])
-        data_values.sort(function (a, b) {
-            return b - a;
-        });
-        sorted_data[dimension] = data_values
-    }
-
-    let single_par_coord = "split"
+function create_par_coords(data, sorted_data) {
     let par_coords;
     switch (single_par_coord) {
         case "simple":
-            par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
             break
         case "symlog":
             par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Log);
@@ -174,7 +159,23 @@ load_periodic_table_data().then((data) => {
     par_coords.draw()
     console.log("Benchmarks:")
     pretty_print_benchmarks(par_coords)
+}
 
-    // create_par_coords(data, sorted_data)
+window.recompute = recompute_par_coords
+let single_par_coord = "simple"
+
+
+let sorted_data = {}
+let data
+load_periodic_table_data().then((data_inc) => {
+    data = data_inc
+    for (let dimension of data.dimensions) {
+        let data_values = data.data.map(value => value[dimension])
+        data_values.sort(function (a, b) {
+            return b - a;
+        });
+        sorted_data[dimension] = data_values
+    }
+    create_par_coords(data, sorted_data)
 })
 
