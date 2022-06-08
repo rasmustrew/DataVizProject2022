@@ -73,7 +73,7 @@ export default class ParallelCoordinates {
 
         let current_ranges = this.dimension_ranges[dimension];
         let axes = []
-        let distance_between = 10
+        let distance_between = 20;
         let current_offset = 0;
         for (let i = 0; i < current_ranges.length; i++) {
             let range = current_ranges[i]
@@ -218,7 +218,7 @@ export default class ParallelCoordinates {
                     tick_values = [_this.y[dim][index].domain()[1]];
                 }
 
-                d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values));
+                d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values).tickSize(15));
             })
             // .on('mouseover', function(event, data) {
             //     _this.axisHover.bind(_this)(data, this.parentNode.__data__)
@@ -295,15 +295,15 @@ export default class ParallelCoordinates {
                 .attr("height", 2)
         }
 
-        let selected_ids = []
-        for (let data_point of this.data) {
-            if (data_point["abundance/universe"] > 0.0071) {
-                selected_ids.push(data_point.id)
-            }
-        }
-        console.log(selected_ids)
-
-        this.highlight_ids(selected_ids)
+        // let selected_ids = []
+        // for (let data_point of this.data) {
+        //     if (data_point["abundance/universe"] > 0.0071) {
+        //         selected_ids.push(data_point.id)
+        //     }
+        // }
+        // console.log(selected_ids)
+        //
+        // this.highlight_ids(selected_ids)
 
 
 

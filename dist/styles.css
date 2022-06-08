@@ -67,7 +67,7 @@ right{
 }
 
 svg {
-    font: 10px Verdana;
+    /*font: 160px Verdana;*/
     /*preserve-aspect-ratio: "none";*/
 }
 
@@ -84,12 +84,12 @@ svg {
 
 .foreground path {
     fill: none;
-    stroke: rgba(70, 130, 180, 0.4);
+    stroke: rgba(70, 130, 180, 0.2);
 }
 
 .highlighted path {
     fill: none;
-    stroke: rgba(70, 130, 180, 0.4);
+    stroke: rgba(70, 130, 180, 0.2);
 }
 
 .background circle {
@@ -111,9 +111,9 @@ svg {
 }
 
 .dimension text {
-    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+    text-shadow: 1px 0 1px #fff, 0 1px 1px #fff, 0 -1px 1px #fff, -1px 0 1px #fff, 1px 1px 1px #fff, -1px -1px 1px #fff, -1px 1px 1px #fff, 1px -1px 1px #fff, 2px 0 1px #fff, 0 2px 1px #fff, 0 -2px 1px #fff, -2px 0 1px #fff, 2px 2px 1px #fff, -2px -2px 1px #fff, -2px 2px 1px #fff, 2px -2px 1px #fff;
     cursor: move;
-    font-size: 1.2em;
+    font: 16px Verdana;
     /*font-weight: bold;*/
     fill: black;
 }

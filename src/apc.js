@@ -198,15 +198,15 @@ export default class APC {
             .attr("x", -8)
             .attr("width", 16);
 
-        let selected_ids = []
-        for (let data_point of this.data) {
-            if (data_point["abundance/universe"] > 0.0071) {
-                selected_ids.push(data_point.id)
-            }
-        }
-        console.log(selected_ids)
-
-        this.highlight_ids(selected_ids)
+        // let selected_ids = []
+        // for (let data_point of this.data) {
+        //     if (data_point["abundance/universe"] > 0.0071) {
+        //         selected_ids.push(data_point.id)
+        //     }
+        // }
+        // console.log(selected_ids)
+        //
+        // this.highlight_ids(selected_ids)
     }
 
 // Returns the path for a given data point.
