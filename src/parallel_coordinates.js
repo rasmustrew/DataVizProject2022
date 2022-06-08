@@ -9,6 +9,7 @@ export const ScaleType = {
 
 function is_unique(value, index, self) {
     return self.indexOf(value) === index;
+    // return true
 }
 
 let highlight_colour = "rgba(255, 0, 0, 0.4)"
@@ -430,6 +431,16 @@ export default class ParallelCoordinates {
             return
         }
         this.foreground.style("display", function(data_point) {
+            if (selected_ids.length === 0) return 'none'
+            if (selected_ids.includes(data_point.id)) {
+                return null
+            }
+            else {
+                return 'none'
+            }
+        });
+
+        this.highlighted.style("display", function(data_point) {
             if (selected_ids.length === 0) return 'none'
             if (selected_ids.includes(data_point.id)) {
                 return null

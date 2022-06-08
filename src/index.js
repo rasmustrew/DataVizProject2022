@@ -77,7 +77,7 @@ function compute_points_from_histogram_indices(jump_indices, simple_ranges, hist
 }
 
 
-function create_split_pc(data, sorted_data) {
+function create_split_pc(data, sorted_data, element_id) {
 
     let weights = {}
     weights["distortion"] = parseFloat(d3.select("#distortion input").property("value"))
@@ -110,10 +110,10 @@ function create_split_pc(data, sorted_data) {
     }
     console.log(biggest_jumps)
 
-    let par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
-    let par_coords_extreme = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),"#single_par_coords", ScaleType.Linear, undefined, true);
+    let par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
+    let par_coords_extreme = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),element_id, ScaleType.Linear, undefined, true);
 
-    let par_coords_splits = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear, [])
+    let par_coords_splits = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear, [])
     let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, biggest_jumps, par_coords, par_coords_extreme)
     par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
@@ -131,29 +131,29 @@ export function recompute_par_coords() {
     create_par_coords(data, sorted_data)
 }
 
-function create_par_coords(data, sorted_data) {
+function create_par_coords(data, sorted_data, element_id, type) {
     let par_coords;
-    switch (single_par_coord) {
+    switch (type) {
         case "simple":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Linear);
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
             break
         case "symlog":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Log);
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Log);
             break
         case "extreme":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),"#single_par_coords", ScaleType.Linear, undefined, true);
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),element_id, ScaleType.Linear, undefined, true);
             break
         case "apc":
-            par_coords = new APC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), '#single_par_coords')
+            par_coords = new APC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id)
             break
         case "sqrt":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), "#single_par_coords", ScaleType.Sqrt);
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Sqrt);
             break
         case "hardcoded":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, hardcoded_periodic_table_range," #single_par_coords", ScaleType.Linear)
+            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, hardcoded_periodic_table_range,element_id, ScaleType.Linear)
             break
         case "split":
-            par_coords = create_split_pc(data, sorted_data)
+            par_coords = create_split_pc(data, sorted_data, element_id)
     }
 
     par_coords.draw()
@@ -162,8 +162,6 @@ function create_par_coords(data, sorted_data) {
 }
 
 window.recompute = recompute_par_coords
-let single_par_coord = "split"
-
 
 let sorted_data = {}
 let data
@@ -176,6 +174,10 @@ load_periodic_table_data().then((data_inc) => {
         });
         sorted_data[dimension] = data_values
     }
-    create_par_coords(data, sorted_data)
+
+    // create_par_coords(data, sorted_data, "#single_par_coords", "extreme")
+    create_par_coords(data, sorted_data, "#parCoordsDiv1", "simple")
+    create_par_coords(data, sorted_data, "#parCoordsDiv2", "apc")
+    create_par_coords(data, sorted_data, "#parCoordsDiv3", "split")
 })
 
