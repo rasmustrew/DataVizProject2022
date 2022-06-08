@@ -259,7 +259,7 @@ export default class APC {
         let _this = this
         // active_dimensions is a list of dimensions currently being filtered upon
         var active_dimensions = this.dimensions.filter(function(dimension) {
-            return _this.y[dimension].some((axis) => {
+            return Object.values(_this.y[dimension]).some((axis) => {
                 return d3.brushSelection(axis.svg) != null
             })
         });
@@ -267,7 +267,7 @@ export default class APC {
         // extents is a double map of the min and max on each axis
         let extents = {}
         active_dimensions.forEach(function(dimension) {
-            let dimension_extents = _this.y[dimension].map((axis) => {
+            let dimension_extents = Object.values(_this.y[dimension]).map((axis) => {
                 let screenspace_selection = d3.brushSelection(axis.svg);
                 if (screenspace_selection === null) {
                     return null
@@ -304,6 +304,16 @@ export default class APC {
             return
         }
         this.foreground.style("display", function(data_point) {
+            if (selected_ids.length === 0) return 'none'
+            if (selected_ids.includes(data_point.id)) {
+                return null
+            }
+            else {
+                return 'none'
+            }
+        });
+
+        this.highlighted.style("display", function(data_point) {
             if (selected_ids.length === 0) return 'none'
             if (selected_ids.includes(data_point.id)) {
                 return null
