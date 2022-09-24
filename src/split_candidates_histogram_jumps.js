@@ -53,17 +53,17 @@ function compute_points_from_histogram_indices(jump_indices, simple_ranges, hist
     return jump_domain_values
 }
 
-export function compute_split_candidates_histogram_jumps(data) {
-    console.log(simple_ranges(data.data, data.dimensions))
-    let simple_ranges_jumps = simple_ranges(data.data, data.dimensions)
-    let histograms_10 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10)
-    let histograms_100 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 100)
-    let histograms_1000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000)
-    let histograms_10000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000)
-    let histograms_100000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 1000000)
-    let histograms_1000000 = create_histograms(data.data, data.dimensions, simple_ranges_jumps, 10000000)
+export function compute_split_candidates_histogram_jumps(data, dimensions) {
+    console.log(simple_ranges(data, dimensions))
+    let simple_ranges_jumps = simple_ranges(data, dimensions)
+    let histograms_10 = create_histograms(data, dimensions, simple_ranges_jumps, 10)
+    let histograms_100 = create_histograms(data, dimensions, simple_ranges_jumps, 100)
+    let histograms_1000 = create_histograms(data, dimensions, simple_ranges_jumps, 1000)
+    let histograms_10000 = create_histograms(data, dimensions, simple_ranges_jumps, 10000)
+    let histograms_100000 = create_histograms(data, dimensions, simple_ranges_jumps, 1000000)
+    let histograms_1000000 = create_histograms(data, dimensions, simple_ranges_jumps, 10000000)
     let biggest_jumps = {}
-    for (let dimension of data.dimensions) {
+    for (let dimension of dimensions) {
         let biggest_jumps_10 = find_biggest_histogram_jumps(histograms_10[dimension], 5)
         let domain_values_10 = compute_points_from_histogram_indices(biggest_jumps_10, simple_ranges_jumps[dimension], 10)
         let biggest_jumps_100 = find_biggest_histogram_jumps(histograms_100[dimension], 20)

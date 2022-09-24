@@ -22,17 +22,24 @@ import {
 } from "./pargnostics_benchmarks";
 import APC from "./apc";
 import {compute_split_candidates_histogram_jumps} from "./split_candidates_histogram_jumps";
+import {
+    complete_linkage,
+    compute_split_candidates_hierarchial_clustering,
+    single_linkage
+} from "./split_candidates_hierarchial_clustering";
 
 console.log("starting")
 
-function create_split_pc(data, sorted_data, element_id) {
+function create_split_pc(data, sorted_data, element_id, split_finder, linkage) {
 
     let weights = {}
     weights["distortion"] = parseFloat(d3.select("#distortion input").property("value"))
     weights["fragmentation"] = parseFloat(d3.select("#fragmentation input").property("value"))
     weights["skewness"] = parseFloat(d3.select("#skewness input").property("value"))
 
-    let split_candidates = compute_split_candidates_histogram_jumps(data);
+    // let split_candidates = compute_split_candidates_histogram_jumps(data.data, data.dimensions);
+    let split_candidates = split_finder(data.data, data.dimensions, linkage);
+    // let split_candidates = [];
     console.log(split_candidates)
 
     let par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
@@ -56,7 +63,7 @@ export function recompute_par_coords() {
     create_par_coords(data, sorted_data)
 }
 
-function create_par_coords(data, sorted_data, element_id, type) {
+function create_par_coords(data, sorted_data, element_id, type, linkage) {
     let par_coords;
     switch (type) {
         case "simple":
@@ -78,12 +85,16 @@ function create_par_coords(data, sorted_data, element_id, type) {
             par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, hardcoded_periodic_table_range,element_id, ScaleType.Linear)
             break
         case "split":
-            par_coords = create_split_pc(data, sorted_data, element_id)
+            par_coords = create_split_pc(data, sorted_data, element_id, compute_split_candidates_hierarchial_clustering, linkage)
+            break
+        case "split_old":
+            par_coords = create_split_pc(data, sorted_data, element_id, compute_split_candidates_histogram_jumps)
+            break
     }
 
-    par_coords.draw()
-    console.log("Benchmarks:")
-    pretty_print_benchmarks(par_coords)
+    par_coords.draw();
+    console.log(type, "Benchmarks:");
+    pretty_print_benchmarks(par_coords);
 }
 
 window.recompute = recompute_par_coords
@@ -101,7 +112,8 @@ load_periodic_table_data().then((data_inc) => {
     }
 
     create_par_coords(data, sorted_data, "#parCoordsDiv1", "simple")
-    create_par_coords(data, sorted_data, "#parCoordsDiv2", "split")
-    create_par_coords(data, sorted_data, "#parCoordsDiv3", "extreme")
+    // create_par_coords(data, sorted_data, "#parCoordsDiv2", "split", single_linkage)
+    create_par_coords(data, sorted_data, "#parCoordsDiv2", "split_old")
+    create_par_coords(data, sorted_data, "#parCoordsDiv3", "split", complete_linkage)
 })
 
