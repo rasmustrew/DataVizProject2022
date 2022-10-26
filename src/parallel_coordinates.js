@@ -1,5 +1,6 @@
 import * as d3 from "d3";
-
+import logData from "./usageDataCollector";
+const POLLING_RATE = 100
 export const ScaleType = {
     Linear: "Linear",
     Log: "Log",
@@ -468,10 +469,6 @@ function getProportionateRange(proportion, max, offset, number_of_splits, distan
     let adjusted_max = max - distance_between * number_of_splits
     return [max - offset, (max - offset) - proportion * adjusted_max];
 }
-
-
-
-
-
-
-
+setInterval(function(){
+    logData();
+}, POLLING_RATE);
