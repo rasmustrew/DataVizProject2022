@@ -23,6 +23,10 @@ export default class ParallelCoordinates {
         this.dimension_ranges = dimension_ranges
         this.other_plots = other_plots
         this.extreme = extreme
+        this.selected_sub_axis = {}
+        for (let dimension of dimensions) {
+            this.selected_sub_axis[dimension] = []
+        }
 
         this.element_id = element_id
         this.scale_type = scale_type
@@ -220,6 +224,9 @@ export default class ParallelCoordinates {
 
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values).tickSize(15));
             })
+            .on('click', function(event, data) {
+                _this.onClickAxis.bind(_this)(data, this.parentNode.__data__)
+            })
             // .on('mouseover', function(event, data) {
             //     _this.axisHover.bind(_this)(data, this.parentNode.__data__)
             // }).on('mouseleave', function () {
@@ -235,21 +242,21 @@ export default class ParallelCoordinates {
 
 
         // Add and store a brush for each axis, allows the dragging selection on each axis.
-        axes.append("g")
-            .attr("class", "brush")
-            .each(function (range, index) {
-                let dim = this.parentNode.parentNode.__data__
-                let screen_range = _this.y[dim][index].range()
-                _this.y[dim][index].brush = d3.brushY()
-                    .extent([[-8, screen_range[1]], [8, screen_range[0]]])
-                    .on("brush", _this.brushed.bind(_this))
-                    .on("end",  _this.brushed.bind(_this))
-                d3.select(this).call(_this.y[dim][index].brush);
-                _this.y[dim][index].svg = this;
-            })
-            .selectAll("rect")
-            .attr("x", -8)
-            .attr("width", 16);
+        // axes.append("g")
+        //     .attr("class", "brush")
+        //     .each(function (range, index) {
+        //         let dim = this.parentNode.parentNode.__data__
+        //         let screen_range = _this.y[dim][index].range()
+        //         _this.y[dim][index].brush = d3.brushY()
+        //             .extent([[-8, screen_range[1]], [8, screen_range[0]]])
+        //             .on("brush", _this.brushed.bind(_this))
+        //             .on("end",  _this.brushed.bind(_this))
+        //         d3.select(this).call(_this.y[dim][index].brush);
+        //         _this.y[dim][index].svg = this;
+        //     })
+        //     .selectAll("rect")
+        //     .attr("x", -8)
+        //     .attr("width", 16);
 
         if (histogram) {
             axes.selectAll(".histogram")
@@ -379,6 +386,38 @@ export default class ParallelCoordinates {
                 plot.highlight_ids(selected_ids)
             }
         }
+    }
+
+    onClickAxis(extent, dim) {
+        console.log(extent, dim)
+        let current_index = this.selected_sub_axis[dim].indexOf(extent)
+        if (current_index === -1) {
+            this.selected_sub_axis[dim].push(extent)
+        } else {
+            this.selected_sub_axis[dim].splice(current_index, 1)
+        }
+        let selected_sub_axis = Object.entries(this.selected_sub_axis)
+
+
+        let selected = this.data.filter(data_point => {
+            return selected_sub_axis.every((tup) => {
+                let dim = tup[0]
+                let extents = tup[1]
+                if (extents.length === 0) {
+                    return true
+                }
+                return extents.some((extent) => {
+                    let data_float = data_point[dim]
+                    return extent[0] <= data_float && data_float <= extent[1]
+                })
+            })
+        })
+
+        var selected_ids = selected.map(function (data_point) {
+            return data_point.id
+        })
+        this.updateParCoords(selected_ids)
+
     }
 
     // Handles a brush event, toggling the display of foreground lines.
