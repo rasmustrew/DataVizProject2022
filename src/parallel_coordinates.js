@@ -308,7 +308,7 @@ export default class ParallelCoordinates {
         //
         // this.highlight_ids(selected_ids)
 
-
+        d3.select("#saveLogData").on("click", saveLogData)
 
     }
 
@@ -429,8 +429,10 @@ export default class ParallelCoordinates {
         logData({
             timestamp: Date.now(),
             eventType : "brush",
-            extents: extents,
-            selected_ids: selected_ids
+            eventDetails: {
+                extents: extents,
+                selected_ids: selected_ids
+            }
         });
     }
 
@@ -477,3 +479,5 @@ function getProportionateRange(proportion, max, offset, number_of_splits, distan
     let adjusted_max = max - distance_between * number_of_splits
     return [max - offset, (max - offset) - proportion * adjusted_max];
 }
+
+
