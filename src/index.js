@@ -113,7 +113,7 @@ load_periodic_table_data().then((data_inc) => {
 
     create_par_coords(data, sorted_data, "#parCoordsDiv1", "simple")
     // create_par_coords(data, sorted_data, "#parCoordsDiv2", "split", single_linkage)
-    create_par_coords(data, sorted_data, "#parCoordsDiv2", "split_old")
+    // create_par_coords(data, sorted_data, "#parCoordsDiv2", "split_old")
     create_par_coords(data, sorted_data, "#parCoordsDiv3", "split", complete_linkage)
 })
 
