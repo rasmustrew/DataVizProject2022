@@ -2,7 +2,6 @@ import * as d3 from "d3";
 import {logData} from "./usageDataCollector";
 import {saveLogData} from "./usageDataCollector";
 
-const POLLING_RATE = 100;
 export const ScaleType = {
     Linear: "Linear",
     Log: "Log",

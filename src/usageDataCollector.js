@@ -1,5 +1,3 @@
-const POLLING_RATE = 100
-
 const data = []
 
 function logData(props) {
