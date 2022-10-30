@@ -79,17 +79,19 @@ svg {
 .background path {
     fill: none;
     stroke: #ddd;
-    shape-rendering: crispEdges;
+    shape-rendering: geometricPrecision;
 }
 
 .foreground path {
     fill: none;
     stroke: rgba(70, 130, 180, 0.2);
+    shape-rendering: geometricPrecision;
 }
 
 .highlighted path {
     fill: none;
     stroke: rgba(70, 130, 180, 0.2);
+    shape-rendering: geometricPrecision;
 }
 
 .background circle {

@@ -208,6 +208,7 @@ export default class ParallelCoordinates {
             })
             .enter().append("g")
             .attr("class", "axis")
+            .attr("cursor", "pointer")
             .each(function (range, index) {
                 let dim = this.parentNode.__data__
                 let screen_range = _this.y[dim][index].range()
@@ -224,9 +225,9 @@ export default class ParallelCoordinates {
 
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values).tickSize(15));
             })
-            .on('click', function(event, data) {
-                _this.onClickAxis.bind(_this)(data, this.parentNode.__data__)
-            })
+            // .on('click', function(event, data) {
+            //     _this.onClickAxis.bind(_this)(data, this.parentNode.__data__)
+            // })
             // .on('mouseover', function(event, data) {
             //     _this.axisHover.bind(_this)(data, this.parentNode.__data__)
             // }).on('mouseleave', function () {
@@ -242,21 +243,21 @@ export default class ParallelCoordinates {
 
 
         // Add and store a brush for each axis, allows the dragging selection on each axis.
-        // axes.append("g")
-        //     .attr("class", "brush")
-        //     .each(function (range, index) {
-        //         let dim = this.parentNode.parentNode.__data__
-        //         let screen_range = _this.y[dim][index].range()
-        //         _this.y[dim][index].brush = d3.brushY()
-        //             .extent([[-8, screen_range[1]], [8, screen_range[0]]])
-        //             .on("brush", _this.brushed.bind(_this))
-        //             .on("end",  _this.brushed.bind(_this))
-        //         d3.select(this).call(_this.y[dim][index].brush);
-        //         _this.y[dim][index].svg = this;
-        //     })
-        //     .selectAll("rect")
-        //     .attr("x", -8)
-        //     .attr("width", 16);
+        axes.append("g")
+            .attr("class", "brush")
+            .each(function (range, index) {
+                let dim = this.parentNode.parentNode.__data__
+                let screen_range = _this.y[dim][index].range()
+                _this.y[dim][index].brush = d3.brushY()
+                    .extent([[-8, screen_range[1]], [8, screen_range[0]]])
+                    .on("brush", _this.brushed.bind(_this))
+                    .on("end",  _this.brushed.bind(_this))
+                d3.select(this).call(_this.y[dim][index].brush);
+                _this.y[dim][index].svg = this;
+            })
+            .selectAll("rect")
+            .attr("x", -8)
+            .attr("width", 16);
 
         if (histogram) {
             axes.selectAll(".histogram")
