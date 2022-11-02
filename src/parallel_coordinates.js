@@ -1,4 +1,6 @@
 import * as d3 from "d3";
+import {logData} from "./usageDataCollector";
+import {saveLogData} from "./usageDataCollector";
 
 export const ScaleType = {
     Linear: "Linear",
@@ -364,21 +366,6 @@ export default class ParallelCoordinates {
         })
 
 
-            // .each(function (range, index) {
-            //     let dim = this.parentNode.parentNode.__data__
-            //     let screen_range = _this.y[dim][index].range()
-            //     _this.y[dim][index].brush = d3.brushY()
-            //         .extent([[-8, screen_range[1]], [8, screen_range[0]]])
-            //         .on("brush", _this.brushed.bind(_this))
-            //         .on("end",  _this.brushed.bind(_this))
-            //     // d3.select(this).call(_this.y[dim][index].brush);
-            //     _this.y[dim][index].brush(d3.select(this))
-            //     _this.y[dim][index].svg = this;
-            // })
-            // .selectAll("rect")
-            // .attr("x", -8)
-            // .attr("width", 16);
-
         if (histogram) {
             axes.selectAll(".histogram")
                 .data(function (d) {
@@ -433,7 +420,7 @@ export default class ParallelCoordinates {
         //
         // this.highlight_ids(selected_ids)
 
-
+        d3.select("#saveLogData").on("click", saveLogData)
 
     }
 
@@ -520,11 +507,11 @@ export default class ParallelCoordinates {
         } else {
             this.selected_sub_axis[dim].splice(current_index, 1)
         }
-        let selected_sub_axis = Object.entries(this.selected_sub_axis)
+        let selected_sub_axes = Object.entries(this.selected_sub_axis)
 
 
         let selected = this.data.filter(data_point => {
-            return selected_sub_axis.every((tup) => {
+            return selected_sub_axes.every((tup) => {
                 let dim = tup[0]
                 let extents = tup[1]
                 if (extents.length === 0) {
@@ -541,7 +528,14 @@ export default class ParallelCoordinates {
             return data_point.id
         })
         this.updateParCoords(selected_ids)
-
+        logData({
+            timestamp: Date.now(),
+            eventType : "brush",
+            eventDetails: {
+                "selected_sub_axes": selected_sub_axes,
+                "selected_ids": selected_ids
+            }
+        });
     }
 
     // Handles a brush event, toggling the display of foreground lines.
@@ -586,6 +580,14 @@ export default class ParallelCoordinates {
             return data_point.id
         })
         this.updateParCoords(selected_ids)
+        logData({
+            timestamp: Date.now(),
+            eventType : "brush",
+            eventDetails: {
+                extents: extents,
+                selected_ids: selected_ids
+            }
+        });
     }
 
     updateParCoords(selected_ids) {
@@ -663,10 +665,5 @@ function attachCancelIcon(container) {
 
     return icon
 }
-
-
-
-
-
 
 
