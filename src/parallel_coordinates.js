@@ -246,8 +246,7 @@ export default class ParallelCoordinates {
 
         // Add and store a brush for each axis, allows the dragging selection on each axis.
 
-        if(_this.element_id == "#parCoordsDiv1")    // terrible way to check if this is the linear plot. @TODO : make this parameterized
-        {
+
             axes.append("g")
                 .attr("class", "brush")
                 .each(function (range, index) {
@@ -263,7 +262,6 @@ export default class ParallelCoordinates {
                 .selectAll("rect")
                 .attr("x", -8)
                 .attr("width", 16);
-        }
 
 
         if (histogram) {
