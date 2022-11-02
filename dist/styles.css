@@ -106,8 +106,8 @@ svg {
 
 .axis line,
 .axis path {
-    fill: none;
-    stroke: #000;
+    /*fill: none;*/
+    /*stroke: #000;*/
     stroke-width: 3;
     shape-rendering: crispEdges;
 }

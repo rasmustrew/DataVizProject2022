@@ -275,15 +275,40 @@ export default class ParallelCoordinates {
                 // })
                 .on('start', (event, data) => {
                     let new_index =  par_coords.brushes[dimension][i].length
-                    let brush_field = _this.append('rect')
+                    let brush_field_group = _this.append("g")
+                        .attr('data-i', new_index)
+                        .attr("transform", `translate(0, ${event.y})`)
+                        .attr("data-y", event.y)
+
+                    let brush_field = brush_field_group.append("rect")
                         .attr("width", 16)
                         .attr("height", 0)
-                        .attr("y", event.y)
+                        // .attr("y", event.y)
                         .attr("class", "brush_field")
-                        .attr('fill', "rgb(255, 130, 180)")
-                        .attr('data-i', new_index)
+                        .attr('fill', "rgba(255, 130, 180, 0.5)")
+                        .attr('cursor', 'move')
+
+
+                    let cancel_icon = attachCancelIcon(brush_field_group)
+                        .attr('visibility', "hidden")
+                        .on('click', () => {
+                            console.log("deleting")
+                            par_coords.brushes[dimension][i][new_index] = null
+                            par_coords.brushed()
+                            brush_field_group.remove()
+                        })
+
+                    brush_field_group.on('mouseover', (event) => {
+                        console.log("hover")
+                        cancel_icon.attr('visibility', 'visible')
+                    })
+                    .on('mouseleave', (event) => {
+                        console.log("unhover")
+                        cancel_icon.attr('visibility', 'hidden')
+                    })
+
                     brush_overlay.startY = event.y
-                    _this.brush_field_being_built = brush_field
+                    _this.brush_field_being_built = brush_field_group
 
                     par_coords.brushes[dimension][i].push([event.y, event.y])
                     console.log(par_coords.brushes[dimension][i])
@@ -297,18 +322,20 @@ export default class ParallelCoordinates {
                     if (height + brush_overlay.startY > brush_range[0]) {
                         height = brush_range[0] - brush_overlay.startY
                     }
+                    let field = _this.brush_field_being_built.select("rect")
                     if (height > 0) {
-                        _this.brush_field_being_built.attr("height", height)
+                        field.attr("height", height)
                     } else {
-                        _this.brush_field_being_built.attr("height", Math.abs(height))
-                        _this.brush_field_being_built.attr("y", event.y)
+                        field.attr("height", Math.abs(height))
+                        _this.brush_field_being_built.attr("data-y", event.y)
+                        _this.brush_field_being_built.attr("transform", `translate(0, ${event.y})`)
                     }
                     let brush_index = parseInt(_this.brush_field_being_built.attr('data-i'))
-                    let brush_y = parseInt(_this.brush_field_being_built.attr("y"))
-                    let brush_height = parseInt(_this.brush_field_being_built.attr("height"))
+                    let brush_y = parseInt(_this.brush_field_being_built.attr("data-y"))
+                    let brush_height = parseInt(field.attr("height"))
                     let brush_bottom_y = brush_height + brush_y;
                     par_coords.brushes[dimension][i][brush_index] = [brush_y, brush_bottom_y]
-                    console.log(par_coords.brushes[dimension][i])
+                    // console.log(par_coords.brushes[dimension][i])
                     par_coords.brushed()
                 })
             )
@@ -497,7 +524,7 @@ export default class ParallelCoordinates {
 
     // Handles a brush event, toggling the display of foreground lines.
     brushed() {
-        console.log("brushed!")
+        // console.log("brushed!")
         let _this = this
         // active_dimensions is a list of dimensions currently being filtered upon
         let active_dimensions = this.dimensions.filter(function(dimension) {
@@ -510,7 +537,7 @@ export default class ParallelCoordinates {
         active_dimensions.forEach(function(dimension) {
             let dimension_selections = _this.brushes[dimension].map((axis_selections, index) => {
                 let axis_function = _this.y[dimension][index]
-                let dataspace_selections = axis_selections.map(function (screenspace_selection) {
+                let dataspace_selections = axis_selections.filter((selection) => selection !== null).map(function (screenspace_selection) {
                     return [axis_function.invert(screenspace_selection[0]), axis_function.invert(screenspace_selection[1])]
                 })
                 return dataspace_selections;
@@ -586,6 +613,33 @@ function isValueInRange(value, range, min_value, max_value) {
 function getProportionateRange(proportion, max, offset, number_of_splits, distance_between) {
     let adjusted_max = max - distance_between * number_of_splits
     return [max - offset, (max - offset) - proportion * adjusted_max];
+}
+
+function attachCancelIcon(container) {
+    let icon = container.append("g")
+        .attr("width", 5)
+        .attr("height", 5)
+        .attr("transform", `translate(${20}, ${0})`)
+    icon.append("circle")
+        .attr("fill", "#f44336")
+        .attr("r", 10)
+    icon.append("line")
+        .attr("stroke-width", 1)
+        .attr("stroke", "#fff")
+        .attr("x1", -5)
+        .attr("y1", -5)
+        .attr("x2", 5)
+        .attr("y2", 5)
+    icon.append("line")
+        .attr("stroke-width", 1)
+        .attr("stroke", "#fff")
+        .attr("x1", 5)
+        .attr("y1", -5)
+        .attr("x2", -5)
+        .attr("y2", 5)
+
+
+    return icon
 }
 
 

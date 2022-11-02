@@ -101,7 +101,7 @@ window.recompute = recompute_par_coords
 
 let sorted_data = {}
 let data
-load_periodic_table_data().then((data_inc) => {
+load_periodic_table_data().then( async (data_inc) => {
     data = data_inc
     for (let dimension of data.dimensions) {
         let data_values = data.data.map(value => value[dimension])
@@ -110,6 +110,7 @@ load_periodic_table_data().then((data_inc) => {
         });
         sorted_data[dimension] = data_values
     }
+
 
     // create_par_coords(data, sorted_data, "#parCoordsDiv1", "simple")
     // create_par_coords(data, sorted_data, "#parCoordsDiv2", "split", single_linkage)
