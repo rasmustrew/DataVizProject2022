@@ -288,22 +288,44 @@ export default class ParallelCoordinates {
                         .attr('fill', "rgba(255, 130, 180, 0.5)")
                         .attr('cursor', 'move')
 
+                    brush_field_group.call(d3.drag()
+                        .on('drag', (event, data) => {
+                            let old_y = parseInt(brush_field_group.attr("data-y"))
+                            let new_y = old_y + event.dy
+                            let height = parseInt(brush_field.attr("height"))
+                            let bottom_y = new_y + height
+
+                            if (new_y < brush_range[1]) {
+                                new_y = brush_range[1]
+                                bottom_y = new_y + height
+                            } else if (bottom_y > brush_range[0]) {
+                                new_y = brush_range[0] - height
+                            }
+
+                            console.log(old_y, event.dy, new_y)
+                            brush_field_group.attr("transform", `translate(0, ${new_y})`)
+                                .attr("data-y", new_y)
+
+                            par_coords.brushes[dimension][i][new_index] = [new_y, bottom_y]
+                            par_coords.brushed()
+                        })
+                    )
 
                     let cancel_icon = attachCancelIcon(brush_field_group)
                         .attr('visibility', "hidden")
                         .on('click', () => {
-                            console.log("deleting")
+                            // console.log("deleting")
                             par_coords.brushes[dimension][i][new_index] = null
                             par_coords.brushed()
                             brush_field_group.remove()
                         })
 
                     brush_field_group.on('mouseover', (event) => {
-                        console.log("hover")
+                        // console.log("hover")
                         cancel_icon.attr('visibility', 'visible')
                     })
                     .on('mouseleave', (event) => {
-                        console.log("unhover")
+                        // console.log("unhover")
                         cancel_icon.attr('visibility', 'hidden')
                     })
 
