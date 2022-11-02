@@ -210,6 +210,7 @@ export default class ParallelCoordinates {
             })
             .enter().append("g")
             .attr("class", "axis")
+            .attr("cursor", "pointer")
             .each(function (range, index) {
                 let dim = this.parentNode.__data__
                 let screen_range = _this.y[dim][index].range()
@@ -226,11 +227,9 @@ export default class ParallelCoordinates {
 
                 d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values).tickSize(15));
             })
-            .on('click', function(event, data) {
-                if(_this.element_id == "#parCoordsDiv3") {
-                    _this.onClickAxis.bind(_this)(data, this.parentNode.__data__)
-                }
-            })
+            // .on('click', function(event, data) {
+            //     _this.onClickAxis.bind(_this)(data, this.parentNode.__data__)
+            // })
             // .on('mouseover', function(event, data) {
             //     _this.axisHover.bind(_this)(data, this.parentNode.__data__)
             // }).on('mouseleave', function () {
