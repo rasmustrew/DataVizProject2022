@@ -111,7 +111,7 @@ load_periodic_table_data().then((data_inc) => {
         sorted_data[dimension] = data_values
     }
 
-    create_par_coords(data, sorted_data, "#parCoordsDiv1", "simple")
+    // create_par_coords(data, sorted_data, "#parCoordsDiv1", "simple")
     // create_par_coords(data, sorted_data, "#parCoordsDiv2", "split", single_linkage)
     // create_par_coords(data, sorted_data, "#parCoordsDiv2", "split_old")
     create_par_coords(data, sorted_data, "#parCoordsDiv3", "split", complete_linkage)
