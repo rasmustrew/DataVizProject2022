@@ -320,8 +320,15 @@ export default class ParallelCoordinates {
                             par_coords.brushes[dimension][i][new_index] = null
                             par_coords.brushed()
                             brush_field_group.remove()
+                            logData({
+                                timestamp: Date.now(),
+                                eventType : "brush_removed",
+                                eventDetails: {
+                                    axis_name: dimension,
+                                    brush_range: brush_range
+                                }
+                            });
                         })
-
                     brush_field_group.on('mouseover', (event) => {
                         // console.log("hover")
                         cancel_icon.attr('visibility', 'visible')
@@ -588,6 +595,10 @@ export default class ParallelCoordinates {
                 selected_ids: selected_ids
             }
         });
+        return {
+            extents: extents,
+            selected_ids: selected_ids
+        }
     }
 
     updateParCoords(selected_ids) {
