@@ -288,10 +288,81 @@ export default class ParallelCoordinates {
                         // .attr("y", event.y)
                         .attr("class", "brush_field")
                         .attr('fill', "rgba(255, 130, 180, 0.5)")
-                        .attr('cursor', 'move')
+
+                    let brush_field_bottom = brush_field_group.append("rect")
+                        .attr("width", 16)
+                        .attr("height", 8)
+                        .attr("class", "brush_field_edge")
+                        .attr('fill', "rgba(255, 130, 180, 0.5)")
+                        .attr('cursor', 'row-resize')
+                        .call(d3.drag()
+                            .container(brush_field_group)
+                            .on('drag', (event, data) => {
+                                console.log("dragging bot")
+                                let old_y = parseInt(brush_field_group.attr("data-y"))
+                                let bottom_y = par_coords.brushes[dimension][i][new_index][1]
+                                let old_height = parseInt(brush_field.attr("height"))
+                                let new_height = old_height + event.dy
+                                let new_bottom_y = old_y + new_height
+
+                                if (new_height <= 16) {
+                                    new_height = 16
+                                    new_bottom_y = old_y + new_height
+                                } else if (new_bottom_y >= brush_range[0]) {
+                                    new_bottom_y = brush_range[0]
+                                    new_height = new_bottom_y - old_y
+                                }
+
+                                // console.log(event.dy, new_height)
+
+
+
+                                brush_field_bottom.attr("y", new_height - 8)
+                                brush_field.attr("height", new_height)
+
+                                par_coords.brushes[dimension][i][new_index] = [old_y, new_bottom_y]
+                                par_coords.brushed()
+                            }))
+
+                    let brush_field_top = brush_field_group.append("rect")
+                        .attr("width", 16)
+                        .attr("height", 8)
+                        .attr("class", "brush_field_edge")
+                        .attr('fill', "rgba(255, 130, 180, 0.5)")
+                        .attr('cursor', 'row-resize')
+                        .call(d3.drag()
+                            .container(brush_field_group)
+                            .on('drag', (event, data) => {
+                                console.log("dragging top")
+                                let old_y = parseInt(brush_field_group.attr("data-y"))
+                                let new_y = old_y + event.dy
+                                let height = parseInt(brush_field.attr("height"))
+                                let bottom_y = par_coords.brushes[dimension][i][new_index][1]
+                                let new_height = bottom_y - new_y
+
+                                if (new_y < brush_range[1]) {
+                                    new_y = brush_range[1]
+                                    new_height = bottom_y - new_y
+                                } else if (new_height <= 16) {
+                                    new_height = 16
+                                    new_y = bottom_y - new_height
+                                }
+
+                                brush_field_group.attr("transform", `translate(0, ${new_y})`)
+                                    .attr("data-y", new_y)
+                                brush_field_bottom.attr("y", new_height - 8)
+
+                                brush_field.attr("height", new_height)
+
+                                par_coords.brushes[dimension][i][new_index] = [new_y, bottom_y]
+                                par_coords.brushed()
+                            }))
+
+
 
                     brush_field_group.call(d3.drag()
                         .on('drag', (event, data) => {
+                            console.log("dragging whole")
                             let old_y = parseInt(brush_field_group.attr("data-y"))
                             let new_y = old_y + event.dy
                             let height = parseInt(brush_field.attr("height"))
@@ -304,7 +375,7 @@ export default class ParallelCoordinates {
                                 new_y = brush_range[0] - height
                             }
 
-                            console.log(old_y, event.dy, new_y)
+
                             brush_field_group.attr("transform", `translate(0, ${new_y})`)
                                 .attr("data-y", new_y)
 
@@ -333,6 +404,7 @@ export default class ParallelCoordinates {
 
                     brush_overlay.startY = event.y
                     _this.brush_field_being_built = brush_field_group
+                    _this.brush_field_being_built_bottom = brush_field_bottom
 
                     par_coords.brushes[dimension][i].push([event.y, event.y])
                     console.log(par_coords.brushes[dimension][i])
@@ -353,7 +425,9 @@ export default class ParallelCoordinates {
                         field.attr("height", Math.abs(height))
                         _this.brush_field_being_built.attr("data-y", event.y)
                         _this.brush_field_being_built.attr("transform", `translate(0, ${event.y})`)
+                        _this.brush_field_being_built_bottom.attr("y", height)
                     }
+                    _this.brush_field_being_built_bottom.attr("y", Math.abs(height) - 8)
                     let brush_index = parseInt(_this.brush_field_being_built.attr('data-i'))
                     let brush_y = parseInt(_this.brush_field_being_built.attr("data-y"))
                     let brush_height = parseInt(field.attr("height"))
