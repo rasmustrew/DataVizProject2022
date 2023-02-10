@@ -6,7 +6,6 @@ export const ScaleType = {
     Linear: "Linear",
     Log: "Log",
     Sqrt: "Sqrt"
-
 }
 
 function is_unique(value, index, self) {
@@ -619,7 +618,9 @@ export default class ParallelCoordinates {
         // active_dimensions is a list of dimensions currently being filtered upon
         let active_dimensions = this.dimensions.filter(function(dimension) {
             return _this.brushes[dimension].some((axis) => {
-                return axis.length > 0;
+                let no_selection = axis.length === 0
+                let only_null_selection = axis.every((selection) => selection === null)
+                return !(no_selection || only_null_selection);
             })
         });
 
