@@ -1,0 +1,60 @@
+import LinearMapper from "./linear_mapping";
+import UniqueIndexMapper from "./unique_index_mapping";
+import CompositeMapper from "./composite_mapping";
+import {compute_metrics} from "../metrics";
+import {is_value_in_range} from "./util";
+
+export default class ProportionateSplitMapper {
+
+    constructor(sorted_data, split_points) {
+        this.min = sorted_data[0];
+        this.max = sorted_data[sorted_data.length - 1]
+        let points = [this.min, ...split_points, this.max]
+        this.input_ranges = []
+        for (let i = 0; i < points.length - 1; i++) {
+            this.input_ranges.push([points[i], points[i+1]])
+        }
+
+        //Calculate how many percent of points is in each range
+        let proportions = this.input_ranges.map((range) => {
+            let points_in_range = sorted_data.filter((data_point) => {
+                return is_value_in_range(data_point, range, this.min, this.max)
+            })
+            let percent_points_in_range = points_in_range.length / sorted_data.length
+            return percent_points_in_range
+        })
+
+        //Create proportional mapping from 0 to 1
+        this.output_ranges = []
+        this.piecewise_linear_maps = []
+        let proportions_processed = 0;
+        for (let i = 0; i < proportions.length; i++) {
+            let proportion = proportions[i]
+            let input_range = this.input_ranges[i]
+            let output_range = [proportions_processed, proportions_processed + proportion]
+            let piecewise_linear_map = LinearMapper([input_range], output_range)
+            this.output_ranges.push(output_range)
+            this.piecewise_linear_maps.push(piecewise_linear_map)
+            proportions_processed += proportion
+
+        }
+    }
+    map(input) {
+        for (let i = 0; i < this.input_ranges.length; i++) {
+            let range = this.input_ranges[i]
+            if (is_value_in_range(input, range, this.min, this.max)) {
+                let range_mapper = this.piecewise_linear_maps[i]
+                let output = range_mapper.map(input)
+                return output
+            }
+        }
+    }
+
+    get_input_space_ranges() {
+        return this.input_ranges
+    }
+
+    get_output_space_ranges() {
+        return this.output_ranges
+    }
+}

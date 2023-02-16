@@ -1,6 +1,6 @@
 import {load_numbeo_data} from "./data/load_numbeo_data";
 import * as d3 from "d3";
-import ParallelCoordinates, {ScaleType} from "./parallel_coordinates";
+import SPC, {ScaleType} from "./plots/spc";
 import {
     simple_ranges,
     hardcoded_numbeo_range,
@@ -19,14 +19,14 @@ import {
     number_of_line_crossings,
     overplotting_2d, pretty_print_benchmark, pretty_print_benchmarks,
     screen_histogram_2d
-} from "./pargnostics_benchmarks";
-import APC from "./apc";
-import {compute_split_candidates_histogram_jumps} from "./split_candidates_histogram_jumps";
+} from "./benchmarks/pargnostics_benchmarks";
+import APC from "./plots/apc";
+import {compute_split_candidates_histogram_jumps} from "./algorithms/greedy_guided_split/split_candidates_histogram_jumps";
 import {
     complete_linkage,
     compute_split_candidates_hierarchial_clustering,
     single_linkage
-} from "./split_candidates_hierarchial_clustering";
+} from "./algorithms/greedy_guided_split/split_candidates_hierarchial_clustering";
 
 console.log("starting")
 
@@ -42,10 +42,10 @@ function create_split_pc(data, sorted_data, element_id, split_finder, linkage) {
     // let split_candidates = [];
     console.log(split_candidates)
 
-    let par_coords = new ParallelCoordinates(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
-    let par_coords_extreme = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),element_id, ScaleType.Linear, undefined, true);
+    let par_coords = new SPC(data.data,sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
+    let par_coords_extreme = new SPC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),element_id, ScaleType.Linear, undefined, true);
 
-    let par_coords_splits = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear, [])
+    let par_coords_splits = new SPC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear, [])
     let guided_result = guided_split(data.dimensions, simple_ranges(data.data, data.dimensions), par_coords_splits, weights, split_candidates, par_coords, par_coords_extreme)
     par_coords_splits.set_dimension_ranges(guided_result.ranges)
 
@@ -67,22 +67,22 @@ function create_par_coords(data, sorted_data, element_id, type, linkage) {
     let par_coords;
     switch (type) {
         case "simple":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
+            par_coords = new SPC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Linear);
             break
         case "symlog":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Log);
+            par_coords = new SPC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Log);
             break
         case "extreme":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),element_id, ScaleType.Linear, undefined, true);
+            par_coords = new SPC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions),element_id, ScaleType.Linear, undefined, true);
             break
         case "apc":
             par_coords = new APC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id)
             break
         case "sqrt":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Sqrt);
+            par_coords = new SPC(data.data, sorted_data, data.dimensions, simple_ranges(data.data, data.dimensions), element_id, ScaleType.Sqrt);
             break
         case "hardcoded":
-            par_coords = new ParallelCoordinates(data.data, sorted_data, data.dimensions, hardcoded_periodic_table_range,element_id, ScaleType.Linear)
+            par_coords = new SPC(data.data, sorted_data, data.dimensions, hardcoded_periodic_table_range,element_id, ScaleType.Linear)
             break
         case "split":
             par_coords = create_split_pc(data, sorted_data, element_id, compute_split_candidates_hierarchial_clustering, linkage)

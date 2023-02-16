@@ -1,0 +1,22 @@
+export default class CompositeMapper {
+
+    //Takes a list of mappers, and applies them one after the other
+    constructor(list_of_mappers) {
+        this.mappers = list_of_mappers
+
+    }
+    map(input) {
+        let output = input;
+        for (let mapper of this.mappers) {
+            output = mapper.map(output)
+        }
+    }
+
+    get_input_space_ranges() {
+        return this.mappers[0].get_input_space_ranges();
+    }
+
+    get_output_space_ranges() {
+        return this.mappers[this.mappers.length - 1].get_output_space_ranges();
+    }
+}
