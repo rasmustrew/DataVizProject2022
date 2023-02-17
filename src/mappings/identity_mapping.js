@@ -15,6 +15,10 @@ export default class IdentityMapper {
         return input
     }
 
+    map_inverse(output) {
+        return output
+    }
+
     get_input_space_ranges() {
         return this.ranges
     }

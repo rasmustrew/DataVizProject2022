@@ -50,6 +50,19 @@ export default class ProportionateSplitMapper {
         }
     }
 
+    map_inverse(output) {
+        let output_min = this.map(this.min)
+        let output_max = this.map(this.max)
+        for (let i = 0; i < this.output_ranges.length; i++) {
+            let range = this.output_ranges[i]
+            if (is_value_in_range(output, range, output_min, output_max)) {
+                let range_mapper = this.piecewise_linear_maps[i]
+                let input = range_mapper.inverse_map(output)
+                return input
+            }
+        }
+    }
+
     get_input_space_ranges() {
         return this.input_ranges
     }

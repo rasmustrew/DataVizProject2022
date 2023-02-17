@@ -17,6 +17,12 @@ export default class LinearMapper {
         return output
     }
 
+    map_inverse(output) {
+        let output_percentage = (output - this.output_start) / this.output_size
+        let input = output_percentage * this.input_size + this.input_start
+        return input
+    }
+
     get_input_space_ranges() {
         return this.input_ranges
     }

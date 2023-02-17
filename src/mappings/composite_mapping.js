@@ -10,6 +10,15 @@ export default class CompositeMapper {
         for (let mapper of this.mappers) {
             output = mapper.map(output)
         }
+        return output
+    }
+
+    map_inverse(output) {
+        let input = output;
+        for (let mapper of this.mappers.reverse()) {
+            input = mapper.map_inverse(input)
+        }
+        return input
     }
 
     get_input_space_ranges() {

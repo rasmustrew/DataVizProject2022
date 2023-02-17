@@ -7,8 +7,11 @@ export default class UniqueIndexMapper {
         let index = this.unique_data_values.findIndex((value) => {
             return input === value
         })
-
         return index
+    }
+
+    map_inverse(output) {
+        return this.unique_data_values[output]
     }
 
     get_input_space_ranges() {
