@@ -1,27 +1,50 @@
 import * as d3 from "d3";
 import {logData} from "../usageDataCollector";
 import {saveLogData} from "../usageDataCollector";
+import ScreenMapper from "../mappings/screen_mapping";
+import CompositeMapper from "../mappings/composite_mapping";
+import { v4 as uuidv4 } from 'uuid';
 
 let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class SPC {
-    constructor(data, dimensions, mapper, element_id) {
+    constructor(data, dimensions, raw_mappers) {
         this.data = data
         this.dimensions = dimensions
-        this.mapper = mapper
-        this.element_id = element_id
         this.brushes = {}
+        for (let dimension of dimensions) {
+            this.brushes[dimension] = []
+            for (let i = 0; i < raw_mappers[dimension].get_output_space_ranges().length; i++) {
+                this.brushes[dimension][i] = []
+            }
+        }
 
+
+        let container = document.querySelector("#plot_container_id")
+        let plot = document.createElement("div")
+        plot.classList.add("par_coords")
+        plot.id = "plot_id_" + uuidv4()
+        this.id = "#" + plot.id
+        container.appendChild(plot)
+
+        let buffer_size = 20;
         let margin = {top: 24, right: 48, bottom: 16, left: 48};
         this.margin = margin
-        let width = document.querySelector(element_id).clientWidth - margin.left - margin.right;
-        let height = document.querySelector(element_id).clientHeight - margin.top - margin.bottom;
+        let width = plot.clientWidth - margin.left - margin.right;
+        let height = plot.clientHeight - margin.top - margin.bottom;
         this.height = height
         this.width = width;
 
+        this.mappers = {}
+        Object.entries(raw_mappers).forEach((entry) => {
+            let dim = entry[0]
+            let mapper = entry[1]
+            let screen_mapper = new ScreenMapper(mapper.get_output_space_ranges(), [0, height], buffer_size)
+            this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
+        })
+
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
-        this.y = {}
         this.foreground;
         this.background;
 
@@ -33,7 +56,7 @@ export default class SPC {
 
     draw() {
         let _this = this
-        let svg = d3.select(this.element_id).append("svg")
+        let svg = d3.select(this.id).append("svg")
             .attr("class", "parcoordsSvg")
             .append("g")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
@@ -99,25 +122,29 @@ export default class SPC {
 
         let axes = axis_groups.selectAll(".axis")
             .data(function (d) {
-                return _this.dimension_ranges[d]
+                return _this.mappers[d].get_input_space_ranges()
             })
             .enter().append("g")
             .attr("class", "axis")
             .each(function (range, index) {
                 let dim = this.parentNode.__data__
-                let screen_range = _this.y[dim][index].range()
-                let screen_span = screen_range[0] - screen_range[1]
-                let num_ticks = Math.floor(screen_span / 100.0)
+                let screen_range = _this.mappers[dim].get_output_space_ranges()[index]
+                // let screen_span = screen_range[0] - screen_range[1]
+                // let num_ticks = Math.floor(screen_span / 100.0)
+                let input_ranges = _this.mappers[dim].get_input_space_ranges()
                 let tick_values = []
                 if (index === 0) {
-                    tick_values = [_this.y[dim][index].domain()[0], _this.y[dim][index].domain()[1]];
-                } else if (index === _this.dimension_ranges[dim].length - 1) {
-                    tick_values = [_this.y[dim][index].domain()[1]];
+                    tick_values = input_ranges[index];
+                } else if (index === input_ranges.length - 1) {
+                    tick_values = [input_ranges[index][1]];
                 } else {
-                    tick_values = [_this.y[dim][index].domain()[1]];
+                    tick_values = [input_ranges[index][1]];
                 }
+                let input_scale = _this.mappers[dim].get_input_space_ranges()[index]
+                let output_scale = _this.mappers[dim].get_output_space_ranges()[index]
+                let d3_scale = d3.scaleLinear().domain(input_scale).range(output_scale)
 
-                d3.select(this).call(d3.axisLeft().scale(_this.y[dim][index]).tickValues(tick_values).tickSize(15));
+                d3.select(this).call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15));
             })
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         let brush_group = axes.append("g")
@@ -136,11 +163,12 @@ export default class SPC {
             let par_coords = this;
             let dimension = nodes[i].parentNode.parentNode.__data__;
             // let brush_field = _this.selectChild(".brush_field");
-            let brush_range = par_coords.y[dimension][i].range()
+            // let brush_range = par_coords.y[dimension][i].range()
+            let brush_range = par_coords.mappers[dimension].get_output_space_ranges()[i]
             console.log(dimension, i, brush_range[1])
             let brush_overlay = _this.selectChild(".brush_overlay")
                 .attr("height", Math.floor(Math.abs(brush_range[0] - brush_range[1])))
-                .attr("y", brush_range[1])
+                .attr("y", brush_range[0])
             brush_overlay.call(d3.drag()
                 // .container(function container() {
                 //     console.log(this)
@@ -283,9 +311,7 @@ export default class SPC {
                 })
                 .on('drag', (event, data) => {
                     let height = event.y - brush_overlay.startY
-                    if (event.y < brush_range[1]) {
-                        event.y = brush_range[1]
-                    }
+                    let event_y = Math.max(event.y, brush_range[1])
                     if (height + brush_overlay.startY > brush_range[0]) {
                         height = brush_range[0] - brush_overlay.startY
                     }
@@ -294,8 +320,8 @@ export default class SPC {
                         field.attr("height", height)
                     } else {
                         field.attr("height", Math.abs(height))
-                        _this.brush_field_being_built.attr("data-y", event.y)
-                        _this.brush_field_being_built.attr("transform", `translate(0, ${event.y})`)
+                        _this.brush_field_being_built.attr("data-y", event_y)
+                        _this.brush_field_being_built.attr("transform", `translate(0, ${event_y})`)
                         _this.brush_field_being_built_bottom.attr("y", height)
                     }
                     _this.brush_field_being_built_bottom.attr("y", Math.abs(height) - 8)
@@ -332,32 +358,7 @@ export default class SPC {
     }
 
     y_position(domain_value, dimension) {
-        if(this.extreme) {
-
-            let data_values = this.sorted_data[dimension]
-            let unique_data_values = data_values.filter(is_unique)
-            let index = unique_data_values.findIndex((value) => {
-                return domain_value === value
-            })
-
-            let p = index/(unique_data_values.length - 1)
-            let pixel = p * this.height
-            return pixel
-        }
-
-        let data_values = this.sorted_data[dimension]
-        let min_value = data_values[0]
-        let max_value = data_values[data_values.length - 1]
-        let range_index = this.dimension_ranges[dimension].findIndex((range) => {
-            return isValueInRange(domain_value, range, min_value, max_value)
-        })
-        if (this.y[dimension][range_index] == undefined) {
-            console.log(domain_value)
-            console.log(this.dimension_ranges[dimension])
-            console.log(range_index)
-        }
-
-        return this.y[dimension][range_index](domain_value)
+        return this.mappers[dimension].map(domain_value)
     }
 
     highlight_ids(ids) {
@@ -444,9 +445,9 @@ export default class SPC {
         let extents = {}
         active_dimensions.forEach(function(dimension) {
             let dimension_selections = _this.brushes[dimension].map((axis_selections, index) => {
-                let axis_function = _this.y[dimension][index]
+                let axis_mapper = _this.mappers[dimension]
                 let dataspace_selections = axis_selections.filter((selection) => selection !== null).map(function (screenspace_selection) {
-                    return [axis_function.invert(screenspace_selection[0]), axis_function.invert(screenspace_selection[1])]
+                    return [axis_mapper.map_inverse(screenspace_selection[0]), axis_mapper.map_inverse(screenspace_selection[1])]
                 })
                 return dataspace_selections;
             })

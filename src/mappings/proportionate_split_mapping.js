@@ -1,7 +1,4 @@
 import LinearMapper from "./linear_mapping";
-import UniqueIndexMapper from "./unique_index_mapping";
-import CompositeMapper from "./composite_mapping";
-import {compute_metrics} from "../metrics";
 import {is_value_in_range} from "./util";
 
 export default class ProportionateSplitMapper {
@@ -32,7 +29,7 @@ export default class ProportionateSplitMapper {
             let proportion = proportions[i]
             let input_range = this.input_ranges[i]
             let output_range = [proportions_processed, proportions_processed + proportion]
-            let piecewise_linear_map = LinearMapper([input_range], output_range)
+            let piecewise_linear_map = new LinearMapper([input_range], output_range)
             this.output_ranges.push(output_range)
             this.piecewise_linear_maps.push(piecewise_linear_map)
             proportions_processed += proportion

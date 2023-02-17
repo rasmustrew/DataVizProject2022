@@ -222,19 +222,20 @@ svg {
     align-items: flex-end;
 }
 
-.par_coords {
-    /*background-color: green;*/
+#plot_container_id {
+    display: flex;
     flex-grow: 1;
     flex-shrink: 1;
     width: 100%;
     height: 100%;
 }
 
-#single_par_coords {
+.par_coords {
+    /*background-color: green;*/
     flex-grow: 1;
     flex-shrink: 1;
     width: 100%;
-    height: 15%;
+    height: 100%;
 }
 
 #parCoordsLegendDiv {
