@@ -175,6 +175,7 @@ export default class SPC {
                 //     return this
                 // })
                 .on('start', (event, data) => {
+                    console.log("drag start: ", event.y)
                     let new_index =  par_coords.brushes[dimension][i].length
                     let brush_field_group = _this.append("g")
                         .attr('data-i', new_index)
@@ -198,6 +199,7 @@ export default class SPC {
                             .container(brush_field_group)
                             .on('drag', (event, data) => {
                                 console.log("dragging bot")
+                                console.log(event.y)
                                 let old_y = parseInt(brush_field_group.attr("data-y"))
                                 let bottom_y = par_coords.brushes[dimension][i][new_index][1]
                                 let old_height = parseInt(brush_field.attr("height"))
@@ -207,8 +209,8 @@ export default class SPC {
                                 if (new_height <= 16) {
                                     new_height = 16
                                     new_bottom_y = old_y + new_height
-                                } else if (new_bottom_y >= brush_range[0]) {
-                                    new_bottom_y = brush_range[0]
+                                } else if (new_bottom_y >= brush_range[1]) {
+                                    new_bottom_y = brush_range[1]
                                     new_height = new_bottom_y - old_y
                                 }
 
@@ -233,14 +235,15 @@ export default class SPC {
                             .container(brush_field_group)
                             .on('drag', (event, data) => {
                                 console.log("dragging top")
+                                console.log(event.y)
                                 let old_y = parseInt(brush_field_group.attr("data-y"))
                                 let new_y = old_y + event.dy
                                 let height = parseInt(brush_field.attr("height"))
                                 let bottom_y = par_coords.brushes[dimension][i][new_index][1]
                                 let new_height = bottom_y - new_y
 
-                                if (new_y < brush_range[1]) {
-                                    new_y = brush_range[1]
+                                if (new_y < brush_range[0]) {
+                                    new_y = brush_range[0]
                                     new_height = bottom_y - new_y
                                 } else if (new_height <= 16) {
                                     new_height = 16
@@ -262,16 +265,17 @@ export default class SPC {
                     brush_field_group.call(d3.drag()
                         .on('drag', (event, data) => {
                             console.log("dragging whole")
+                            console.log(event.y)
                             let old_y = parseInt(brush_field_group.attr("data-y"))
                             let new_y = old_y + event.dy
                             let height = parseInt(brush_field.attr("height"))
                             let bottom_y = new_y + height
 
-                            if (new_y < brush_range[1]) {
-                                new_y = brush_range[1]
+                            if (new_y < brush_range[0]) {
+                                new_y = brush_range[0]
                                 bottom_y = new_y + height
-                            } else if (bottom_y > brush_range[0]) {
-                                new_y = brush_range[0] - height
+                            } else if (bottom_y > brush_range[1]) {
+                                new_y = brush_range[1] - height
                             }
 
 
@@ -307,13 +311,15 @@ export default class SPC {
 
                     par_coords.brushes[dimension][i].push([event.y, event.y])
                     console.log(par_coords.brushes[dimension][i])
-                    console.log(event.y)
+
                 })
                 .on('drag', (event, data) => {
+                    console.log("continuing drag", event.y)
                     let height = event.y - brush_overlay.startY
-                    let event_y = Math.max(event.y, brush_range[1])
-                    if (height + brush_overlay.startY > brush_range[0]) {
-                        height = brush_range[0] - brush_overlay.startY
+                    let event_y = Math.max(event.y, brush_range[0])
+                    console.log(event_y)
+                    if (height + brush_overlay.startY > brush_range[1]) {
+                        height = brush_range[1] - brush_overlay.startY
                     }
                     let field = _this.brush_field_being_built.select("rect")
                     if (height > 0) {
@@ -447,7 +453,9 @@ export default class SPC {
             let dimension_selections = _this.brushes[dimension].map((axis_selections, index) => {
                 let axis_mapper = _this.mappers[dimension]
                 let dataspace_selections = axis_selections.filter((selection) => selection !== null).map(function (screenspace_selection) {
-                    return [axis_mapper.map_inverse(screenspace_selection[0]), axis_mapper.map_inverse(screenspace_selection[1])]
+                    let low = axis_mapper.map_inverse(screenspace_selection[0])
+                    let high = axis_mapper.map_inverse(screenspace_selection[1])
+                    return [low, high]
                 })
                 return dataspace_selections;
             })

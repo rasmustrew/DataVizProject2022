@@ -18,7 +18,7 @@ export default class LinearMapper {
     }
 
     map_inverse(output) {
-        this.d3_scale.invert(output)
+        return this.d3_scale.invert(output)
     }
 
     get_input_space_ranges() {

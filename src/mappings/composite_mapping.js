@@ -15,7 +15,7 @@ export default class CompositeMapper {
 
     map_inverse(output) {
         let input = output;
-        for (let mapper of this.mappers.reverse()) {
+        for (let mapper of [...this.mappers].reverse()) {
             input = mapper.map_inverse(input)
         }
         return input
