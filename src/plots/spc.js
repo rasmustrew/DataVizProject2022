@@ -40,7 +40,7 @@ export default class SPC {
         Object.entries(raw_mappers).forEach((entry) => {
             let dim = entry[0]
             let mapper = entry[1]
-            let screen_mapper = new ScreenMapper(mapper.get_output_space_ranges(), [0, height], buffer_size)
+            let screen_mapper = new ScreenMapper(mapper.get_output_space_ranges(), [height, 0], buffer_size)
             this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
         })
 
@@ -126,7 +126,7 @@ export default class SPC {
             })
             .enter().append("g")
             .attr("class", "axis")
-            .each(function (range, index) {
+            .each(function (_, index) {
                 let dim = this.parentNode.__data__
                 let screen_range = _this.mappers[dim].get_output_space_ranges()[index]
                 // let screen_span = screen_range[0] - screen_range[1]
@@ -165,15 +165,13 @@ export default class SPC {
             // let brush_field = _this.selectChild(".brush_field");
             // let brush_range = par_coords.y[dimension][i].range()
             let brush_range = par_coords.mappers[dimension].get_output_space_ranges()[i]
-            console.log(dimension, i, brush_range[1])
+            let brush_start = Math.min(brush_range[0], brush_range[1])
+            let brush_end = Math.max(brush_range[0], brush_range[1])
+            console.log(dimension, i, brush_start)
             let brush_overlay = _this.selectChild(".brush_overlay")
                 .attr("height", Math.floor(Math.abs(brush_range[0] - brush_range[1])))
-                .attr("y", brush_range[0])
+                .attr("y", brush_start)
             brush_overlay.call(d3.drag()
-                // .container(function container() {
-                //     console.log(this)
-                //     return this
-                // })
                 .on('start', (event, data) => {
                     console.log("drag start: ", event.y)
                     let new_index =  par_coords.brushes[dimension][i].length
@@ -196,32 +194,29 @@ export default class SPC {
                         .attr('fill', "rgba(255, 130, 180, 0.5)")
                         .attr('cursor', 'row-resize')
                         .call(d3.drag()
-                            .container(brush_field_group)
+                            // .container(_this)
                             .on('drag', (event, data) => {
                                 console.log("dragging bot")
                                 console.log(event.y)
-                                let old_y = parseInt(brush_field_group.attr("data-y"))
-                                let bottom_y = par_coords.brushes[dimension][i][new_index][1]
+                                let old_y = parseInt(brush_field_bottom.attr("y"))
                                 let old_height = parseInt(brush_field.attr("height"))
                                 let new_height = old_height + event.dy
-                                let new_bottom_y = old_y + new_height
+                                let new_bottom_y = old_y + event.dy
 
-                                if (new_height <= 16) {
+                                if (new_height < 16) {
+                                    let diff = 16 - new_height
                                     new_height = 16
-                                    new_bottom_y = old_y + new_height
-                                } else if (new_bottom_y >= brush_range[1]) {
-                                    new_bottom_y = brush_range[1]
-                                    new_height = new_bottom_y - old_y
+                                    new_bottom_y += diff
+                                } else if (new_bottom_y > brush_end) {
+                                    let diff = new_bottom_y - brush_end
+                                    new_bottom_y = brush_end
+                                    new_height -= diff
                                 }
-
-                                // console.log(event.dy, new_height)
-
-
-
                                 brush_field_bottom.attr("y", new_height - 8)
                                 brush_field.attr("height", new_height)
 
-                                par_coords.brushes[dimension][i][new_index] = [old_y, new_bottom_y]
+                                let old_brush_selection = par_coords.brushes[dimension][i][new_index]
+                                par_coords.brushes[dimension][i][new_index] = [old_brush_selection[0], new_bottom_y]
                                 par_coords.brushed()
                             }))
 
@@ -238,16 +233,17 @@ export default class SPC {
                                 console.log(event.y)
                                 let old_y = parseInt(brush_field_group.attr("data-y"))
                                 let new_y = old_y + event.dy
-                                let height = parseInt(brush_field.attr("height"))
-                                let bottom_y = par_coords.brushes[dimension][i][new_index][1]
-                                let new_height = bottom_y - new_y
+                                let old_height = parseInt(brush_field.attr("height"))
+                                let new_height = old_height - event.dy
 
-                                if (new_y < brush_range[0]) {
-                                    new_y = brush_range[0]
-                                    new_height = bottom_y - new_y
-                                } else if (new_height <= 16) {
+                                if (new_y < brush_start) {
+                                    let diff = brush_start - new_y
+                                    new_y = brush_start
+                                    new_height -= diff
+                                } else if (new_height < 16) {
+                                    let diff = 16 - new_height
                                     new_height = 16
-                                    new_y = bottom_y - new_height
+                                    new_y -= diff
                                 }
 
                                 brush_field_group.attr("transform", `translate(0, ${new_y})`)
@@ -256,7 +252,7 @@ export default class SPC {
 
                                 brush_field.attr("height", new_height)
 
-                                par_coords.brushes[dimension][i][new_index] = [new_y, bottom_y]
+                                par_coords.brushes[dimension][i][new_index] = [new_y, new_y + new_height]
                                 par_coords.brushed()
                             }))
 
@@ -271,13 +267,12 @@ export default class SPC {
                             let height = parseInt(brush_field.attr("height"))
                             let bottom_y = new_y + height
 
-                            if (new_y < brush_range[0]) {
-                                new_y = brush_range[0]
+                            if (new_y < brush_start) {
+                                new_y = brush_start
                                 bottom_y = new_y + height
-                            } else if (bottom_y > brush_range[1]) {
-                                new_y = brush_range[1] - height
+                            } else if (bottom_y > brush_end) {
+                                new_y = brush_end - height
                             }
-
 
                             brush_field_group.attr("transform", `translate(0, ${new_y})`)
                                 .attr("data-y", new_y)
@@ -305,7 +300,6 @@ export default class SPC {
                         cancel_icon.attr('visibility', 'hidden')
                     })
 
-                    brush_overlay.startY = event.y
                     _this.brush_field_being_built = brush_field_group
                     _this.brush_field_being_built_bottom = brush_field_bottom
 
@@ -315,11 +309,14 @@ export default class SPC {
                 })
                 .on('drag', (event, data) => {
                     console.log("continuing drag", event.y)
-                    let height = event.y - brush_overlay.startY
-                    let event_y = Math.max(event.y, brush_range[0])
+                    let brush_min = Math.min(brush_range[0], brush_range[1])
+                    let brush_max = Math.max(brush_range[0], brush_range[1])
+                    let top_y = parseInt(_this.brush_field_being_built.attr("data-y"))
+                    let height = event.y - top_y
+                    let event_y = Math.max(event.y, brush_min)
                     console.log(event_y)
-                    if (height + brush_overlay.startY > brush_range[1]) {
-                        height = brush_range[1] - brush_overlay.startY
+                    if (height + top_y > brush_max) {
+                        height = brush_max - top_y
                     }
                     let field = _this.brush_field_being_built.select("rect")
                     if (height > 0) {

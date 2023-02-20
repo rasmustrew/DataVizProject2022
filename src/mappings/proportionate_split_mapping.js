@@ -54,7 +54,7 @@ export default class ProportionateSplitMapper {
             let range = this.output_ranges[i]
             if (is_value_in_range(output, range, output_min, output_max)) {
                 let range_mapper = this.piecewise_linear_maps[i]
-                let input = range_mapper.inverse_map(output)
+                let input = range_mapper.map_inverse(output)
                 return input
             }
         }

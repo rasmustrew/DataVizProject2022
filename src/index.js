@@ -94,11 +94,11 @@ load_periodic_table_data().then( async (data_inc) => {
     for (let dimension of data.dimensions) {
         let data_values = data.data.map(value => value[dimension])
         data_values.sort(function (a, b) {
-            return b - a;
+            return a - b;
         });
         sorted_data[dimension] = data_values
-        // let mapper = greedy_guided_split(data_values, weights, data_values)
-        let mapper = new LinearMapper([[data_values[0], data_values[data_values.length - 1]]], [0, 1])
+        let mapper = greedy_guided_split(data_values, weights, data_values)
+        // let mapper = new LinearMapper([[data_values[0], data_values[data_values.length - 1]]], [0, 1])
         mappers[dimension] = mapper
     }
     let spc = new SPC(data.data, data.dimensions, mappers)
