@@ -41,14 +41,11 @@ export function greedy_guided_split(sorted_data, weights, suggested_split_points
 }
 
 function insert_split(splits, new_split) {
-    splits = [...splits]
-    let insert_index = splits.length - 1
-    for (let i = 0; i < splits.length; i++) {
-        if (new_split < splits[i]) {
-            insert_index = i
-        }
-    }
-    splits.splice(insert_index, 0, new_split)
+    splits = [...splits, new_split]
+    splits.sort(function (a, b) {
+        return a - b;
+    });
+
     return splits
 }
 
