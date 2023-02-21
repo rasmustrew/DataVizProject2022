@@ -1,3 +1,4 @@
+import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
 
 export const hardcoded_numbeo_range = {
     'crime_index': [[0, 100]],
@@ -34,16 +35,18 @@ export const hardcoded_animals_range = {
     'Male CI - upper': [[2.5, 25], [25, 55]]
 }
 
-export const hardcoded_periodic_table_range = {
-    'boiling_point': [[4.222, 400], [400, 6203]],
-    'abundance/universe': [[8e-9, 8e-7], [8e-7, 8e-5], [8e-5, 8e-3], [8e-3, 8e-1], [8e-1, 75]],
-    // 'abundance/universe': [[8e-9, 0.1], [0.1, 75]],
-    'conductivity/thermal': [[0.00565, 1], [1, 250], [250, 430]],
-    // 'density/stp': [[0.0899, 5], [5, 22590]],
-    // 'density/stp': [[0.0899, 225], [225, 22590]],
-    'density/stp': [[0.0899, 2.25], [2.25, 22590]],
-    'ionization_energies/0': [[357.7, 2372.3]],
-    'melting_point': [[0.95, 100], [100, 3823]],
-    'electron_affinity': [[-116, 348.575]],
-    'discovered/year': [[-8000, 1650], [1650, 1925]]
+const hardcoded_periodic_table_splits = {
+    'boiling_point': [400],
+    'abundance/universe': [ 8e-7,  8e-5, 8e-3, 8e-1, ],
+    'conductivity/thermal': [1, 250],
+    'density/stp': [2.25],
+    'ionization_energies/0': [],
+    'melting_point': [100],
+    'electron_affinity': [],
+    'discovered/year': [1650]
+}
+
+export function hardcoded_periodic_table_get_mapper(data, args, dimension) {
+    let mapper = new ProportionateSplitMapper(data, hardcoded_periodic_table_splits[dimension])
+    return mapper
 }

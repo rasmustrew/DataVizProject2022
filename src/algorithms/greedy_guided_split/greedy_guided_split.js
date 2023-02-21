@@ -2,8 +2,10 @@ import LinearMapper from "../../mappings/linear_mapping";
 import UniqueIndexMapper from "../../mappings/unique_index_mapping";
 import CompositeMapper from "../../mappings/composite_mapping";
 import ProportionateSplitMapper from "../../mappings/proportionate_split_mapping";
+import * as d3 from "d3";
 
-export function greedy_guided_split(sorted_data, weights, suggested_split_points) {
+export function greedy_guided_split(sorted_data, weights) {
+    let suggested_split_points = sorted_data;
     let input_range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
     let linear_mapper = new LinearMapper([input_range], [0, 1])
     let unique_index_mapper = new UniqueIndexMapper(sorted_data)
@@ -77,4 +79,12 @@ function mapping_difference(data, mapping1, mapping2) {
         summed_diff += diff
     }
     return summed_diff / data.length
+}
+
+export function read_greedy_guided_split_args() {
+    let weights = {}
+    weights["distortion"] = parseFloat(d3.select("#distortion input").property("value"))
+    weights["fragmentation"] = parseFloat(d3.select("#fragmentation input").property("value"))
+    weights["skewness"] = parseFloat(d3.select("#skewness input").property("value"))
+    return weights
 }

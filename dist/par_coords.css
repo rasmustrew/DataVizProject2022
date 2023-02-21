@@ -1,0 +1,74 @@
+.parcoordsSvg {
+    width: 100%;
+    height: 100%;
+}
+
+
+.par_coords {
+    /*background-color: green;*/
+    display:flex;
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    height: 100%;
+}
+
+#parCoordsLegendDiv {
+    flex-grow: 1;
+    flex-shrink: 1;
+    /*width: 100%;*/
+    height: 10%;
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-bottom: 8px;
+    /*border-style: solid;*/
+    /*border-color: brown;*/
+    /*border-width: 2px;*/
+    /*border-color: brown;*/
+    /*background-color: brown;*/
+}
+
+
+.background path {
+    fill: none;
+    stroke: #ddd;
+    shape-rendering: geometricPrecision;
+}
+
+.foreground path {
+    fill: none;
+    stroke: rgba(70, 130, 180, 0.2);
+    shape-rendering: geometricPrecision;
+}
+
+.highlighted path {
+    fill: none;
+    stroke: rgba(70, 130, 180, 0.2);
+    shape-rendering: geometricPrecision;
+}
+
+.background circle {
+    fill: #ddd
+}
+
+.brush .extent {
+    fill-opacity: .3;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
+
+.axis line,
+.axis path {
+    /*fill: none;*/
+    /*stroke: #000;*/
+    stroke-width: 3;
+    shape-rendering: crispEdges;
+}
+
+.dimension text {
+    text-shadow: 1px 0 1px #fff, 0 1px 1px #fff, 0 -1px 1px #fff, -1px 0 1px #fff, 1px 1px 1px #fff, -1px -1px 1px #fff, -1px 1px 1px #fff, 1px -1px 1px #fff, 2px 0 1px #fff, 0 2px 1px #fff, 0 -2px 1px #fff, -2px 0 1px #fff, 2px 2px 1px #fff, -2px -2px 1px #fff, -2px 2px 1px #fff, 2px -2px 1px #fff;
+    cursor: move;
+    font: 16px Verdana;
+    /*font-weight: bold;*/
+    fill: black;
+}

@@ -6,199 +6,16 @@ body, html {
     width: 100%;
 }
 
-header{
-    background-color: darkgray;
-}
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-nav{
-    margin-top: 2px;
-    margin-bottom: 10px;
-}
-
-main{
-    width: 50%;
-    margin-left: 2px;
-
-}
-box1, box2{
-    border-color: black;
-    border-width: 2px;
-    border-style: solid;
-    width: 100%;
-    flex-grow: 1;
-    flex-shrink: 1;
-}
-right{
-    border-color: black;
-    border-width: 2px;
-    border-style: solid;
-    width: 50%;
-    heigth: 100%;
-    margin-right: 2px;
-    margin-left: 5px;
+#body {
     display: flex;
-    flex-shrink: 1;
-    flex-grow: 1;
     flex-direction: column;
-}
-.titlebox{
-    background-color: darkgray;
-    font-family: Verdana;
-}
-#titlebox1, #titlebox2, #titlebox3{
-    background-color: darkgray;
-    font-family: Verdana;
-
-}
-
-#first{
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-    flex-shrink: 1;
-    width: 100%;
-}
-#seconde{
-    width:100%;
-}
-
-svg {
-    /*font: 160px Verdana;*/
-    /*preserve-aspect-ratio: "none";*/
-}
-
-.parcoordsSvg {
-    width: 100%;
     height: 100%;
-}
-
-.background path {
-    fill: none;
-    stroke: #ddd;
-    shape-rendering: geometricPrecision;
-}
-
-.foreground path {
-    fill: none;
-    stroke: rgba(70, 130, 180, 0.2);
-    shape-rendering: geometricPrecision;
-}
-
-.highlighted path {
-    fill: none;
-    stroke: rgba(70, 130, 180, 0.2);
-    shape-rendering: geometricPrecision;
-}
-
-.background circle {
-    fill: #ddd
-}
-
-.brush .extent {
-    fill-opacity: .3;
-    stroke: #fff;
-    shape-rendering: crispEdges;
-}
-
-.axis line,
-.axis path {
-    /*fill: none;*/
-    /*stroke: #000;*/
-    stroke-width: 3;
-    shape-rendering: crispEdges;
-}
-
-.dimension text {
-    text-shadow: 1px 0 1px #fff, 0 1px 1px #fff, 0 -1px 1px #fff, -1px 0 1px #fff, 1px 1px 1px #fff, -1px -1px 1px #fff, -1px 1px 1px #fff, 1px -1px 1px #fff, 2px 0 1px #fff, 0 2px 1px #fff, 0 -2px 1px #fff, -2px 0 1px #fff, 2px 2px 1px #fff, -2px -2px 1px #fff, -2px 2px 1px #fff, 2px -2px 1px #fff;
-    cursor: move;
-    font: 16px Verdana;
-    /*font-weight: bold;*/
-    fill: black;
-}
-
-#chartsDiv {
-    display: flex;
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-direction: column;
-    /*background-color: red;*/
-    width: 100%;
-    height: 100%;
-}
-
-#leftDiv {
-    flex-grow: 1;
-    flex-shrink: 1;
-    display: flex;
-    flex-direction: column;
-    margin-right: 5px;
-    height: 100%;
-
-}
-#map{
-    border-color: black;
-    border-width: 2px;
-    border-style: solid;
-    width: 100%;
-}
-#mapDiv {
-    background-color: blue;
-    width: 100%;
-    flex-grow: 1;
-    flex-shrink: 1;
-
-}
-#linechart{
-    margin-top: 5px;
-    border-color: black;
-    border-width: 2px;
-    border-style: solid;
-    width: 100%;
-}
-#lineDiv {
-    background-color: blue;
     width: 100%;
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-#singleCountryDiv {
-    text-align: center;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-    margin-left: 2px;
-    border-color: black;
-    border-width: 2px;
-    border-style: solid;
-
-}
-
-#countryHeader {
-    background-color: darkgray;
-    font-family: Verdana;
-
-}
-
-#radarDiv {
-    width: 100%;
-    flex-grow: 1;
-}
-
-#rightDiv {
-    display: flex;
-    flex-grow: 1;
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-}
-
-#headerDiv {
+#header_div {
     display: flex;
     flex-direction: row;
     flex-grow: 1;
@@ -209,17 +26,15 @@ svg {
     align-content: space-between;
 }
 
-#titleDiv {
-    margin-left: 10px;
-    font-size: 1.5em;
-    align-self: center;
-}
-
-#metricDiv {
+#arguments_div {
     align-self: flex-end;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    background-color: blue;
+    width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 
 #plot_container_id {
@@ -230,33 +45,14 @@ svg {
     height: 100%;
 }
 
-.par_coords {
-    /*background-color: green;*/
-    flex-grow: 1;
-    flex-shrink: 1;
-    width: 100%;
-    height: 100%;
+#title_div {
+    margin-left: 10px;
+    font-size: 1.5em;
+    align-self: center;
 }
 
-#parCoordsLegendDiv {
-    flex-grow: 1;
-    flex-shrink: 1;
-    /*width: 100%;*/
-    height: 10%;
-    margin-left: 40px;
-    margin-right: 40px;
-    margin-bottom: 8px;
-    /*border-style: solid;*/
-    /*border-color: brown;*/
-    /*border-width: 2px;*/
-    /*border-color: brown;*/
-    /*background-color: brown;*/
-}
 
-#parCoordsLegendSvg {
-    width: 100%;
-    height: 100%;
-}
+
 
 #hoverBox {
     display: inline;

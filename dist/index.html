@@ -6,17 +6,32 @@
 
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="par_coords.css">
+    <link rel="stylesheet" href="arguments.css">
 </head>
 
 <body>
 
+    <div id="body">
+        <div id='header_div'>
+            <div id='title_div'>Axis Splits</div>
+            <select name="data" id="data-select" onChange="console.log(this.value);">
+                <option value="periodic_table" selected>Periodic Table</option>
+                <option value="un_country_data">UN Country Data</option>
+            </select>
 
+            <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm(this.value)">
+                <option value="greedy_guided_split" selected>Greedy Guided Split</option>
+                <option value="hardcoded_periodic_table">Hardcoded Periodic Table</option>
+            </select>
 
-    <div id='rightDiv'>
+            <button id="submitDiv" onclick="window.rebuild_plot();">
+                Recompute
+            </button>
+        </div>
 
-        <div id='headerDiv'>
-            <div id='titleDiv'>Split Parallel Coordinates</div>
-            <div id='metricDiv'>
+        <div id="arguments_div">
+            <div id='greedy_guided_split_arguments' >
                 <div id="distortion">
                     Distortion:
                     <input type="number" value="1"/>
@@ -29,23 +44,14 @@
                     Skewness:
                     <input type="number" value="1.5" />
                 </div>
-                <button id="submitDiv" onclick="console.log('blah');window.recompute();">
-                    Recompute
-                </button>
             </div>
-
         </div>
         <div id='plot_container_id'></div>
-<!--        <div id='parCoordsDiv4' class='par_coords'></div>-->
-<!--        <div id='parCoordsDiv5' class='par_coords'></div>-->
-<!--        <div id='parCoordsDiv6' class='par_coords'></div>-->
 
     </div>
+<!--    <div id="hoverBox" />-->
 
-    <div id="hoverBox">
-
-    </div>
-    <button id="saveLogData">SAVE LOG DATA</button>
+<!--    <button id="saveLogData">SAVE LOG DATA</button>-->
 </body>
 <script src="main.js"></script>
 

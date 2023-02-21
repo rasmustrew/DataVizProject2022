@@ -34,7 +34,6 @@ export async function load_periodic_table_data() {
     // let row_filtered_data = data.filter(row => row["GDP: Gross domestic product (million current US$)"] !== "-99")
     // row_filtered_data = row_filtered_data.filter(row => row["Surface area (km2)"] !== "-99");
 
-    console.log(data)
     let column_filtered_data = row_filtered_data.map(row => {
         let filtered_row = {}
         float_dimensions.forEach(dimension => {
