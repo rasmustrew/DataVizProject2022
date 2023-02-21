@@ -4,6 +4,7 @@ import {greedy_guided_split, read_greedy_guided_split_args} from "./algorithms/g
 import { load_periodic_table_data } from "./data/load_periodic_table_data";
 import {load_un_data} from "./data/load_un_data";
 import {hardcoded_periodic_table_get_mapper} from "./algorithms/hardcoded_splits";
+import HeatMap from "./plots/heatmap";
 
 console.log("starting")
 
@@ -68,6 +69,7 @@ async function create_plot() {
 
     let spc = new SPC(data, dimensions, mappers)
     spc.draw()
+    //new HeatMap(data, dimensions, mappers)
 }
 
 function init() {
