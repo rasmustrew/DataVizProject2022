@@ -21,9 +21,10 @@ body, html {
     flex-grow: 1;
     flex-shrink: 1;
     width: 100%;
-    background-color: brown;
+    background-color: darkgrey;
     justify-content: space-between;
     align-content: space-between;
+    padding: 5px;
 }
 
 #arguments_div {
@@ -31,10 +32,11 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    background-color: blue;
+    background-color: lightgray;
     width: 100%;
     flex-grow: 1;
     flex-shrink: 1;
+    padding: 5px;
 }
 
 #plot_container_id {
@@ -51,6 +53,26 @@ body, html {
     align-self: center;
 }
 
+.button {
+    border: 2px solid #4CAF50;
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+#submitDiv:hover {
+    background-color: #4CAF50;
+    border: 2px solid #4CAF50;
+    color: white;
+}
 
 
 
