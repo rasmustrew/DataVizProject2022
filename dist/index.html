@@ -23,6 +23,7 @@
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm(this.value)">
                 <option value="greedy_guided_split" selected>Greedy Guided Split</option>
                 <option value="hardcoded_periodic_table">Hardcoded Periodic Table</option>
+                <option value="quantile">Quantile</option>
             </select>
 
             <button class="button" id="submitDiv" onclick="window.rebuild_plot();">
@@ -43,6 +44,10 @@
                 <div id="skewness">
                     Skewness:
                     <input type="number" value="1.5" />
+                </div>
+                <div id="clusters">
+                    Clusters:
+                    <input type="number" min="1" step="1" value="3" />
                 </div>
                 <div class="slidecontainer" id="slider">
                     <input type="range" min="1" max="100" value="50" class="slider" id="myRange">

@@ -5,12 +5,20 @@ import { load_periodic_table_data } from "./data/load_periodic_table_data";
 import {load_un_data} from "./data/load_un_data";
 import {hardcoded_periodic_table_get_mapper} from "./algorithms/hardcoded_splits";
 import HeatMap from "./plots/heatmap";
+import Choropleth from "./plots/choropleth";
+import {quantile_split} from "./algorithms/quantile_split";
 
 console.log("starting")
 
 let data_selection_map = {
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
+}
+
+let read_number_of_clusters = () => {
+    let args = {}
+    args["clusters"] = parseInt(d3.select("#clusters input").property("value"))
+    return args
 }
 
 let algorithm_selection_map = {
@@ -22,6 +30,11 @@ let algorithm_selection_map = {
         algo: hardcoded_periodic_table_get_mapper,
         arguments_id: null,
         read_args: () => {},
+    },
+    quantile: {
+        algo: quantile_split,
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
     }
 }
 
@@ -67,9 +80,9 @@ async function create_plot() {
         mappers[dimension] = mapper
     }
 
-    //let spc = new SPC(data, dimensions, mappers)
-    //spc.draw()
-    new HeatMap(data, dimensions, mappers)
+    let spc = new SPC(data, dimensions, mappers)
+    spc.draw()
+    //new HeatMap(data, dimensions, mappers)
 }
 
 function init() {
