@@ -49,7 +49,7 @@ export default class HeatMap {
 
         //Read the data
         d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv", line => {
-            console.log(line)
+            //console.log(line)
             svg.selectAll()
                 .data(line, d => d.group + ':' + d.variable)
                 .enter()
@@ -60,6 +60,13 @@ export default class HeatMap {
                 .attr("height", y.bandwidth() )
                 .style("fill", function(d) { return myColor(d.value)} )
         })
+
+        //Title
+        svg.append("text")
+            .attr("x", 0)
+            .attr("y", -50)
+            .style("font-size", "22px")
+            .text("Why does the title not appear?");
     }
 
 }
