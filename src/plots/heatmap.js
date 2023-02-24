@@ -6,7 +6,7 @@ export default class HeatMap {
         this.init()
     }
 
-    init() {
+    async init() {
         // set the dimensions and margins of the graph
         let margin = {top: 30, right: 30, bottom: 30, left: 30},
             width = 450 - margin.left - margin.right,
@@ -48,18 +48,18 @@ export default class HeatMap {
             .domain([1,100])
 
         //Read the data
-        d3.csv("../data/heatmap_data.csv", line => {
-            //console.log(line)
-            svg.selectAll()
-                .data(line, d => d.group + ':' + d.variable)
-                .enter()
-                .append("rect")
-                .attr("x", d => x(d.group))
-                .attr("y", d => y(d.variable))
-                .attr("width", x.bandwidth() )
-                .attr("height", y.bandwidth() )
-                .style("fill", function(d) { return myColor(d.value)} )
-        })
+        let data = await d3.csv("../data/heatmap_data.csv")
+        svg
+            .selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", d => x(d.group))
+            .attr("y", d => y(d.variable))
+            .attr("width", x.bandwidth() )
+            .attr("height", y.bandwidth() )
+            .style("fill", function(d) { console.log("test"); return myColor(d.value)} )
+
 
         //Title
         svg.append("text")
