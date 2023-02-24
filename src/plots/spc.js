@@ -9,7 +9,8 @@ let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class SPC {
-    constructor(data, dimensions, raw_mappers) {
+    constructor(container_ref, data, dimensions, raw_mappers) {
+        this.container_ref
         this.data = data
         this.dimensions = dimensions
         this.brushes = {}
@@ -21,7 +22,7 @@ export default class SPC {
         }
 
 
-        let container = document.querySelector("#plot_container_id")
+        let container = document.querySelector(container_ref)
         let plot = document.createElement("div")
         plot.classList.add("par_coords")
         plot.id = "plot_id_" + uuidv4()

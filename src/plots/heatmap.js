@@ -50,8 +50,7 @@ export default class HeatMap {
 
         //Read the data
         let data = await d3.csv("../data/heatmap_data.csv")
-        svg
-            .selectAll("rect")
+        svg.selectAll("rect")
             .data(data)
             .enter()
             .append("rect")

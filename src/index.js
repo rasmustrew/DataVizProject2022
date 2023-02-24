@@ -11,6 +11,8 @@ import {kmeans_splits} from "./algorithms/kmeans_split";
 
 console.log("starting")
 
+const chart_container_ref = "#plot_container_id"
+
 let data_selection_map = {
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
@@ -56,18 +58,21 @@ window.select_algorithm = (selection) => {
     window.rebuild_plot()
 }
 
+
 let chart_selection_map = {
-    spc: () => {
-        let spc = new SPC(data, dimensions, mappers)
+    spc: (data, dimensions, mappers) => {
+        let spc = new SPC(chart_container_ref, data, dimensions, mappers)
         spc.draw()
     },
-    heatmap: () => new HeatMap("#plot_contained_id", data, dimensions, mappers)
+    heatmap: (data, dimensions, mappers) => new HeatMap(chart_container_ref, data, dimensions, mappers)
 }
+
+let chart_generator = chart_selection_map["spc"];
 
 window.select_chart = (selection) => {
     console.log("selected chart: ", selection)
-    let chart_generator = chart_selection_map[selection]
-    chart_generator()
+    chart_generator = chart_selection_map[selection]
+    create_plot()
 }
 
 
@@ -75,8 +80,10 @@ window.rebuild_plot = () => {
     clean_plot();
     create_plot();
 }
+
+
 function clean_plot() {
-    d3.select("#plot_container_id").html("")
+    d3.select(chart_container_ref).html("")
 }
 
 async function create_plot() {
@@ -100,7 +107,7 @@ async function create_plot() {
         mappers[dimension] = mapper
     }
 
-    select_chart("spc")
+    chart_generator(data, dimensions, mappers)
 }
 
 function init() {
