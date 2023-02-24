@@ -86,9 +86,9 @@ async function create_plot() {
         mappers[dimension] = mapper
     }
 
-    let spc = new SPC(data, dimensions, mappers)
-    spc.draw()
-    //new HeatMap(data, dimensions, mappers)
+    // let spc = new SPC(data, dimensions, mappers)
+    // spc.draw()
+    new HeatMap(data, dimensions, mappers)
 }
 
 function init() {

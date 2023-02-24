@@ -48,7 +48,7 @@ export default class HeatMap {
             .domain([1,100])
 
         //Read the data
-        d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv", line => {
+        d3.csv("../data/heatmap_data.csv", line => {
             //console.log(line)
             svg.selectAll()
                 .data(line, d => d.group + ':' + d.variable)
