@@ -6,7 +6,8 @@ import {load_un_data} from "./data/load_un_data";
 import {hardcoded_periodic_table_get_mapper} from "./algorithms/hardcoded_splits";
 import HeatMap from "./plots/heatmap";
 import Choropleth from "./plots/choropleth";
-import {quantile_split} from "./algorithms/quantile_split";
+import {quantile_splits} from "./algorithms/quantile_splits";
+import {kmeans_splits} from "./algorithms/kmeans_split";
 
 console.log("starting")
 
@@ -32,7 +33,12 @@ let algorithm_selection_map = {
         read_args: () => {},
     },
     quantile: {
-        algo: quantile_split,
+        algo: quantile_splits,
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
+    },
+    kmeans: {
+        algo: kmeans_splits,
         arguments_id: "#greedy_guided_split_arguments",
         read_args: read_number_of_clusters
     }

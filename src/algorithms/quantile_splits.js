@@ -1,6 +1,6 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
 
-export function quantile_split(sorted_data, args, dimension) {
+export function quantile_splits(sorted_data, args) {
     let number_of_splits = args["clusters"]
     let n_elements = Math.floor(sorted_data.length / number_of_splits)
     let split_points = []
