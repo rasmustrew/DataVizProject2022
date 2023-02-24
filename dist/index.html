@@ -20,6 +20,11 @@
                 <option value="un_country_data">UN Country Data</option>
             </select>
 
+            <select name="chart" id="add-chart-select" onChange="window.select_chart(this.value);">
+                <option value="spc" selected>Split Parallel Coordinates</option>
+                <option value="heatmap">Heatmap</option>
+            </select>
+
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm(this.value)">
                 <option value="greedy_guided_split" selected>Greedy Guided Split</option>
                 <option value="hardcoded_periodic_table">Hardcoded Periodic Table</option>

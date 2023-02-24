@@ -2,7 +2,8 @@ import * as d3 from "d3";
 
 export default class HeatMap {
 
-    constructor(data, dimensions, raw_mappers) {
+    constructor(container_ref, data, dimensions, raw_mappers) {
+        this.container_ref = container_ref
         this.init()
     }
 
@@ -13,7 +14,7 @@ export default class HeatMap {
             height = 450 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
-        let svg = d3.select("#plot_container_id")
+        let svg = d3.select(this.container_ref)
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)

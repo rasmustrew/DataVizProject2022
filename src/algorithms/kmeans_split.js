@@ -43,7 +43,7 @@ function cluster_assigment(data, centers) {
     return clustering
 }
 
-function kmeans1d(data, n_clusters, init_function=rand_init, max_iter=10) {
+function kmeans1d(data, n_clusters, init_function=kMeansPlusPlus1D, max_iter=10) {
     var centers = init_function(data, n_clusters)
     var change_in_centers = true
     var iters = 0
@@ -70,13 +70,52 @@ function kmeans1d(data, n_clusters, init_function=rand_init, max_iter=10) {
     return centers
 }
 
-function rand_init(sorted_data, clusters) {
+function rand_init(sorted_data, n_clusters) {
     let min_val = sorted_data[0]
     let max_val = sorted_data[sorted_data.length - 1]
     let interval_size = max_val - min_val
     let centers = []
-    for (let i = 0; i < clusters; i++) {
+    for (let i = 0; i < n_clusters; i++) {
         centers.push(Math.random() * interval_size + min_val)
     }
     return centers
 }
+
+//From ChatGPT
+function kMeansPlusPlus1D(sorted_data, n_clusters) {
+    // Initialize centroids with k-means++ method
+    let centroids = [sorted_data[Math.floor(Math.random() * sorted_data.length)]];
+    for (let i = 1; i < n_clusters; i++) {
+        let distances = [];
+        let totalDistance = 0;
+
+        // Calculate distances from each point to the closest centroid
+        for (let j = 0; j < sorted_data.length; j++) {
+            let minDistance = Infinity;
+            for (let l = 0; l < centroids.length; l++) {
+                let distance = Math.abs(sorted_data[j] - centroids[l]);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            }
+            distances[j] = minDistance;
+            totalDistance += minDistance;
+        }
+
+        // Choose new centroid based on probability proportional to distance squared
+        let cumulativeProbability = 0;
+        let chosenIndex = -1;
+        let randomValue = Math.random() * totalDistance;
+        for (let j = 0; j < distances.length; j++) {
+            cumulativeProbability += distances[j] / totalDistance;
+            if (randomValue <= cumulativeProbability) {
+                chosenIndex = j;
+                break;
+            }
+        }
+        centroids.push(sorted_data[chosenIndex]);
+    }
+
+    return centroids;
+}
+

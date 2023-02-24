@@ -56,6 +56,20 @@ window.select_algorithm = (selection) => {
     window.rebuild_plot()
 }
 
+let chart_selection_map = {
+    spc: () => {
+        let spc = new SPC(data, dimensions, mappers)
+        spc.draw()
+    },
+    heatmap: () => new HeatMap("#plot_contained_id", data, dimensions, mappers)
+}
+
+window.select_chart = (selection) => {
+    console.log("selected chart: ", selection)
+    let chart_generator = chart_selection_map[selection]
+    chart_generator()
+}
+
 
 window.rebuild_plot = () => {
     clean_plot();
@@ -86,9 +100,7 @@ async function create_plot() {
         mappers[dimension] = mapper
     }
 
-    let spc = new SPC(data, dimensions, mappers)
-    spc.draw()
-    //new HeatMap(data, dimensions, mappers)
+    select_chart("spc")
 }
 
 function init() {
