@@ -11,7 +11,7 @@ export default class HeatMap {
     async init() {
         // set the dimensions and margins of the graph
         let margin = {top: 30, right: 30, bottom: 30, left: 30},
-            width = 600 - margin.left - margin.right,
+            width = 450 - margin.left - margin.right,
             height = 450 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
@@ -27,12 +27,14 @@ export default class HeatMap {
         let data = await load_heatmap_data("tourism_museum")
 
         // Labels of row and columns
-        let xKeys = [], yKeys = []
+        let xKeys = [], yKeys = [], max_value = 0
         for (const row of data) {
             let xKey = row["group"]
             let yKey = row["variable"]
+            let value = parseInt(row["value"])
             if (!xKeys.includes(xKey)) xKeys.push(xKey)
             if (!yKeys.includes(yKey)) yKeys.push(yKey)
+            if (value > max_value) max_value = value
         }
 
         // Build X scales and axis:
@@ -55,7 +57,7 @@ export default class HeatMap {
         // Build color scale
         let myColor = d3.scaleLinear()
             .range(["white", "#69b3a2"])
-            .domain([1,10])
+            .domain([1, max_value])
 
         // create a tooltip
         const tooltip = d3.select(this.container_ref)
