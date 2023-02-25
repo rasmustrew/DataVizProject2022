@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {load_heatmap_data} from "../data/load_heatmap_csv";
 
 export default class HeatMap {
 
@@ -10,7 +11,7 @@ export default class HeatMap {
     async init() {
         // set the dimensions and margins of the graph
         let margin = {top: 30, right: 30, bottom: 30, left: 30},
-            width = 450 - margin.left - margin.right,
+            width = 600 - margin.left - margin.right,
             height = 450 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
@@ -22,23 +23,31 @@ export default class HeatMap {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
+        //Read the data
+        let data = await load_heatmap_data("tourism_museum")
+
         // Labels of row and columns
-        let myGroups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        let myVars = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"]
+        let xKeys = [], yKeys = []
+        for (const row of data) {
+            let xKey = row["group"]
+            let yKey = row["variable"]
+            if (!xKeys.includes(xKey)) xKeys.push(xKey)
+            if (!yKeys.includes(yKey)) yKeys.push(yKey)
+        }
 
         // Build X scales and axis:
         let x = d3.scaleBand()
             .range([ 0, width ])
-            .domain(myGroups)
+            .domain(xKeys)
             .padding(0);
         svg.append("g")
             .attr("transform", "translate(0," + height + ")")
             .call(d3.axisBottom(x))
 
-        // Build X scales and axis:
+        // Build Y scales and axis:
         let y = d3.scaleBand()
             .range([ height, 0 ])
-            .domain(myVars)
+            .domain(yKeys)
             .padding(0.01);
         svg.append("g")
             .call(d3.axisLeft(y));
@@ -46,10 +55,33 @@ export default class HeatMap {
         // Build color scale
         let myColor = d3.scaleLinear()
             .range(["white", "#69b3a2"])
-            .domain([1,100])
+            .domain([1,10])
 
-        //Read the data
-        let data = await d3.csv("../data/heatmap_data.csv")
+        // create a tooltip
+        const tooltip = d3.select(this.container_ref)
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "2px")
+            .style("border-radius", "5px")
+            .style("padding", "5px")
+
+        // Three function that change the tooltip when user hover / move / leave a cell
+        const mouseover = function(event,d) {
+            tooltip.style("opacity", 1)
+        }
+        const mousemove = function(event,d) {
+            tooltip
+                .html("The exact value of<br>this cell is: " + d.value)
+                .style("left", (event.x)/2 + "px")
+                .style("top", (event.y)/2 + "px")
+        }
+        const mouseleave = function(d) {
+            tooltip.style("opacity", 0)
+        }
+
         svg.selectAll("rect")
             .data(data)
             .enter()
@@ -59,6 +91,9 @@ export default class HeatMap {
             .attr("width", x.bandwidth() )
             .attr("height", y.bandwidth() )
             .style("fill", function(d) { console.log("test"); return myColor(d.value)} )
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
 
 
         //Title
