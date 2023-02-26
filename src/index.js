@@ -8,14 +8,18 @@ import HeatMap from "./plots/heatmap";
 import Choropleth from "./plots/choropleth";
 import {quantile_splits} from "./algorithms/quantile_splits";
 import {kmeans_splits} from "./algorithms/kmeans_split";
+import {load_heatmap_data} from "./data/load_heatmap_csv";
 
 console.log("starting")
 
 const chart_container_ref = "#plot_container_id"
+const data_selector_ref = "data-select"
+const data_selector_d3ref = "#" + data_selector_ref
 
 let data_selection_map = {
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
+    heatmap_data: () => load_heatmap_data("tourism_museum")
 }
 
 let read_number_of_clusters = () => {
@@ -60,18 +64,33 @@ window.select_algorithm = (selection) => {
 
 
 let chart_selection_map = {
-    spc: (data, dimensions, mappers) => {
-        let spc = new SPC(chart_container_ref, data, dimensions, mappers)
-        spc.draw()
+    spc: {
+        chart_generator: (data, dimensions, mappers) => {
+            let spc = new SPC(chart_container_ref, data, dimensions, mappers)
+            spc.draw()
+        },
+        ui_update: () => {}
     },
-    heatmap: (data, dimensions, mappers) => new HeatMap(chart_container_ref, data, dimensions, mappers)
+    heatmap: {
+        chart_generator: (data, dimensions, mappers) => {
+            new HeatMap(chart_container_ref, data, dimensions, mappers)
+        },
+        ui_update: () => {
+            let data_selector = document.getElementById(data_selector_ref)
+            if (!data_selector.value.toString().includes("heatmap")) {
+                data_selector.selectedIndex = 2
+            }
+        }
+    }
 }
 
-let chart_generator = chart_selection_map["spc"];
+let chart_generator = chart_selection_map["spc"]["chart_generator"];
 
 window.select_chart = (selection) => {
     console.log("selected chart: ", selection)
-    chart_generator = chart_selection_map[selection]
+    let chart_select = chart_selection_map[selection]
+    chart_generator = chart_select["chart_generator"]
+    chart_select["ui_update"]()
     create_plot()
 }
 
@@ -87,7 +106,7 @@ function clean_plot() {
 }
 
 async function create_plot() {
-    let data_selection = d3.select("#data-select").property("value")
+    let data_selection = d3.select(data_selector_d3ref).property("value")
     let data_function = data_selection_map[data_selection]
     let {data, dimensions} = await data_function();
 

@@ -1,10 +1,10 @@
 import * as d3 from "d3";
-import {load_heatmap_data} from "../data/load_heatmap_csv";
 
 export default class HeatMap {
 
     constructor(container_ref, data, dimensions, raw_mappers) {
         this.container_ref = container_ref
+        this.data = data
         this.init()
     }
 
@@ -23,12 +23,9 @@ export default class HeatMap {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-        //Read the data
-        let data = await load_heatmap_data("tourism_museum")
-
         // Labels of row and columns
         let xKeys = [], yKeys = [], max_value = 0
-        for (const row of data) {
+        for (const row of this.data) {
             let xKey = row["group"]
             let yKey = row["variable"]
             let value = parseInt(row["value"])
@@ -84,7 +81,7 @@ export default class HeatMap {
         }
 
         svg.selectAll("rect")
-            .data(data)
+            .data(this.data)
             .enter()
             .append("rect")
             .attr("x", d => x(d.group))
