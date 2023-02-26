@@ -73,7 +73,7 @@ let chart_selection_map = {
     },
     heatmap: {
         chart_generator: (data, dimensions, mappers) => {
-            new HeatMap(chart_container_ref, data, dimensions, mappers)
+            new HeatMap(chart_container_ref, data, mappers)
         },
         ui_update: () => {
             let data_selector = document.getElementById(data_selector_ref)

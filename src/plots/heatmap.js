@@ -2,9 +2,10 @@ import * as d3 from "d3";
 
 export default class HeatMap {
 
-    constructor(container_ref, data, dimensions, raw_mappers) {
+    constructor(container_ref, data, raw_mappers) {
         this.container_ref = container_ref
         this.data = data
+        this.raw_mappers = raw_mappers
         this.init()
     }
 
@@ -51,10 +52,6 @@ export default class HeatMap {
         svg.append("g")
             .call(d3.axisLeft(y));
 
-        // Build color scale
-        let myColor = d3.scaleSequential(d3.interpolateViridis)
-            .domain([1, max_value])
-
         // create a tooltip
         const tooltip = d3.select(this.container_ref)
             .append("div")
@@ -80,6 +77,10 @@ export default class HeatMap {
             tooltip.style("opacity", 0)
         }
 
+        // Build color scale
+        let myColor = d3.scaleSequential(d3.interpolateViridis)
+            .domain([0, 1])
+
         svg.selectAll("rect")
             .data(this.data)
             .enter()
@@ -88,7 +89,7 @@ export default class HeatMap {
             .attr("y", d => y(d.variable))
             .attr("width", x.bandwidth() )
             .attr("height", y.bandwidth() )
-            .style("fill", function(d) { console.log("test"); return myColor(d.value)} )
+            .style("fill", d => myColor(this.raw_mappers["value"].map(d.value)))
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
