@@ -55,8 +55,7 @@ export default class HeatMap {
             .call(d3.axisLeft(y));
 
         // Build color scale
-        let myColor = d3.scaleLinear()
-            .range(["white", "#69b3a2"])
+        let myColor = d3.scaleSequential(d3.interpolateViridis)
             .domain([1, max_value])
 
         // create a tooltip
