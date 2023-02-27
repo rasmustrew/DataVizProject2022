@@ -4,7 +4,8 @@ import CompositeMapper from "../../mappings/composite_mapping";
 import ProportionateSplitMapper from "../../mappings/proportionate_split_mapping";
 import * as d3 from "d3";
 
-export function greedy_guided_split(sorted_data, weights) {
+export function greedy_guided_split(sorted_data, weights, dimension) {
+    console.log(dimension)
     let suggested_split_points = sorted_data;
     let input_range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
     let linear_mapper = new LinearMapper([input_range], [0, 1])
@@ -15,30 +16,48 @@ export function greedy_guided_split(sorted_data, weights) {
     ])
 
     let metrics_without_splits = compute_metrics(sorted_data, linear_mapper, linear_mapper, extreme_mapper)
+    let metric_without_splits = compute_total_metric(metrics_without_splits, weights)
 
-    let current_best_metric = compute_total_metric(metrics_without_splits, weights)
-    let current_best_splits = []
+    let current_best_metric = metric_without_splits
+    let confirmed_splits = []
     let current_best_mapper = linear_mapper;
+    let current_best_metrics = metrics_without_splits
     let improving = true
     while (improving) {
         improving = false;
+        let current_best_splits = confirmed_splits
         for (let split_point of suggested_split_points) {
             if (current_best_splits.includes(split_point)) {
                 continue
             }
 
-            let suggested_splits = insert_split(current_best_splits, split_point)
+
+
+            let suggested_splits = insert_split(confirmed_splits, split_point)
             let current_mapper = new ProportionateSplitMapper(sorted_data, suggested_splits)
             let metrics = compute_metrics(sorted_data, current_mapper, linear_mapper, extreme_mapper)
             let current_metric = compute_total_metric(metrics, weights)
             if (current_metric < current_best_metric) {
+                console.log("improved")
+                console.log("improvement: ", current_best_metric - current_metric)
                 improving = true
                 current_best_metric = current_metric
                 current_best_splits = suggested_splits
                 current_best_mapper = current_mapper
+                current_best_metrics = metrics
             }
         }
+        if (improving) {
+            confirmed_splits = current_best_splits
+        }
     }
+
+    console.log(weights)
+    console.log(metrics_without_splits)
+    console.log(metric_without_splits)
+    console.log(current_best_metrics)
+    console.log(current_best_metric)
+    console.log("improvement: ", metric_without_splits - current_best_metric)
     return current_best_mapper
 }
 

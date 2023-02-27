@@ -9,6 +9,8 @@ import Choropleth from "./plots/choropleth";
 import {quantile_splits} from "./algorithms/quantile_splits";
 import {kmeans_splits} from "./algorithms/kmeans_split";
 import {load_heatmap_data} from "./data/load_heatmap_csv";
+import Lollipop from "./plots/lollipop";
+import LinearMapper from "./mappings/linear_mapping";
 
 console.log("starting")
 
@@ -47,6 +49,13 @@ let algorithm_selection_map = {
         algo: kmeans_splits,
         arguments_id: "#greedy_guided_split_arguments",
         read_args: read_number_of_clusters
+    },
+    none: {
+        algo: (sorted_data, args, dimension) => {
+            return new LinearMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1])
+        },
+        arguments_id: null,
+        read_args: () => {},
     }
 }
 
@@ -81,6 +90,12 @@ let chart_selection_map = {
                 data_selector.selectedIndex = 2
             }
         }
+    },
+    lollipop: {
+        chart_generator: (data, dimensions, mappers) => {
+            new Lollipop(chart_container_ref, data, dimensions, mappers)
+        },
+        ui_update: () => {}
     }
 }
 
@@ -91,7 +106,7 @@ window.select_chart = (selection) => {
     let chart_select = chart_selection_map[selection]
     chart_generator = chart_select["chart_generator"]
     chart_select["ui_update"]()
-    create_plot()
+    rebuild_plot()
 }
 
 

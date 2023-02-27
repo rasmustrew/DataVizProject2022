@@ -34,8 +34,6 @@ export default class SPC {
         this.margin = margin
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
-        this.height = height
-        this.width = width;
 
         this.mappers = {}
         Object.entries(raw_mappers).forEach((entry) => {

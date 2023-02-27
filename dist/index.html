@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="par_coords.css">
     <link rel="stylesheet" href="arguments.css">
+    <link rel="stylesheet" href="lollipop.css">
 </head>
 
 <body>
@@ -24,10 +25,12 @@
             <select name="chart" id="add-chart-select" onChange="window.select_chart(this.value);">
                 <option value="spc" selected>Split Parallel Coordinates</option>
                 <option value="heatmap">Heatmap</option>
+                <option value="lollipop">Lollipop</option>
             </select>
 
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm(this.value)">
-                <option value="greedy_guided_split" selected>Greedy Guided Split</option>
+                <option value="none" selected>None</option>
+                <option value="greedy_guided_split">Greedy Guided Split</option>
                 <option value="hardcoded_periodic_table">Hardcoded Periodic Table</option>
                 <option value="quantile">Quantile</option>
                 <option value="kmeans">KMeans</option>
