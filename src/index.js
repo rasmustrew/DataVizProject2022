@@ -19,7 +19,7 @@ const data_selector_d3ref = "#" + data_selector_ref
 let data_selection_map = {
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
-    heatmap_data: () => load_heatmap_data("tourism_museum")
+    heatmap_data: () => load_heatmap_data("tourism_hotel")
 }
 
 let read_number_of_clusters = () => {

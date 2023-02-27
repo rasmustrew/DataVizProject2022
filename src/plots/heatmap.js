@@ -27,8 +27,8 @@ export default class HeatMap {
         // Labels of row and columns
         let xKeys = [], yKeys = [], max_value = 0
         for (const row of this.data) {
-            let xKey = row["group"]
-            let yKey = row["variable"]
+            let xKey = row["x"]
+            let yKey = row["y"]
             let value = parseInt(row["value"])
             if (!xKeys.includes(xKey)) xKeys.push(xKey)
             if (!yKeys.includes(yKey)) yKeys.push(yKey)
@@ -85,8 +85,8 @@ export default class HeatMap {
             .data(this.data)
             .enter()
             .append("rect")
-            .attr("x", d => x(d.group))
-            .attr("y", d => y(d.variable))
+            .attr("x", d => x(d.x))
+            .attr("y", d => y(d.y))
             .attr("width", x.bandwidth() )
             .attr("height", y.bandwidth() )
             .style("fill", d => myColor(this.raw_mappers["value"].map(d.value)))
@@ -98,9 +98,9 @@ export default class HeatMap {
         //Title
         svg.append("text")
             .attr("x", 0)
-            .attr("y", -50)
+            .attr("y", -12)
             .style("font-size", "22px")
-            .text("Why does the title not appear?");
+            .text("Geospatial heatmap");
     }
 
 }
