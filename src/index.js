@@ -40,6 +40,29 @@ window.update_data_dimension = (selection) => {
     window.rebuild_plot()
 }
 
+function set_up_dimensions_selector(dimensions) {
+    let dimension_selector = document.getElementById("dimension-select")
+    while (dimension_selector.firstChild) {
+        dimension_selector.removeChild(dimension_selector.firstChild)
+    }
+    for (let dimension of dimensions) {
+        const optionElement = document.createElement('option');
+        optionElement.value = dimension;
+        optionElement.text = dimension;
+        dimension_selector.appendChild(optionElement);
+    }
+    if (selected_dimension == null || !dimensions.includes(selected_dimension)) {
+        selected_dimension = dimension_selector.firstChild["value"]
+    } else {
+        for (let i = 0; i < dimension_selector.options.length; i++) {
+            if (dimension_selector.options[i].value === selected_dimension) {
+                dimension_selector.selectedIndex = i;
+                break;
+            }
+        }
+    }
+}
+
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
 
 let algorithm_selection_map = {
@@ -131,12 +154,12 @@ window.select_chart = (selection) => {
 
 
 window.rebuild_plot = () => {
-    clean_plot();
+    clear_plot();
     create_plot();
 }
 
 
-function clean_plot() {
+function clear_plot() {
     d3.select(chart_container_ref).html("")
 }
 
@@ -146,26 +169,7 @@ async function create_plot() {
     let {data, dimensions} = await data_function();
 
     // Repopulate dimensions selector
-    let dimension_selector = document.getElementById("dimension-select")
-    while(dimension_selector.firstChild) {
-        dimension_selector.removeChild(dimension_selector.firstChild)
-    }
-    for (let dimension of dimensions) {
-        const optionElement = document.createElement('option');
-        optionElement.value = dimension;
-        optionElement.text = dimension;
-        dimension_selector.appendChild(optionElement);
-    }
-    if (selected_dimension == null) {
-        selected_dimension = dimension_selector.firstChild["value"]
-    } else {
-        for (let i = 0; i < dimension_selector.options.length; i++) {
-            if (dimension_selector.options[i].value === selected_dimension) {
-                dimension_selector.selectedIndex = i;
-                break;
-            }
-        }
-    }
+    set_up_dimensions_selector(dimensions);
 
     // Apply algorithm to relevant dimensions
     let algo_selection = d3.select("#algorithm-select").property("value")
