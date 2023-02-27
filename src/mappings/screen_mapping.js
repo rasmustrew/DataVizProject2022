@@ -13,6 +13,8 @@ export default class ScreenMapper {
         let output_end = output_range[1]
         let output_size = Math.abs(output_end - output_start) - num_gaps * buffer_size;
         this.reverse = output_start > output_end
+        this.output_start = output_start;
+        this.output_end = output_end
 
         this.inner_mappers = []
         let current_output = output_start
@@ -45,19 +47,9 @@ export default class ScreenMapper {
     }
 
     map_inverse(output) {
-        let output_ranges = this.get_output_space_ranges()
-        let output_range_index = output_ranges.findIndex((range) =>
+        let output_range_index = this.get_output_space_ranges().findIndex((range) =>
             is_value_in_range(output, range, this.output_start, this.output_end))
-        if (this.reverse) {
-            let output_no_buffer = output + this.buffer_size * output_range_index
-            let output_percentage = (this.output_start - output_no_buffer) / this.output_size
-            return output_percentage * this.input_size + this.input_start
-        } else {
-            let output_no_buffer = output - this.buffer_size * output_range_index
-            let output_percentage = (output_no_buffer - this.output_start) / this.output_size
-            return output_percentage * this.input_size + this.input_start
-        }
-
+        return this.inner_mappers[output_range_index].map_inverse(output)
     }
 
     get_input_space_ranges() {
