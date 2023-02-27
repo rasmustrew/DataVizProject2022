@@ -2,10 +2,11 @@ import * as d3 from "d3";
 
 export default class HeatMap {
 
-    constructor(container_ref, data, raw_mappers) {
+    constructor(container_ref, data, raw_mappers, selected_dimension) {
         this.container_ref = container_ref
         this.data = data
         this.raw_mappers = raw_mappers
+        this.dimension = selected_dimension
         this.init()
     }
 
@@ -29,7 +30,7 @@ export default class HeatMap {
         for (const row of this.data) {
             let xKey = row["x"]
             let yKey = row["y"]
-            let value = parseInt(row["value"])
+            let value = parseInt(row[this.dimension])
             if (!xKeys.includes(xKey)) xKeys.push(xKey)
             if (!yKeys.includes(yKey)) yKeys.push(yKey)
             if (value > max_value) max_value = value
@@ -67,9 +68,10 @@ export default class HeatMap {
         const mouseover = function(event,d) {
             tooltip.style("opacity", 1)
         }
-        const mousemove = function(event,d) {
+        let value_row = this.dimension
+        const mousemove = (event, d) => {
             tooltip
-                .html("The exact value of<br>this cell is: " + d.value)
+                .html("The exact value of<br>this cell is: " + d[value_row])
                 .style("left", (event.x)/2 + "px")
                 .style("top", (event.y)/2 + "px")
         }
@@ -89,7 +91,7 @@ export default class HeatMap {
             .attr("y", d => y(d.y))
             .attr("width", x.bandwidth() )
             .attr("height", y.bandwidth() )
-            .style("fill", d => myColor(this.raw_mappers["value"].map(d.value)))
+            .style("fill", d => myColor(this.raw_mappers[value_row].map(d[value_row])))
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -98,7 +100,7 @@ export default class HeatMap {
         //Title
         svg.append("text")
             .attr("x", 0)
-            .attr("y", -12)
+            .attr("y", -10)
             .style("font-size", "22px")
             .text("Geospatial heatmap");
     }

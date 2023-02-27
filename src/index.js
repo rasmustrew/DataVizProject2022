@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import SPC from "./plots/spc";
 import {greedy_guided_split, read_greedy_guided_split_args} from "./algorithms/greedy_guided_split/greedy_guided_split"
-import { load_periodic_table_data } from "./data/load_periodic_table_data";
+import {load_periodic_table_data} from "./data/load_periodic_table_data";
 import {load_un_data} from "./data/load_un_data";
 import {hardcoded_periodic_table_get_mapper} from "./algorithms/hardcoded_splits";
 import HeatMap from "./plots/heatmap";
@@ -21,14 +21,26 @@ const data_selector_d3ref = "#" + data_selector_ref
 let data_selection_map = {
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
-    heatmap_data: () => load_heatmap_data("tourism_hotel")
+    heatmap_data: () => load_heatmap_data("data"),
+    heatmap_denmark: () => load_heatmap_data("denmark"),
+    heatmap_pubs: () => load_heatmap_data("amenity_pub")
 }
 
-let read_number_of_clusters = () => {
-    let args = {}
-    args["clusters"] = parseInt(d3.select("#clusters input").property("value"))
-    return args
+window.update_data_set = async (selection) => {
+    console.log("selected data set: ", selection)
+    selected_dimension = null
+    window.rebuild_plot()
 }
+
+let selected_dimension = null
+
+window.update_data_dimension = (selection) => {
+    console.log("selected dimension: ", selection)
+    selected_dimension = selection
+    window.rebuild_plot()
+}
+
+let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
 
 let algorithm_selection_map = {
     greedy_guided_split: {
@@ -81,8 +93,8 @@ let chart_selection_map = {
         ui_update: () => {}
     },
     heatmap: {
-        chart_generator: (data, dimensions, mappers) => {
-            new HeatMap(chart_container_ref, data, mappers)
+        chart_generator: (data, dimensions, mappers, selected_dimension) => {
+            new HeatMap(chart_container_ref, data, mappers, selected_dimension)
         },
         ui_update: () => {
             let data_selector = document.getElementById(data_selector_ref)
@@ -90,6 +102,12 @@ let chart_selection_map = {
                 data_selector.selectedIndex = 2
             }
         }
+    },
+    choropleth: {
+        chart_generator: (data, dimensions, mappers, selected_dimension) => {
+            new Choropleth(chart_container_ref, data, mappers)
+        },
+        ui_update: () => {}
     },
     lollipop: {
         chart_generator: (data, dimensions, mappers) => {
@@ -110,6 +128,8 @@ window.select_chart = (selection) => {
 }
 
 
+
+
 window.rebuild_plot = () => {
     clean_plot();
     create_plot();
@@ -125,7 +145,29 @@ async function create_plot() {
     let data_function = data_selection_map[data_selection]
     let {data, dimensions} = await data_function();
 
+    // Repopulate dimensions selector
+    let dimension_selector = document.getElementById("dimension-select")
+    while(dimension_selector.firstChild) {
+        dimension_selector.removeChild(dimension_selector.firstChild)
+    }
+    for (let dimension of dimensions) {
+        const optionElement = document.createElement('option');
+        optionElement.value = dimension;
+        optionElement.text = dimension;
+        dimension_selector.appendChild(optionElement);
+    }
+    if (selected_dimension == null) {
+        selected_dimension = dimension_selector.firstChild["value"]
+    } else {
+        for (let i = 0; i < dimension_selector.options.length; i++) {
+            if (dimension_selector.options[i].value === selected_dimension) {
+                dimension_selector.selectedIndex = i;
+                break;
+            }
+        }
+    }
 
+    // Apply algorithm to relevant dimensions
     let algo_selection = d3.select("#algorithm-select").property("value")
     let {algo, read_args} = algorithm_selection_map[algo_selection]
     let args = read_args()
@@ -141,7 +183,7 @@ async function create_plot() {
         mappers[dimension] = mapper
     }
 
-    chart_generator(data, dimensions, mappers)
+    chart_generator(data, dimensions, mappers, selected_dimension)
 }
 
 function init() {

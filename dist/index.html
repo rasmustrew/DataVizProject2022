@@ -16,22 +16,27 @@
     <div id="body">
         <div id='header_div'>
             <div id='title_div'>Axis Splits</div>
-            <select name="data" id="data-select" onChange="console.log(this.value);">
+            <select name="data" id="data-select" onChange="window.update_data_set(this.value)">
                 <option value="periodic_table" selected>periodic table</option>
                 <option value="un_country_data">UN country data</option>
-                <option value="heatmap_data">museums in denmark (heatmap)</option>
+                <option value="heatmap_denmark">tourism in denmark (heatmap)</option>
+                <option value="heatmap_pubs">pubs in europe (heatmap)</option>
+                <option value="heatmap_data">example data (heatmap)</option>
             </select>
+
+            <select name="data_dimension" id="dimension-select" onChange="window.update_data_dimension(this.value)"></select>
 
             <select name="chart" id="add-chart-select" onChange="window.select_chart(this.value);">
                 <option value="spc" selected>Split Parallel Coordinates</option>
                 <option value="heatmap">Heatmap</option>
                 <option value="lollipop">Lollipop</option>
+                <option value="choropleth">Choropleth</option>
             </select>
 
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm(this.value)">
                 <option value="none" selected>None</option>
                 <option value="greedy_guided_split">Greedy Guided Split</option>
-                <option value="hardcoded_periodic_table">Hardcoded Periodic Table</option>
+                <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
                 <option value="quantile">Quantile</option>
                 <option value="kmeans">KMeans</option>
             </select>
