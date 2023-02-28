@@ -102,15 +102,16 @@ let data_selection_map = {
 }
 
 async function update_data_set(selection) {
-    if (selection == null) {
-        selection = d3.select(data_selector_ref).property("value")
-    }
     selected_dimension = null
-    data_source = await prepare_data_set(selection)
+    await prepare_data_set(selection)
     set_up_dimensions_selector(data_source.dimensions);
 }
 
 async function prepare_data_set(data_selection) {
+    if (data_selection == null) {
+        data_selection = d3.select(data_selector_ref).property("value")
+    }
+
     let data_function = data_selection_map[data_selection]
     let {data, dimensions} = await data_function();
 
@@ -129,7 +130,7 @@ async function prepare_data_set(data_selection) {
         // let mapper = new LinearMapper([[data_values[0], data_values[data_values.length - 1]]], [0, 1])
         mappers[dimension] = mapper
     }
-    return new DataSource(data, dimensions, mappers);
+    data_source = new DataSource(data, dimensions, mappers);
 }
 
 let selected_dimension = null
@@ -197,7 +198,7 @@ window.select_data_dimension = (selection) => {
 window.select_algorithm = (selection) => {
     console.log("selected algo: ", selection)
     update_selected_algorithm(selection);
-    update_data_set().then(rebuild_plot);
+    prepare_data_set().then(rebuild_plot);
 }
 
 window.select_chart = (selection) => {
@@ -207,7 +208,7 @@ window.select_chart = (selection) => {
 }
 
 window.on_recompute_button = () => {
-    update_data_set().then(rebuild_plot);
+    prepare_data_set().then(rebuild_plot);
 }
 
 init()
