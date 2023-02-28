@@ -47,7 +47,7 @@ function clear_plot() {
 
 // Requires data_source to be initialized
 function create_plot() {
-    chart_generator(data_source.data, data_source.dimensions, data_source.mappers, selected_dimension)
+    chart_generator(data_source, selected_dimension)
 }
 
 let algorithm_selection_map = {
@@ -153,39 +153,30 @@ function set_up_dimensions_selector(dimensions) {
 }
 
 let chart_selection_map = {
-    spc: {
-        chart_generator: (data, dimensions, mappers, selected_dimension) => {
-            let spc = new SPC(chart_container_ref, data, dimensions, mappers)
-            spc.draw()
-        },
-        ui_update: () => {}
+    spc: (data_source, selected_dimension) => {
+        let spc = new SPC(chart_container_ref, data_source.data, data_source.dimensions, data_source.mappers)
+        spc.draw()
     },
-    heatmap: {
-        chart_generator: (data, dimensions, mappers, selected_dimension) => {
-            new HeatMap(chart_container_ref, data, mappers, selected_dimension)
-        },
-        ui_update: () => {
-            let data_selector = document.getElementById(data_selector_id)
-            if (!data_selector.value.toString().includes("heatmap")) {
-                data_selector.selectedIndex = 2
-            }
+    heatmap: (arg_data_source, arg_selected_dimension) => {
+        let data_selector = document.querySelector(data_selector_ref)
+        if (!data_selector.value.toString().includes("heatmap")) {
+            data_selector.selectedIndex = 2
+            update_data_set().then(() => {
+                new HeatMap(chart_container_ref, data_source.data, data_source.mappers, selected_dimension)
+            })
+        } else {
+            new HeatMap(chart_container_ref, arg_data_source.data, arg_data_source.mappers, arg_selected_dimension)
         }
     },
-    choropleth: {
-        chart_generator: (data, dimensions, mappers, selected_dimension) => {
-            new Choropleth(chart_container_ref, data, mappers)
-        },
-        ui_update: () => {}
+    choropleth: (data_source, selected_dimension) => {
+        new Choropleth(chart_container_ref, data_source.data, data_source.mappers)
     },
-    lollipop: {
-        chart_generator: (data, dimensions, mappers, selected_dimension) => {
-            new Lollipop(chart_container_ref, data, dimensions, mappers)
-        },
-        ui_update: () => {}
+    lollipop: (data_source, selected_dimension) => {
+        new Lollipop(chart_container_ref, data_source.data, data_source.dimensions, data_source.mappers)
     }
 }
 
-let chart_generator = chart_selection_map["spc"]["chart_generator"];
+let chart_generator = chart_selection_map["spc"];
 
 window.select_data_set = (selection) => {
     console.log("selected data set: ", selection)
@@ -206,9 +197,7 @@ window.select_algorithm = (selection) => {
 
 window.select_chart = (selection) => {
     console.log("selected chart: ", selection)
-    let chart_select = chart_selection_map[selection]
-    chart_generator = chart_select["chart_generator"]
-    chart_select["ui_update"]()
+    chart_generator = chart_selection_map[selection]
     rebuild_plot()
 }
 
