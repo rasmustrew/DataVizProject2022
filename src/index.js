@@ -66,7 +66,12 @@ let algorithm_selection_map = {
         read_args: read_number_of_clusters
     },
     kmeans: {
-        algo: kmeans_splits,
+        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "random"),
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
+    },
+    kmeans_plusplus: {
+        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "++"),
         arguments_id: "#greedy_guided_split_arguments",
         read_args: read_number_of_clusters
     },

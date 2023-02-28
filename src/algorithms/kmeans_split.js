@@ -1,8 +1,13 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
 
-export function kmeans_splits(sorted_data, args) {
+let init_map = {
+    "random": rand_init,
+    "++": kMeansPlusPlus1D
+}
+
+export function kmeans_splits(sorted_data, args, _, init_function="++") {
     let n_clusters = args["clusters"]
-    let centers = kmeans1d(sorted_data, n_clusters, rand_init)
+    let centers = kmeans1d(sorted_data, n_clusters, init_map[init_function])
     let clusters = get_clusters(sorted_data, centers)
     let cluster_starts = [], cluster_ends = []
     for (const cluster of clusters) {
@@ -10,9 +15,10 @@ export function kmeans_splits(sorted_data, args) {
         cluster_ends.push(Math.max(cluster))
     }
     let split_points = []
-    centers.sort()
+    centers = [...new Set(centers)]
+    centers.sort((a, b) => a - b)
     for (let i = 0; i < n_clusters - 1; i++) {
-        split_points.push(((centers[i] - centers[i + 1]) / 2) + centers[i])
+        split_points.push(((centers[i + 1] - centers[i]) / 2) + centers[i])
     }
     split_points = split_points.filter(point => !isNaN(point) && point !== Infinity)
     return new ProportionateSplitMapper(sorted_data, split_points)
@@ -92,7 +98,7 @@ function kMeansPlusPlus1D(sorted_data, n_clusters) {
     let centroids = [sorted_data[Math.floor(Math.random() * sorted_data.length)]];
     for (let i = 1; i < n_clusters; i++) {
         let distances = [];
-        let totalDistance = 0;
+        let totalSquaredDistance = 0;
 
         // Calculate distances from each point to the closest centroid
         for (let j = 0; j < sorted_data.length; j++) {
@@ -104,20 +110,26 @@ function kMeansPlusPlus1D(sorted_data, n_clusters) {
                 }
             }
             distances[j] = minDistance;
-            totalDistance += minDistance;
+            totalSquaredDistance += minDistance ** 2;
         }
 
         // Choose new centroid based on probability proportional to distance squared
         let cumulativeProbability = 0;
         let chosenIndex = -1;
-        let randomValue = Math.random() * totalDistance;
+        let randomValue = Math.random();
         for (let j = 0; j < distances.length; j++) {
-            cumulativeProbability += distances[j] / totalDistance;
+            cumulativeProbability += distances[j] ** 2 / totalSquaredDistance;
             if (randomValue <= cumulativeProbability) {
                 chosenIndex = j;
                 break;
             }
         }
+
+        // Fix rounding errors
+        if (chosenIndex === -1 && Math.abs(cumulativeProbability - totalSquaredDistance) < 1e-6) {
+            chosenIndex = distances.length - 1;
+        }
+
         centroids.push(sorted_data[chosenIndex]);
     }
 
