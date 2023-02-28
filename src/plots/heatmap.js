@@ -102,7 +102,7 @@ export default class HeatMap {
             .attr("x", 0)
             .attr("y", -10)
             .style("font-size", "22px")
-            .text("Geospatial heatmap");
+            .text("Geospatial heatmap " + this.dimension);
     }
 
 }

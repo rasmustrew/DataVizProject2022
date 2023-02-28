@@ -23,7 +23,7 @@ let data_selection_map = {
     un_country_data: load_un_data,
     heatmap_data: () => load_heatmap_data("data"),
     heatmap_denmark: () => load_heatmap_data("denmark"),
-    heatmap_pubs: () => load_heatmap_data("amenity_pub")
+    heatmap_europe: () => load_heatmap_data("europe")
 }
 
 window.update_data_set = async (selection) => {
