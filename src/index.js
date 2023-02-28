@@ -202,7 +202,7 @@ window.select_chart = (selection) => {
 }
 
 window.on_recompute_button = () => {
-    rebuild_plot();
+    update_data_set().then(rebuild_plot);
 }
 
 init()

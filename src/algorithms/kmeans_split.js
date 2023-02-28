@@ -1,8 +1,8 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
 
-export function kmeans_splits(sorted_data, args, ) {
+export function kmeans_splits(sorted_data, args) {
     let n_clusters = args["clusters"]
-    let centers = kmeans1d(sorted_data, n_clusters)
+    let centers = kmeans1d(sorted_data, n_clusters, rand_init)
     let clusters = get_clusters(sorted_data, centers)
     let cluster_starts = [], cluster_ends = []
     for (const cluster of clusters) {
@@ -14,6 +14,7 @@ export function kmeans_splits(sorted_data, args, ) {
     for (let i = 0; i < n_clusters - 1; i++) {
         split_points.push(((centers[i] - centers[i + 1]) / 2) + centers[i])
     }
+    split_points = split_points.filter(point => !isNaN(point) && point !== Infinity)
     return new ProportionateSplitMapper(sorted_data, split_points)
 }
 
@@ -49,11 +50,14 @@ function kmeans1d(data, n_clusters, init_function=kMeansPlusPlus1D, max_iter=10)
     var iters = 0
     while (change_in_centers && iters < max_iter) {
         let clustering = cluster_assigment(data, centers)
-        let new_centers = new Array(n_clusters)
-        let cluster_sizes = new Array(n_clusters)
+        let new_centers = Array(n_clusters).fill(0)
+        let cluster_sizes = Array(n_clusters).fill(0)
         for (let i = 0; i < data.length; i++) {
             new_centers[clustering[i]] += data[i]
             cluster_sizes[clustering[i]] += 1
+        }
+        if(cluster_sizes.includes(NaN) || new_centers.includes(NaN)) {
+            throw Error()
         }
         for (let i = 0; i < n_clusters; i++) {
             new_centers[i] = new_centers[i] / cluster_sizes[i]
@@ -65,18 +69,19 @@ function kmeans1d(data, n_clusters, init_function=kMeansPlusPlus1D, max_iter=10)
         if (total_center_difference < 0.001) {
             change_in_centers = false
         }
+        centers = new_centers
         iters++
     }
     return centers
 }
 
 function rand_init(sorted_data, n_clusters) {
-    let min_val = sorted_data[0]
-    let max_val = sorted_data[sorted_data.length - 1]
-    let interval_size = max_val - min_val
     let centers = []
+    let non_picked_values = sorted_data
     for (let i = 0; i < n_clusters; i++) {
-        centers.push(Math.random() * interval_size + min_val)
+        const randomInt = Math.floor(Math.random() * sorted_data.length);
+        centers.push(sorted_data[randomInt])
+        non_picked_values = non_picked_values.filter(item => item !== sorted_data[randomInt])
     }
     return centers
 }
