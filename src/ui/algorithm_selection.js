@@ -1,0 +1,58 @@
+import {
+    greedy_guided_split,
+    read_greedy_guided_split_args
+} from "../algorithms/greedy_guided_split/greedy_guided_split";
+import {hardcoded_periodic_table_get_mapper} from "../algorithms/hardcoded_splits";
+import {quantile_splits} from "../algorithms/quantile_splits";
+import {kmeans_splits} from "../algorithms/kmeans_split";
+import LinearMapper from "../mappings/linear_mapping";
+import * as d3 from "d3";
+
+const algo_selector_ref = "#algorithm-select";
+let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
+
+let algorithm_selection_map = {
+    greedy_guided_split: {
+        algo: greedy_guided_split,
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_greedy_guided_split_args},
+    hardcoded_periodic_table: {
+        algo: hardcoded_periodic_table_get_mapper,
+        arguments_id: null,
+        read_args: () => {},
+    },
+    quantile: {
+        algo: quantile_splits,
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
+    },
+    kmeans: {
+        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "random"),
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
+    },
+    kmeans_plusplus: {
+        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "++"),
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
+    },
+    none: {
+        algo: (sorted_data, args, dimension) => {
+            return new LinearMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1])
+        },
+        arguments_id: null,
+        read_args: () => {},
+    }
+}
+
+export function algorithm_selection_update(arguments_id) {
+    let args = d3.select("#arguments_div").selectChildren();
+    args.style("display", "none")
+    if (arguments_id !== null) {
+        d3.select(arguments_id).style("display", null)
+    }
+}
+
+export function get_selected_algorithm() {
+    return algorithm_selection_map[d3.select(algo_selector_ref).property("value")]
+}
