@@ -36,6 +36,11 @@ let algorithm_selection_map = {
         arguments_id: "#greedy_guided_split_arguments",
         read_args: read_number_of_clusters
     },
+    kmeans_opt: {
+        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "optimal"),
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_number_of_clusters
+    },
     none: {
         algo: (sorted_data, args, dimension) => {
             return new LinearMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1])

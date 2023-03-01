@@ -17,29 +17,30 @@
         <div id='header_div'>
             <div id='title_div'>Axis Splits</div>
             <select name="data" id="data-select" onChange="window.select_data()" required>
-                <option value="periodic_table" selected>periodic table</option>
-                <option value="un_country_data">UN country data</option>
+                <option value="heatmap_data">example data (heatmap)</option>
                 <option value="heatmap_denmark">OSM Denmark amenity density (heatmap)</option>
                 <option value="heatmap_europe">OSM Europe amenity density (heatmap)</option>
-                <option value="heatmap_data">example data (heatmap)</option>
+                <option value="periodic_table" selected>periodic table</option>
+                <option value="un_country_data">UN country data</option>
             </select>
 
             <select name="data_dimension" id="dimension-select" onChange="window.select_dimensions()" multiple required></select>
 
             <select name="chart" id="chart-select" onChange="window.select_chart();" required>
-                <option value="spc" selected>Split Parallel Coordinates</option>
+                <option value="choropleth">Choropleth</option>
                 <option value="heatmap">Heatmap</option>
                 <option value="lollipop">Lollipop</option>
-                <option value="choropleth">Choropleth</option>
+                <option value="spc" selected>Split Parallel Coordinates</option>
             </select>
 
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm()" required>
                 <option value="none" selected>None</option>
-                <option value="greedy_guided_split">Greedy Guided Split</option>
                 <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
                 <option value="quantile">Quantile</option>
                 <option value="kmeans">KMeans</option>
                 <option value="kmeans_plusplus">KMeans++</option>
+                <option value="kmeans_opt">KMeansOPT</option>
+                <option value="greedy_guided_split">Greedy Guided Split</option>
             </select>
 
             <button class="button" id="submitDiv" onclick="window.on_recompute_button();">
