@@ -134,50 +134,62 @@ function kMeansPlusPlus1D(sorted_data, k) {
     return centers;
 }
 
+// from and to are both included in the segment
+function faster_single_cluster_cost(cum_sum, square_cum_sum, from, to) {
+    if (from + 1 === to) return 0
+    let squared_sum = (cum_sum[to] - cum_sum[from]) ** 2
+    let sum_of_squares = square_cum_sum[to] - square_cum_sum[from]
+    let factor = 1.0 / (to - from)
+    return sum_of_squares - factor * squared_sum
+}
+
 function mean(points) {
-    return points.reduce((a, b) => a + b) / points.length;
+    return points.reduce((a, b) => a + b, 0) / points.length;
 }
 
 function single_cluster_cost(points) {
     let center = mean(points);
     // Calculate total squared distance to mean
-    return points.reduce((total, point) => total + (point - center) ** 2)
+    return points.reduce((total, point) => total + (point - center) ** 2, 0)
 }
 
 // Based on building a dynamic programming table of optimal k-means clustering of n points
 // Each cell only depends on the cells to the left of it in the previous row of the table
 function optimal_kmeans_1d(sorted_data, k) {
     const n = sorted_data.length
-    let cost_table = Array(n).fill(null).map(() => Array(k).fill(0));
-    let segment_table = Array(n).fill(null).map(() => Array(k).fill(0));
+    let cost_table = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    let segment_table = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
     // Init first row with 1 cluster error
     for (let i = 1; i <= n; i++) {
-        cost_table[0][i] = single_cluster_cost(sorted_data.slice(0, i))
+        cost_table[1][i] = single_cluster_cost(sorted_data.slice(0, i))
     }
+    // Precompute cumulative sum of points and their squares for simpler computation of means
+    let cum_sum = sorted_data.map(point => [point]).reduce((acc, point) => acc.concat([point[0] + acc[acc.length - 1]]), [0])
+    let square_cum_sum = sorted_data.map(point => [point]).reduce((acc, point) => acc.concat([point[0] ** 2 + acc[acc.length - 1]]), [0])
     // Fill tables
-    for (let m = 1; m < k; m++) {
-        for (let i = m + 1; i < n; i++) {
+    for (let m = 2; m <= k; m++) {
+        for (let i = m + 1; i <= n; i++) {
             let optimal_cost_so_far = Infinity
             let splitting_point = 0
             // Look up cells to the left in the previous row
-            for (let j = m; j < i; j++) {
-                let optimal_j_points_cost = cost_table[j][m - 1]
-                let new_cluster_from_j_to_i_cost = single_cluster_cost(sorted_data.slice(j, i))
-                let combined_cost = optimal_j_points_cost + new_cluster_from_j_to_i_cost
+            for (let j = m - 1; j < i; j++) {
+                let optimal_cost_first_j_points = cost_table[m - 1][j]
+                let new_cluster_from_j_to_i_cost = faster_single_cluster_cost(cum_sum, square_cum_sum, j + 1, i + 1)
+                let combined_cost = optimal_cost_first_j_points + new_cluster_from_j_to_i_cost
                 if (combined_cost < optimal_cost_so_far) {
                     optimal_cost_so_far = combined_cost
                     splitting_point = j
                 }
             }
-            cost_table[i][m] = optimal_cost_so_far
-            segment_table[i][m] = splitting_point
+            cost_table[m][i] = optimal_cost_so_far
+            segment_table[m][i] = splitting_point
         }
     }
     // Construct centers based on reversing through segment table
     let next_segment_start = n
     let centers = []
-    for (let m = k - 1; m >= 0; m--) {
-        let segment_start = m === 0 ? 0 : segment_table[next_segment_start - 1][m] + 1
+    for (let m = k; m > 0; m--) {
+        let segment_start = segment_table[m][next_segment_start - 1]
         let cluster = sorted_data.slice(segment_start, next_segment_start)
         let center = mean(cluster)
         centers.push(center)
