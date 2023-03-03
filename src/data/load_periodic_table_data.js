@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
 export async function load_periodic_table_data() {
-    let data = await d3.csv("../data/periodic_table.csv");
+    let data = await d3.csv("./data/periodic_table.csv");
     // let float_dimensions = [
     //     'boiling_point',
     //     'abundance/universe',

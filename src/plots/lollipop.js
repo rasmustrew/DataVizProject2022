@@ -2,6 +2,7 @@ import {v4 as uuidv4} from "uuid";
 import * as d3 from "d3";
 import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
+import {is_value_in_range} from "../mappings/util";
 export default class Lollipop {
     constructor(container_ref, data, dimension, raw_mapper) {
         let container = document.querySelector(container_ref)
@@ -12,7 +13,7 @@ export default class Lollipop {
         container.appendChild(plot)
 
         let buffer_size = 20;
-        let margin = {top: 24, right: 48, bottom: 16, left: 48};
+        let margin = {top: 80, right: 16, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
         let screen_mapper = new ScreenMapper(raw_mapper.get_output_space_ranges(), [height, 0], buffer_size)
@@ -23,67 +24,92 @@ export default class Lollipop {
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
+        for (let index = 0; index < mapper.get_input_space_ranges().length; index++) {
+            console.log(index)
+            let base_svg = svg.append('g').attr("class", "lollipopSvg")
+            this.create_single_axis_lollipop(data, base_svg, mapper, index, dimension, width, buffer_size)
+        }
 
-        // X axis
+    }
+
+    create_single_axis_lollipop(data, base_svg, mapper, index, dimension, width, buffer) {
+        let screen_range = mapper.get_output_space_ranges()[index]
+        let input_ranges = mapper.get_input_space_ranges()
+        let input_range = input_ranges[index]
+        // Add X axis
         const x = d3.scaleBand()
             .range([ 0, width ])
             .domain(data.map(function(d) { return d.id; }))
             .padding(1);
-        svg.append("g")
-            .attr("transform", `translate(0, ${height})`)
-            .call(d3.axisBottom(x))
-            .selectAll("text")
-            .attr("transform", "translate(-10,0)rotate(-45)")
+
+        let axis_x = base_svg.append('g')
+            .attr("class", "x_axis")
+            .attr("transform", `translate(0, ${mapper.map(input_range[0])})`)
+
+        if (index === 0) {
+            axis_x.call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", "translate(-10,0)rotate(-45)")
+                .style("text-anchor", "end");
+        } else {
+            axis_x.call(d3.axisBottom(x).tickValues([]))
+        }
+
+        let axis_x_top = base_svg.append('g')
+            .attr("class", "x_axis")
+
+        if (index === mapper.get_input_space_ranges().length - 1) {
+            axis_x_top.attr("transform", `translate(0, ${mapper.map(input_range[1])})`)
+                .call(d3.axisTop(x))
+        } else {
+            axis_x_top.attr("transform", `translate(0, ${mapper.map(input_range[1]) + buffer})`)
+                .call(d3.axisTop(x).tickValues([]))
+        }
+        axis_x_top.selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(45)")
             .style("text-anchor", "end");
 
-        // Add Y axes
-        let axis_group = svg.append("g")
-            .attr("class", "dimension")
-            .attr("transform", "translate(0)")
 
-        axis_group.append("text")
+        // Add Y axis
+        let tick_values = []
+        if (index === 0) {
+            tick_values = input_range;
+        } else if (index === input_ranges.length - 1) {
+            tick_values = [input_range[1]];
+        } else {
+            tick_values = [input_range[1]];
+        }
+        let d3_scale = d3.scaleLinear().domain(input_range).range(screen_range)
+        let axis_y = base_svg.append('g')
+            .attr("class", "y_axis")
+            .call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15));
+
+        axis_y.append("text")
             .style("text-anchor", "middle")
             .style("font-weight", 400)
             .style("overflow", "visible")
             .attr("y", -8)
             .text(dimension);
-
-        let axes = axis_group.selectAll(".axis")
-            .data(function (d) {
-                return mapper.get_input_space_ranges()
-            })
-            .enter().append("g")
-            .attr("class", "axis")
-            .each(function (range, index) {
-                let screen_range = mapper.get_output_space_ranges()[index]
-                let input_ranges = mapper.get_input_space_ranges()
-                let tick_values = []
-                if (index === 0) {
-                    tick_values = range;
-                } else if (index === input_ranges.length - 1) {
-                    tick_values = [range[1]];
-                } else {
-                    tick_values = [range[1]];
-                }
-                let input_scale = range
-                let output_scale = screen_range
-                let d3_scale = d3.scaleLinear().domain(input_scale).range(output_scale)
-                d3.select(this).call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15));
-            })
-
         // Lines
-        svg.selectAll("lollipopLine")
-            .data(data)
+        base_svg.selectAll("lollipopLine")
+            .data(data.filter((d) => d[dimension] >= input_range[0]))
             .enter()
             .append("line")
             .attr("x1", function(d) { return x(d.id); })
             .attr("x2", function(d) { return x(d.id); })
-            .attr("y1", function(d) { return mapper.map(d[dimension]); })
-            .attr("y2", mapper.map(mapper.get_input_space_ranges()[0][0]))
+            .attr("y1", function(d) {
+                if (d[dimension] >= input_range[1]) {
+                    return mapper.map(input_range[1]) + buffer;
+                } else {
+                    return mapper.map(d[dimension])
+                }
+
+            })
+            .attr("y2", mapper.map(input_range[0]))
             .attr("stroke", "grey")
 
         // Circles
-        svg.selectAll("mycircle")
+        base_svg.selectAll("mycircle")
             .data(data)
             .join("circle")
             .attr("cx", function(d) { return x(d.id); })
@@ -91,7 +117,6 @@ export default class Lollipop {
             .attr("r", "4")
             .style("fill", "#69b3a2")
             .attr("stroke", "black")
-    }
-
+}
 
 }

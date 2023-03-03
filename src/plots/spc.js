@@ -30,7 +30,7 @@ export default class SPC {
         container.appendChild(plot)
 
         let buffer_size = 20;
-        let margin = {top: 24, right: 48, bottom: 16, left: 48};
+        let margin = {top: 24, right: 80, bottom: 16, left: 80};
         this.margin = margin
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
