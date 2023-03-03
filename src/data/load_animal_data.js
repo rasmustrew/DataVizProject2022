@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
 export async function load_animal_data() {
-    let data = await d3.csv("../data/animal_population.csv");
+    let data = await d3.csv("./data/animal_population.csv");
     let float_dimensions = [
         'Overall Sample Size ', 'Overall MLE', 'Overall CI - lower', 'Overall CI - upper',
         'Male Sample Size', 'Male MLE', 'Male CI - lower', 'Male CI - upper']

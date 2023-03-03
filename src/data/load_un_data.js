@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
 export async function load_un_data() {
-    let data = await d3.csv("../data/un_country_data.csv");
+    let data = await d3.csv("./data/un_country_data.csv");
     let float_dimensions = [
         'Surface area (km2)',
         'Population in thousands (2017)',
