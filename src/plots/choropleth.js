@@ -9,9 +9,9 @@ export default class Choropleth {
 
     init(data, raw_mappers, dimension) {
         // set the dimensions and margins of the graph
-        let margin = {top: 30, right: 30, bottom: 30, left: 30},
+        let margin = {top: 0, right: 30, bottom: 30, left: 30},
             width = 1000 - margin.left - margin.right,
-            height = 800 - margin.top - margin.bottom;
+            height = 600 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         let svg = d3.select(this.container_ref)
@@ -75,8 +75,7 @@ export default class Choropleth {
 
             // Projection and size
             const projection = d3.geoMercator()
-                .fitSize([width, height], topo)
-                .center([0, 20]);
+                .fitSize([width, height], topo);
 
             // Draw the map
             svg.selectAll("path")
