@@ -27,7 +27,8 @@ let chart_selection_map = {
         new Choropleth(chart_container_ref, data, mappers, dimensions[0])
     },
     lollipop: (chart_container_ref, data, dimensions, mappers) => {
-        new Lollipop(chart_container_ref, data, dimensions[0], mappers[dimensions[0]])
+        let chosen_dimension = dimensions[0]
+        new Lollipop(chart_container_ref, data, chosen_dimension, mappers[chosen_dimension])
     }
 }
 
