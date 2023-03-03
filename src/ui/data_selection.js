@@ -2,12 +2,14 @@ import {load_periodic_table_data} from "../data/load_periodic_table_data";
 import {load_un_data} from "../data/load_un_data";
 import {load_heatmap_data} from "../data/load_heatmap_csv";
 import * as d3 from "d3";
+import {load_numbeo_data} from "../data/load_numbeo_data";
 
 const data_selector_ref = "#data-select";
 
 const data_selection_map = {
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
+    numbeo_country_data: load_numbeo_data,
     heatmap_data: () => load_heatmap_data("data"),
     heatmap_denmark: () => load_heatmap_data("denmark"),
     heatmap_europe: () => load_heatmap_data("europe")

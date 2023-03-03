@@ -91,7 +91,6 @@ export default class Lollipop {
             .attr("r", "4")
             .style("fill", "#69b3a2")
             .attr("stroke", "black")
-
     }
 
 

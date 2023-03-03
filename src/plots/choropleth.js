@@ -1,20 +1,17 @@
 import * as d3 from "d3";
 
-export default class HeatMap {
+export default class Choropleth {
 
     constructor(container_ref, data, raw_mappers, selected_dimension) {
         this.container_ref = container_ref
-        this.data = data
-        this.raw_mappers = raw_mappers
-        this.dimension = selected_dimension
-        this.init()
+        this.init(data, raw_mappers, selected_dimension)
     }
 
-    init() {
+    init(data, raw_mappers, dimension) {
         // set the dimensions and margins of the graph
         let margin = {top: 30, right: 30, bottom: 30, left: 30},
-            width = 450 - margin.left - margin.right,
-            height = 350 - margin.top - margin.bottom;
+            width = 1000 - margin.left - margin.right,
+            height = 800 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         let svg = d3.select(this.container_ref)
@@ -24,19 +21,6 @@ export default class HeatMap {
             .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
-
-        // Map and projection
-        const path = d3.geoPath();
-        const projection = d3.geoMercator()
-            .scale(70)
-            .center([0,20])
-            .translate([width / 2, height / 2]);
-
-        // Data and color scale
-        let data = new Map()
-        const colorScale = d3.scaleThreshold()
-            .domain([100000, 1000000, 10000000, 30000000, 100000000, 500000000])
-            .range(d3.schemeBlues[7]);
 
         // create a tooltip
         const tooltip = d3.select(this.container_ref)
@@ -50,16 +34,16 @@ export default class HeatMap {
             .style("padding", "5px")
 
         let mouseOver = function(d) {
-            d3.selectAll(".Country")
+            d3.select(this)
                 .transition()
                 .duration(200)
-                .style("opacity", .5)
+                .style("opacity", 1)
             tooltip.style("opacity", 1)
         }
 
         const mouseMove = function(event,d) {
             tooltip
-                .html("The population of<br>" + d.properties["name"] + " is: " + d.total.toLocaleString('en-GB'))
+                .html("The " + dimension + " of<br>" + d.properties["name"] + " is: " + d.value)
                 .style("left", (event.x)/2 + "px")
                 .style("top", (event.y)/2 + "px")
         }
@@ -68,22 +52,34 @@ export default class HeatMap {
             d3.selectAll(".Country")
                 .transition()
                 .duration(200)
-                .style("opacity", .8)
+                .style("opacity", .7)
+                .style("stroke", null)
             tooltip.style("opacity", 0)
         }
+        // Color scale
+        const colorScale = d3.scaleSequential(d3.interpolateViridis)
+            .domain([0, 1])
 
+        let country_to_index = {}
+        for (let i in data) {
+            const row = data[i]
+            const iso_code = row["code"]
+            country_to_index[iso_code] = parseInt(i)
+        }
         // Load external data and boot
         Promise.all([
-            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
-            d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv", function(d) {
-                data.set(d.code, +d.pop)
-            })
+            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"), []
         ]).then(function(loadData){
             let topo = loadData[0]
+            topo.features = topo.features.filter(shape => shape.id !== "ATA")
+
+            // Projection and size
+            const projection = d3.geoMercator()
+                .fitSize([width, height], topo)
+                .center([0, 20]);
 
             // Draw the map
-            svg.append("g")
-                .selectAll("path")
+            svg.selectAll("path")
                 .data(topo.features)
                 .join("path")
                 // draw each country
@@ -92,8 +88,13 @@ export default class HeatMap {
                 )
                 // set the color of each country
                 .attr("fill", function (d) {
-                    d.total = data.get(d.id) || 0;
-                    return colorScale(d.total);
+                    if (!(d.id in country_to_index)) {
+                        console.log("Couldn't find " + d.id + " in index map")
+                        return 0
+                    }
+                    let country_index = country_to_index[d.id]
+                    d.value = data[country_index][dimension] || 0;
+                    return colorScale(raw_mappers[dimension].map(d.value));
                 })
                 .style("stroke", "transparent")
                 .attr("class", function(d){ return "Country" } )

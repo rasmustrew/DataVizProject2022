@@ -24,7 +24,7 @@ let chart_selection_map = {
         new HeatMap(chart_container_ref, data, mappers, dimensions[0])
     },
     choropleth: (chart_container_ref, data, dimensions, mappers) => {
-        new Choropleth(chart_container_ref, data, mappers)
+        new Choropleth(chart_container_ref, data, mappers, dimensions[0])
     },
     lollipop: (chart_container_ref, data, dimensions, mappers) => {
         new Lollipop(chart_container_ref, data, dimensions[0], mappers[dimensions[0]])

@@ -17,11 +17,12 @@
         <div id='header_div'>
             <div id='title_div'>Axis Splits</div>
             <select name="data" id="data-select" onChange="window.select_data()" required>
+                <option value="numbeo_country_data">country data Numbeo</option>
+                <option value="un_country_data">country data UN</option>
                 <option value="heatmap_data">example data (heatmap)</option>
                 <option value="heatmap_denmark">OSM Denmark amenity density (heatmap)</option>
                 <option value="heatmap_europe">OSM Europe amenity density (heatmap)</option>
                 <option value="periodic_table" selected>periodic table</option>
-                <option value="un_country_data">UN country data</option>
             </select>
 
             <select name="data_dimension" id="dimension-select" onChange="window.select_dimensions()" multiple required></select>

@@ -40,6 +40,7 @@ export async function load_un_data() {
 
     column_filtered_data.forEach((row, index) => {
         row["id"] = row_filtered_data[index][id_dimension]
+        row["code"] = row_filtered_data[index]["iso3"]
     })
 
     return {
