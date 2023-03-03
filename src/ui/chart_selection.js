@@ -3,6 +3,7 @@ import HeatMap from "../plots/heatmap";
 import Choropleth from "../plots/choropleth";
 import Lollipop from "../plots/lollipop";
 import * as d3 from "d3";
+import ScatterPlot from "../plots/scatterplot";
 
 const chart_selector_ref = "#chart-select";
 
@@ -24,11 +25,15 @@ let chart_selection_map = {
         new HeatMap(chart_container_ref, data, mappers, dimensions[0])
     },
     choropleth: (chart_container_ref, data, dimensions, mappers) => {
-        new Choropleth(chart_container_ref, data, mappers, dimensions[0])
+        new Choropleth(chart_container_ref, data, dimensions[0], mappers)
     },
     lollipop: (chart_container_ref, data, dimensions, mappers) => {
         let chosen_dimension = dimensions[0]
         new Lollipop(chart_container_ref, data, chosen_dimension, mappers[chosen_dimension])
+    },
+    scatter_plot:  (chart_container_ref, data, dimensions, mappers) => {
+        let chosen_dimensions = dimensions.slice(0, 3)
+        new ScatterPlot(chart_container_ref, data, chosen_dimensions, mappers)
     }
 }
 

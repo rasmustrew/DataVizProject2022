@@ -2,10 +2,10 @@ import * as d3 from "d3";
 
 export default class HeatMap {
 
-    constructor(container_ref, data, raw_mappers, selected_dimension) {
+    constructor(container_ref, data, mappers, selected_dimension) {
         this.container_ref = container_ref
         this.data = data
-        this.raw_mappers = raw_mappers
+        this.mappers = mappers
         this.dimension = selected_dimension
         this.init()
     }
@@ -91,7 +91,7 @@ export default class HeatMap {
             .attr("y", d => y(d.y))
             .attr("width", x.bandwidth() )
             .attr("height", y.bandwidth() )
-            .style("fill", d => myColor(this.raw_mappers[value_row].map(d[value_row])))
+            .style("fill", d => myColor(this.mappers[value_row].map(d[value_row])))
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)

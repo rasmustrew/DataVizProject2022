@@ -2,7 +2,7 @@ import * as d3 from "d3";
 
 export default class Choropleth {
 
-    constructor(container_ref, data, raw_mappers, selected_dimension) {
+    constructor(container_ref, data, selected_dimension, raw_mappers) {
         this.container_ref = container_ref
         this.init(data, raw_mappers, selected_dimension)
     }
