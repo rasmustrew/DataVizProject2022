@@ -24,36 +24,51 @@ export default class Lollipop {
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
 
-        // X axis
+        // Add X axes
         const x = d3.scaleBand()
             .range([ 0, width ])
             .domain(data.map(function(d) { return d.id; }))
             .padding(1);
-        svg.append("g")
-            .attr("transform", `translate(0, ${height})`)
-            .call(d3.axisBottom(x))
+        let axis_groups_x = svg.append("g")
+            // .attr("transform", `translate(0, ${height})`)
+            .attr("class", "axis_group_x")
+
+        let axes_x = axis_groups_x.selectAll(".x_axis")
+            .data(mapper.get_input_space_ranges())
+            .enter().append("g")
+            .attr("class", "x_axis")
+            .attr("transform", (range) => {
+                return `translate(0, ${mapper.map(range[0])})`
+            }).each(function (range, index) {
+                if (index === 0) {
+                    d3.select(this).call(d3.axisBottom(x))
+                } else {
+                    d3.select(this).call(d3.axisBottom(x).tickValues([]))
+                }
+
+            })
             .selectAll("text")
             .attr("transform", "translate(-10,0)rotate(-45)")
             .style("text-anchor", "end");
 
         // Add Y axes
-        let axis_group = svg.append("g")
-            .attr("class", "dimension")
+        let axis_group_y = svg.append("g")
+            .attr("class", "axis_group_y")
             .attr("transform", "translate(0)")
 
-        axis_group.append("text")
+        axis_group_y.append("text")
             .style("text-anchor", "middle")
             .style("font-weight", 400)
             .style("overflow", "visible")
             .attr("y", -8)
             .text(dimension);
 
-        let axes = axis_group.selectAll(".axis")
-            .data(function (d) {
+        let axes_y = axis_group_y.selectAll(".y_axis")
+            .data((d) => {
                 return mapper.get_input_space_ranges()
             })
             .enter().append("g")
-            .attr("class", "axis")
+            .attr("class", "y_axis")
             .each(function (range, index) {
                 let screen_range = mapper.get_output_space_ranges()[index]
                 let input_ranges = mapper.get_input_space_ranges()
