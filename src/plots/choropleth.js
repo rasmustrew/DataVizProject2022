@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {v4 as uuidv4} from "uuid";
 
 export default class Choropleth {
 
@@ -8,10 +9,17 @@ export default class Choropleth {
     }
 
     init(data, raw_mappers, dimension) {
+        let container = document.querySelector(container_ref)
+        let plot = document.createElement("div")
+        plot.classList.add("choropleth")
+        plot.id = "plot_id_" + uuidv4()
+        this.id = "#" + plot.id
+        container.appendChild(plot)
+
         // set the dimensions and margins of the graph
         let margin = {top: 0, right: 30, bottom: 30, left: 30},
-            width = 1000 - margin.left - margin.right,
-            height = 600 - margin.top - margin.bottom;
+            width = plot.clientWidth - margin.left - margin.right,
+            height = plot.clientHeight - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         let svg = d3.select(this.container_ref)
@@ -52,8 +60,7 @@ export default class Choropleth {
             d3.selectAll(".Country")
                 .transition()
                 .duration(200)
-                .style("opacity", .7)
-                .style("stroke", null)
+                .style("opacity", 1)
             tooltip.style("opacity", 0)
         }
         // Color scale
