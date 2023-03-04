@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import {v4 as uuidv4} from "uuid";
 
 export default class HeatMap {
 

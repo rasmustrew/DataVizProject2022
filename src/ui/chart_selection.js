@@ -18,6 +18,7 @@ function make_chart_div(container_ref, chart_class="chart") {
     return ref
 }
 
+
 let chart_selection_map = {
     spc: (chart_container_ref, data, dimensions, mappers) => {
         let spc = new SPC(chart_container_ref, data, dimensions, mappers)

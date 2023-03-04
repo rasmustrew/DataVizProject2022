@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import {v4 as uuidv4} from "uuid";
 
 export default class ScatterPlot {
 
@@ -15,33 +14,36 @@ export default class ScatterPlot {
     init() {
         let plot = document.querySelector(this.chart_ref)
         // set the dimensions and margins of the graph
-        var margin = {top: 10, right: 30, bottom: 40, left: 80},
+        const margin = {top: 10, right: 30, bottom: 40, left: 80},
             width = plot.clientWidth - margin.left - margin.right,
             height = plot.clientHeight - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
-        var svg = d3.select(this.chart_ref)
+        const svg = d3.select(this.chart_ref)
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")")
+                "translate(" + margin.left + "," + margin.top + ")");
 
-
+        // Add scales and ticks
         const x_dimension = this.dimensions[0]
         const y_dimension = this.dimensions[1]
-
+        const space_between_ticks = 50
+        const x_ticks = Math.floor(width / space_between_ticks)
+        const y_ticks = Math.floor(height / space_between_ticks)
         const tick_formatter = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
 
         var x = d3.scaleLinear()
             .domain([0, 1])
             .range([0, width])
+
         svg.append("g")
             .attr("transform", "translate(0," + height + ")")
             .call(d3.axisBottom(x)
                 .tickSize(-height*1.3)
-                .ticks(10)
+                .ticks(x_ticks)
                 .tickFormat(d => tick_formatter.format(this.mappers[x_dimension].map_inverse(d))))
             .select(".domain").remove()
 
@@ -49,14 +51,15 @@ export default class ScatterPlot {
             .domain([0, 1])
             .range([ height, 0])
             .nice()
+
         svg.append("g")
             .call(d3.axisLeft(y)
                 .tickSize(-width*1.3)
-                .ticks(8)
+                .ticks(y_ticks)
                 .tickFormat(d => tick_formatter.format(this.mappers[y_dimension].map_inverse(d))))
             .select(".domain").remove()
 
-        // Customization
+        // Custom tick line
         svg.selectAll(".tick line").attr("stroke", "#EBEBEB")
 
         // Add X axis label:
