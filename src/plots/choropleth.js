@@ -3,26 +3,20 @@ import {v4 as uuidv4} from "uuid";
 
 export default class Choropleth {
 
-    constructor(container_ref, data, selected_dimension, raw_mappers) {
-        this.container_ref = container_ref
+    constructor(chart_ref, data, selected_dimension, raw_mappers) {
+        this.chart_ref = chart_ref
         this.init(data, raw_mappers, selected_dimension)
     }
 
     init(data, raw_mappers, dimension) {
-        let container = document.querySelector(container_ref)
-        let plot = document.createElement("div")
-        plot.classList.add("choropleth")
-        plot.id = "plot_id_" + uuidv4()
-        this.id = "#" + plot.id
-        container.appendChild(plot)
-
+        let plot = document.querySelector(this.chart_ref)
         // set the dimensions and margins of the graph
         let margin = {top: 0, right: 30, bottom: 30, left: 30},
             width = plot.clientWidth - margin.left - margin.right,
             height = plot.clientHeight - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
-        let svg = d3.select(this.container_ref)
+        let svg = d3.select(this.chart_ref)
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -31,7 +25,7 @@ export default class Choropleth {
                 "translate(" + margin.left + "," + margin.top + ")");
 
         // create a tooltip
-        const tooltip = d3.select(this.container_ref)
+        const tooltip = d3.select(this.chart_ref)
             .append("div")
             .style("opacity", 0)
             .attr("class", "tooltip")
@@ -60,7 +54,8 @@ export default class Choropleth {
             d3.selectAll(".Country")
                 .transition()
                 .duration(200)
-                .style("opacity", 1)
+                .style("opacity", .7)
+                .style("stroke", null)
             tooltip.style("opacity", 0)
         }
         // Color scale

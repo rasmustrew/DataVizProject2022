@@ -4,8 +4,19 @@ import Choropleth from "../plots/choropleth";
 import Lollipop from "../plots/lollipop";
 import * as d3 from "d3";
 import ScatterPlot from "../plots/scatterplot";
+import {v4 as uuidv4} from "uuid";
 
 const chart_selector_ref = "#chart-select";
+
+function make_chart_div(container_ref, chart_class="chart") {
+    let container = document.querySelector(container_ref)
+    let plot = document.createElement("div")
+    plot.classList.add(chart_class)
+    plot.id = "plot_id_" + uuidv4()
+    let ref = "#" + plot.id
+    container.appendChild(plot)
+    return ref
+}
 
 let chart_selection_map = {
     spc: (chart_container_ref, data, dimensions, mappers) => {
@@ -13,27 +24,22 @@ let chart_selection_map = {
         spc.draw()
     },
     heatmap: (chart_container_ref, data, dimensions, mappers) => {
-        // let data_selector = document.querySelector(data_selector_ref)
-        // if (!data_selector.value.toString().includes("heatmap")) {
-        //     data_selector.selectedIndex = 2
-        //     update_data_set().then(() => {
-        //         new HeatMap(chart_container_ref, data_source.data, data_source.mappers, selected_dimension)
-        //     })
-        // } else {
-        //     new HeatMap(chart_container_ref, arg_data_source.data, arg_data_source.mappers, arg_selected_dimension)
-        // }
-        new HeatMap(chart_container_ref, data, mappers, dimensions[0])
+        let chart_ref = make_chart_div(chart_container_ref)
+        new HeatMap(chart_ref, data, mappers, dimensions[0])
     },
     choropleth: (chart_container_ref, data, dimensions, mappers) => {
-        new Choropleth(chart_container_ref, data, dimensions[0], mappers)
+        let chart_ref = make_chart_div(chart_container_ref)
+        new Choropleth(chart_ref, data, dimensions[0], mappers)
     },
     lollipop: (chart_container_ref, data, dimensions, mappers) => {
+        let chart_ref = make_chart_div(chart_container_ref, "lollipop")
         let chosen_dimension = dimensions[0]
-        new Lollipop(chart_container_ref, data, chosen_dimension, mappers[chosen_dimension])
+        new Lollipop(chart_ref, data, chosen_dimension, mappers[chosen_dimension])
     },
     scatter_plot:  (chart_container_ref, data, dimensions, mappers) => {
+        let chart_ref = make_chart_div(chart_container_ref)
         let chosen_dimensions = dimensions.slice(0, 3)
-        new ScatterPlot(chart_container_ref, data, chosen_dimensions, mappers)
+        new ScatterPlot(chart_ref, data, chosen_dimensions, mappers)
     }
 }
 

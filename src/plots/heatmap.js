@@ -1,9 +1,10 @@
 import * as d3 from "d3";
+import {v4 as uuidv4} from "uuid";
 
 export default class HeatMap {
 
-    constructor(container_ref, data, mappers, selected_dimension) {
-        this.container_ref = container_ref
+    constructor(chart_ref, data, mappers, selected_dimension) {
+        this.chart_ref = chart_ref
         this.data = data
         this.mappers = mappers
         this.dimension = selected_dimension
@@ -11,13 +12,14 @@ export default class HeatMap {
     }
 
     async init() {
+        let plot = document.querySelector(this.chart_ref)
         // set the dimensions and margins of the graph
         let margin = {top: 30, right: 30, bottom: 30, left: 30},
-            width = 450 - margin.left - margin.right,
-            height = 450 - margin.top - margin.bottom;
+            width = plot.clientHeight + 50 - margin.left - margin.right,
+            height = plot.clientHeight - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
-        let svg = d3.select(this.container_ref)
+        let svg = d3.select(this.chart_ref)
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -54,7 +56,7 @@ export default class HeatMap {
             .call(d3.axisLeft(y));
 
         // create a tooltip
-        const tooltip = d3.select(this.container_ref)
+        const tooltip = d3.select(this.chart_ref)
             .append("div")
             .style("opacity", 0)
             .attr("class", "tooltip")

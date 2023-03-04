@@ -4,13 +4,8 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import {is_value_in_range} from "../mappings/util";
 export default class Lollipop {
-    constructor(container_ref, data, dimension, raw_mapper) {
-        let container = document.querySelector(container_ref)
-        let plot = document.createElement("div")
-        plot.classList.add("lollipop")
-        plot.id = "plot_id_" + uuidv4()
-        this.id = "#" + plot.id
-        container.appendChild(plot)
+    constructor(chart_ref, data, dimension, raw_mapper) {
+        let plot = document.querySelector(chart_ref)
 
         let buffer_size = 20;
         let margin = {top: 80, right: 16, bottom: 80, left: 64};
@@ -20,7 +15,8 @@ export default class Lollipop {
         let mapper = new CompositeMapper([raw_mapper, screen_mapper])
 
         // append the svg object to the body of the page
-        const svg = d3.select(this.id).append("svg").attr("class", "lollipopSvg")
+        const svg = d3.select(chart_ref).append("svg")
+            .attr("class", "lollipopSvg")
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 

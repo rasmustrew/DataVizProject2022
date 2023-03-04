@@ -1,9 +1,10 @@
 import * as d3 from "d3";
+import {v4 as uuidv4} from "uuid";
 
 export default class ScatterPlot {
 
-    constructor(container_ref, data, selected_dimensions, raw_mappers) {
-        this.container_ref = container_ref
+    constructor(chart_ref, data, selected_dimensions, raw_mappers) {
+        this.chart_ref = chart_ref
         this.data = data
         this.mappers = raw_mappers
         this.dimensions = selected_dimensions
@@ -12,13 +13,14 @@ export default class ScatterPlot {
     }
 
     init() {
+        let plot = document.querySelector(this.chart_ref)
         // set the dimensions and margins of the graph
         var margin = {top: 10, right: 30, bottom: 40, left: 80},
-            width = 1000 - margin.left - margin.right,
-            height = 750 - margin.top - margin.bottom;
+            width = plot.clientWidth - margin.left - margin.right,
+            height = plot.clientHeight - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
-        var svg = d3.select(this.container_ref)
+        var svg = d3.select(this.chart_ref)
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)

@@ -1,4 +1,4 @@
-.lollipop {
+.chart {
     width: 100%;
     height: 100%;
     display: flex;
@@ -6,7 +6,7 @@
     flex-grow: 1;
 }
 
-.lollipopSvg {
+.chartSvg {
     width: 100%;
     height: 100%;
 }
