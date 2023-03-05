@@ -1,14 +1,24 @@
 import * as d3 from "d3";
+import ScreenMapper from "../mappings/screen_mapping";
+import CompositeMapper from "../mappings/composite_mapping";
 
 export default class ScatterPlot {
+
+    tick_spacing = 50
+    chart_spacing = 25
+
 
     constructor(chart_ref, data, selected_dimensions, raw_mappers) {
         this.chart_ref = chart_ref
         this.data = data
         this.mappers = raw_mappers
         this.dimensions = selected_dimensions
-        if (this.dimensions.length > 1)
-            this.init()
+        if (this.dimensions.length < 2)
+            return
+        this.x_dim = this.dimensions[0]
+        this.y_dim = this.dimensions[1]
+        this.color_dim = this.dimensions[2]
+        this.init()
     }
 
     init() {
@@ -27,40 +37,50 @@ export default class ScatterPlot {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-        // Add scales and ticks
-        const x_dimension = this.dimensions[0]
-        const y_dimension = this.dimensions[1]
-        const space_between_ticks = 50
-        const x_ticks = Math.floor(width / space_between_ticks)
-        const y_ticks = Math.floor(height / space_between_ticks)
-        const tick_formatter = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
+        let base_svg = svg.append('g').attr("class", "chartSvg")
 
-        var x = d3.scaleLinear()
+        // Add tick marks and lines
+        let x_ranges = this.mappers[this.x_dim].get_input_space_ranges()
+        let y_ranges = this.mappers[this.y_dim].get_input_space_ranges()
+        let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
+        let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()
+        let x_screen_mapper = new ScreenMapper(x_ranges_norm, [0, width], this.chart_spacing)
+        let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
+        let x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
+        let y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
+
+        for (var i = 0; i < x_ranges.length; i++) {
+            const x_range = x_ranges[i]
+            for (var j = 0; j < y_ranges.length; j++) {
+                const y_range = y_ranges[j]
+                this.add_chart_tile(svg, i, j, x_range, y_range, x_mapper, y_mapper)
+                console.log(x_range.toString() + "; " + y_range.toString())
+            }
+        }
+
+        // Color scale
+        let colorScale = d3.scaleSequential(d3.interpolateViridis)
             .domain([0, 1])
-            .range([0, width])
 
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x)
-                .tickSize(-height*1.3)
-                .ticks(x_ticks)
-                .tickFormat(d => tick_formatter.format(this.mappers[x_dimension].map_inverse(d))))
-            .select(".domain").remove()
-
-        var y = d3.scaleLinear()
-            .domain([0, 1])
-            .range([ height, 0])
-            .nice()
-
-        svg.append("g")
-            .call(d3.axisLeft(y)
-                .tickSize(-width*1.3)
-                .ticks(y_ticks)
-                .tickFormat(d => tick_formatter.format(this.mappers[y_dimension].map_inverse(d))))
-            .select(".domain").remove()
-
-        // Custom tick line
-        svg.selectAll(".tick line").attr("stroke", "#EBEBEB")
+        // Add dots
+        base_svg.append('g')
+            .selectAll("dot")
+            .data(this.data.map(d => {
+                d.x_val = x_mapper.map(d[this.x_dim])
+                d.y_val = y_mapper.map(d[this.y_dim])
+                d.color_val = this.mappers[this.color_dim].map(d[this.color_dim])
+                return d
+            }))
+            .enter()
+            .append("circle")
+            .attr("cx", d => d.x_val)
+            .attr("cy", d => d.y_val)
+            .attr("r", 5)
+            .style("fill", d => {
+                if (this.dimensions.length < 3)
+                    return 0
+                return colorScale(d.color_val)
+            })
 
         // Add X axis label:
         svg.append("text")
@@ -76,27 +96,56 @@ export default class ScatterPlot {
             .attr("y", -margin.left+30)
             .attr("x", -margin.top)
             .text(this.dimensions[1])
+    }
 
-        // Color scale
-        const colorScale = d3.scaleSequential(d3.interpolateViridis)
-            .domain([0, 1])
+    add_chart_tile(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
+        const x_range_screen = x_range.map(v => x_mapper.map(v))
+        const y_range_screen = y_range.map(v => y_mapper.map(v))
+        const tile_width = Math.abs(x_range_screen[0] - x_range_screen[1])
+        const tile_height = Math.abs(y_range_screen[0] - y_range_screen[1])
+        const no_x_ticks = Math.floor(tile_width / this.tick_spacing)
+        const no_y_ticks = Math.floor(tile_height / this.tick_spacing)
+        const x_ticks = []
+        for (let k = 0; k <= no_x_ticks; k++) {
+            x_ticks.push(x_range_screen[0] + k / no_x_ticks * tile_width)
+        }
+        const y_ticks = []
+        for (let k = 0; k <= no_y_ticks; k++) {
+            y_ticks.push(y_range_screen[1] + k / no_y_ticks * tile_height)
+        }
 
-        // Add dots
-        svg.append('g')
-            .selectAll("dot")
-            .data(this.data)
-            .enter()
-            .append("circle")
-            .attr("cx", d => x(this.mappers[x_dimension].map(d[x_dimension])))
-            .attr("cy", d => y(this.mappers[y_dimension].map(d[y_dimension])))
-            .attr("r", 5)
-            .style("fill", d => {
-                if (this.dimensions.length < 3)
-                    return 0
-                const dimension = this.dimensions[2]
-                return colorScale(this.mappers[dimension].map(d[dimension]))
-            })
+        const tick_formatter = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
 
+        //base_svg = base_svg.append("g").attr("style", "outline: thin solid red;")
+
+        var x = d3.scaleLinear()
+            .domain(x_range_screen)
+            .range([x_range_screen[0] + this.chart_spacing * i, x_range_screen[1] + this.chart_spacing * i])
+
+        base_svg.append("g")
+            .attr("transform", "translate(" + 0 + "," + (y_range_screen[0] - this.chart_spacing * j) + ")")
+            .call(d3.axisBottom(x)
+                .tickSize(-tile_height)
+                .tickValues(x_ticks)
+                .tickFormat(tick_val => j === 0
+                    ? tick_formatter.format(x_mapper.map_inverse(tick_val))
+                    : "")
+            ).select(".domain").remove()
+
+        var y = d3.scaleLinear()
+            .domain(y_range_screen)
+            .range([y_range_screen[0] - this.chart_spacing * j, y_range_screen[1] - this.chart_spacing * j])
+
+        base_svg.append("g")
+            .attr("transform", "translate(" + (x_range_screen[0] + this.chart_spacing * i) + ","+ 0 + ")")
+            .call(d3.axisLeft(y)
+                .tickSize(-tile_width)
+                .tickValues(y_ticks)
+                .tickFormat(tick_val => i === 0
+                    ? tick_formatter.format(y_mapper.map_inverse(tick_val))
+                    : "")
+            ).select(".domain").remove()
+        return base_svg;
     }
 }
 

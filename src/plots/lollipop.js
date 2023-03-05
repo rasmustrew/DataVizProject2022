@@ -1,8 +1,7 @@
-import {v4 as uuidv4} from "uuid";
 import * as d3 from "d3";
 import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
-import {is_value_in_range} from "../mappings/util";
+
 export default class Lollipop {
     constructor(chart_ref, data, dimension, raw_mapper) {
         let plot = document.querySelector(chart_ref)

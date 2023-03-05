@@ -19,7 +19,7 @@ export default class ScreenMapper {
         this.inner_mappers = []
         let current_output = output_start
         for (let range of input_space_ranges) {
-            let range_size = range[1] - range[0];
+            let range_size = Math.abs(range[1] - range[0]);
             let range_percent = range_size / input_range_size
             let new_output_range_size = output_size * range_percent
             let new_output_range_end;
@@ -49,6 +49,8 @@ export default class ScreenMapper {
     map_inverse(output) {
         let output_range_index = this.get_output_space_ranges().findIndex((range) =>
             is_value_in_range(output, range, this.output_start, this.output_end))
+        if (output_range_index === -1)
+            return 0
         return this.inner_mappers[output_range_index].map_inverse(output)
     }
 
