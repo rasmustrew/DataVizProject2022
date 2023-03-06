@@ -9,9 +9,11 @@ import LinearMapper from "../mappings/linear_mapping";
 import * as d3 from "d3";
 import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
+import PowMapper from "../mappings/pow_mapping";
 
 const algo_selector_ref = "#algorithm-select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
+let read_exponent = () => ({exponent: parseInt(d3.select("#exponent input").property("value"))})
 
 let algorithm_selection_map = {
     none: {
@@ -59,6 +61,11 @@ let algorithm_selection_map = {
         algo: (sorted_data, args, dimension) => new SqrtMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1]),
         arguments_id: null,
         read_args: () => {}
+    },
+    pow: {
+        algo: (sorted_data, args, dimension) => new PowMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1], args.exponent),
+        arguments_id: "#exponent_argument",
+        read_args: read_exponent
     },
 }
 
