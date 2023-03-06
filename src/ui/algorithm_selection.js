@@ -32,22 +32,22 @@ let algorithm_selection_map = {
     },
     quantile: {
         algo: quantile_splits,
-        arguments_id: "#greedy_guided_split_arguments",
+        arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     kmeans: {
         algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "random"),
-        arguments_id: "#greedy_guided_split_arguments",
+        arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     kmeans_plusplus: {
         algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "++"),
-        arguments_id: "#greedy_guided_split_arguments",
+        arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     kmeans_opt: {
         algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "optimal"),
-        arguments_id: "#greedy_guided_split_arguments",
+        arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     log: {
