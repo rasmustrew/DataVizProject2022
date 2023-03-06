@@ -37,13 +37,20 @@
             </select>
 
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm()" required>
-                <option value="none" selected>None</option>
-                <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
-                <option value="quantile" selected>Quantile</option>
-<!--                <option value="kmeans">KMeans</option>-->
-<!--                <option value="kmeans_plusplus">KMeans++</option>-->
-                <option value="kmeans_opt">KMeansOPT</option>
-                <option value="greedy_guided_split">Greedy Guided Split</option>
+                <optgroup label="Split">
+
+                    <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
+                    <option value="quantile">Quantile</option>
+    <!--                <option value="kmeans">KMeans</option>-->
+    <!--                <option value="kmeans_plusplus">KMeans++</option>-->
+                    <option value="kmeans_opt">KMeansOPT</option>
+                    <option value="greedy_guided_split">Greedy Guided Split</option>
+                </optgroup>
+                <optgroup label="Standard">
+                    <option value="none" selected>None</option>
+                    <option value="log">Log</option>
+                    <option value="sqrt">Square root</option>
+                </optgroup>
             </select>
 
             <button class="button" id="submitDiv" onclick="window.on_recompute_button();">

@@ -7,11 +7,20 @@ import {quantile_splits} from "../algorithms/quantile_splits";
 import {kmeans_splits} from "../algorithms/kmeans_split";
 import LinearMapper from "../mappings/linear_mapping";
 import * as d3 from "d3";
+import LogMapper from "../mappings/log_mapping";
+import SqrtMapper from "../mappings/sqrt_mapping";
 
 const algo_selector_ref = "#algorithm-select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
 
 let algorithm_selection_map = {
+    none: {
+        algo: (sorted_data, args, dimension) => {
+            return new LinearMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1])
+        },
+        arguments_id: null,
+        read_args: () => {},
+    },
     greedy_guided_split: {
         algo: greedy_guided_split,
         arguments_id: "#greedy_guided_split_arguments",
@@ -41,13 +50,16 @@ let algorithm_selection_map = {
         arguments_id: "#greedy_guided_split_arguments",
         read_args: read_number_of_clusters
     },
-    none: {
-        algo: (sorted_data, args, dimension) => {
-            return new LinearMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1])
-        },
+    log: {
+        algo: (sorted_data, args, dimension) => new LogMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1]),
         arguments_id: null,
-        read_args: () => {},
-    }
+        read_args: () => {}
+    },
+    sqrt: {
+        algo: (sorted_data, args, dimension) => new SqrtMapper([[sorted_data[0], sorted_data[sorted_data.length - 1]]], [0, 1]),
+        arguments_id: null,
+        read_args: () => {}
+    },
 }
 
 export function algorithm_selection_update(arguments_id) {
