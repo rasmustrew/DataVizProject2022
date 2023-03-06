@@ -37,13 +37,21 @@
             </select>
 
             <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm()" required>
-                <option value="none" selected>None</option>
-                <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
-                <option value="quantile" selected>Quantile</option>
-<!--                <option value="kmeans">KMeans</option>-->
-<!--                <option value="kmeans_plusplus">KMeans++</option>-->
-                <option value="kmeans_opt">KMeansOPT</option>
-                <option value="greedy_guided_split">Greedy Guided Split</option>
+                <optgroup label="Split">
+                    <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
+                    <option value="quantile">Quantile</option>
+    <!--                <option value="kmeans">KMeans</option>-->
+    <!--                <option value="kmeans_plusplus">KMeans++</option>-->
+                    <option value="kmeans_opt">KMeansOPT</option>
+                    <option value="greedy_guided_split">Greedy Guided Split</option>
+                </optgroup>
+                <optgroup label="Standard">
+                    <option value="none" selected>None</option>
+                    <option value="log">Log</option>
+                    <option value="sqrt">Square root</option>
+                    <option value="pow">Power</option>
+                    <option value="box_cox">Box Cox</option>
+                </optgroup>
             </select>
 
             <button class="button" id="submitDiv" onclick="window.on_recompute_button();">
@@ -65,12 +73,23 @@
                     Skewness:
                     <input type="number" value="1.5" />
                 </div>
+            </div>
+            <div id="num_clusters_argument">
                 <div id="clusters">
                     Clusters:
                     <input type="number" min="1" step="1" value="3" />
                 </div>
-                <div class="slidecontainer" id="slider">
-                    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+            </div>
+            <div id="exponent_argument">
+                <div id="exponent">
+                    Exponent:
+                    <input type="number" min="1" step="1" value="2" />
+                </div>
+            </div>
+            <div id="lambda_argument">
+                <div id="lambda">
+                    Lambda:
+                    <input type="number" min="-5" max="5" step="1" value="2" />
                 </div>
             </div>
         </div>
