@@ -30,16 +30,13 @@ export function greedy_guided_split(sorted_data, weights, dimension) {
             if (current_best_splits.includes(split_point)) {
                 continue
             }
-
-
-
             let suggested_splits = insert_split(confirmed_splits, split_point)
             let current_mapper = new ProportionateSplitMapper(sorted_data, suggested_splits)
             let metrics = compute_metrics(sorted_data, current_mapper, linear_mapper, extreme_mapper)
             let current_metric = compute_total_metric(metrics, weights)
             if (current_metric < current_best_metric) {
-                console.log("improved")
-                console.log("improvement: ", current_best_metric - current_metric)
+                // console.log("improved")
+                // console.log("improvement: ", current_best_metric - current_metric)
                 improving = true
                 current_best_metric = current_metric
                 current_best_splits = suggested_splits
@@ -52,12 +49,12 @@ export function greedy_guided_split(sorted_data, weights, dimension) {
         }
     }
 
-    console.log(weights)
-    console.log(metrics_without_splits)
-    console.log(metric_without_splits)
-    console.log(current_best_metrics)
-    console.log(current_best_metric)
-    console.log("improvement: ", metric_without_splits - current_best_metric)
+    // console.log(weights)
+    // console.log(metrics_without_splits)
+    // console.log(metric_without_splits)
+    // console.log(current_best_metrics)
+    // console.log(current_best_metric)
+    // console.log("improvement: ", metric_without_splits - current_best_metric)
     return current_best_mapper
 }
 
