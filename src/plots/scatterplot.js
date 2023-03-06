@@ -3,10 +3,8 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 
 export default class ScatterPlot {
-
     tick_spacing = 50
     chart_spacing = 25
-
 
     constructor(chart_ref, data, selected_dimensions, raw_mappers) {
         this.chart_ref = chart_ref
@@ -133,52 +131,57 @@ export default class ScatterPlot {
     }
 
     add_chart_tile(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
-        const x_range_screen = x_range.map(v => x_mapper.map(v))
-        const y_range_screen = y_range.map(v => y_mapper.map(v))
+        // const x_range_screen = x_range.map(v => x_mapper.map(v))
+        // const y_range_screen = y_range.map(v => y_mapper.map(v))
+        const x_range_screen = x_mapper.get_output_space_ranges()[i]
+        const y_range_screen = y_mapper.get_output_space_ranges()[j]
         const tile_width = Math.abs(x_range_screen[0] - x_range_screen[1])
         const tile_height = Math.abs(y_range_screen[0] - y_range_screen[1])
         const no_x_ticks = Math.floor(tile_width / this.tick_spacing)
         const no_y_ticks = Math.floor(tile_height / this.tick_spacing)
-        const x_ticks = []
-        for (let k = 0; k <= no_x_ticks; k++) {
-            x_ticks.push(x_range_screen[0] + k / no_x_ticks * tile_width)
-        }
-        const y_ticks = []
-        for (let k = 0; k <= no_y_ticks; k++) {
-            y_ticks.push(y_range_screen[1] + k / no_y_ticks * tile_height)
-        }
 
+        const x_ticks = [x_range[0]]
+        for (let k = 1; k < no_x_ticks; k++) {
+            let screen_value = x_range_screen[0] + k / no_x_ticks * tile_width
+            x_ticks.push(x_mapper.map_inverse(screen_value))
+        }
+        x_ticks.push(x_range[1])
+
+
+        const y_ticks = [y_range[1]]
+        for (let k = 1; k < no_y_ticks; k++) {
+            let screen_value = y_range_screen[1] + k / no_y_ticks * tile_height
+            y_ticks.push(y_mapper.map_inverse(screen_value))
+        }
+        y_ticks.push(y_range[0])
+        y_ticks.reverse()
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
 
         //base_svg = base_svg.append("g").attr("style", "outline: thin solid red;")
 
         var x = d3.scaleLinear()
-            .domain(x_range_screen)
-            .range([x_range_screen[0] + this.chart_spacing * i, x_range_screen[1] + this.chart_spacing * i])
+            .domain(x_range)
+            .range(x_range_screen)
 
         base_svg.append("g")
-            .attr("transform", "translate(" + 0 + "," + (y_range_screen[0] - this.chart_spacing * j) + ")")
+            .attr("transform", "translate(" + this.chart_spacing * i + "," + (y_range_screen[0] - this.chart_spacing * j) + ")")
             .call(d3.axisBottom(x)
                 .tickSize(-tile_height)
                 .tickValues(x_ticks)
-                .tickFormat(tick_val => j === 0
-                    ? tick_format.format(x_mapper.map_inverse(tick_val))
-                    : "")
-            ).select(".domain").remove()
+                .tickFormat((tick) => j === 0? tick_format.format(tick): "")
+            )
 
         var y = d3.scaleLinear()
-            .domain(y_range_screen)
-            .range([y_range_screen[0] - this.chart_spacing * j, y_range_screen[1] - this.chart_spacing * j])
+            .domain(y_range)
+            .range(y_range_screen)
 
         base_svg.append("g")
-            .attr("transform", "translate(" + (x_range_screen[0] + this.chart_spacing * i) + ","+ 0 + ")")
+            .attr("transform", "translate(" + (x_range_screen[0] + this.chart_spacing * i) + ","+ (-this.chart_spacing * j) + ")")
             .call(d3.axisLeft(y)
                 .tickSize(-tile_width)
                 .tickValues(y_ticks)
-                .tickFormat(tick_val => i === 0
-                    ? tick_format.format(y_mapper.map_inverse(tick_val))
-                    : "")
-            ).select(".domain").remove()
+                .tickFormat((tick) => i === 0? tick_format.format(tick): "")
+            )
         return base_svg;
     }
 }
