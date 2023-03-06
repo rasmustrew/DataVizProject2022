@@ -8,7 +8,7 @@ export default class LogMapper {
         this.input_start = input_space_ranges[0][0];
         this.input_end = input_space_ranges[input_space_ranges.length - 1][1];
         this.output_range = output_range
-        this.d3_scale = d3.scaleLog().domain([this.input_start, this.input_end]).range(output_range)
+        this.d3_scale = d3.scaleSymlog().domain([this.input_start, this.input_end]).range(output_range)
     }
     map(input) {
         // let input_percentage = (input - this.input_start) / this.input_size
