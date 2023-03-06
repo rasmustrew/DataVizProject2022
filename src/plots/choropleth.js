@@ -24,40 +24,24 @@ export default class Choropleth {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-        // create a tooltip
-        const tooltip = d3.select(this.chart_ref)
-            .append("div")
-            .style("opacity", 0)
-            .attr("class", "tooltip")
-            .style("background-color", "white")
-            .style("border", "solid")
-            .style("border-width", "2px")
-            .style("border-radius", "5px")
-            .style("padding", "5px")
+        // Tooltip
+        const tooltip = d3.select(this.chart_ref).append("g").attr("class", "tooltip")
 
-        let mouseOver = function(d) {
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .style("opacity", 1)
-            tooltip.style("opacity", 1)
+        // Mouse callbacks
+        let mouseover = function(event,d) {
+            tooltip.style("visibility", "visible")
         }
 
-        const mouseMove = function(event,d) {
+        let mousemove = (event, d) => {
             tooltip
-                .html("The " + dimension + " of<br>" + d.properties["name"] + " is: " + d.value)
-                .style("left", (event.x)/2 + "px")
-                .style("top", (event.y)/2 + "px")
+                .html("The " + dimension + " of" + d.properties["name"] + " is:<br>" + d.value)
+                .style("left", event.x + "px")
+                .style("top", (event.y + 20) + "px")
+        }
+        let mouseleave = function(d) {
+            tooltip.style("visibility", "hidden")
         }
 
-        let mouseLeave = function(d) {
-            d3.selectAll(".Country")
-                .transition()
-                .duration(200)
-                .style("opacity", .7)
-                .style("stroke", null)
-            tooltip.style("opacity", 0)
-        }
         // Color scale
         const colorScale = d3.scaleSequential(d3.interpolateViridis)
             .domain([0, 1])
@@ -100,9 +84,9 @@ export default class Choropleth {
                 .style("stroke", "transparent")
                 .attr("class", function(d){ return "Country" } )
                 .style("opacity", .8)
-                .on("mouseover", mouseOver )
-                .on("mousemove", mouseMove)
-                .on("mouseleave", mouseLeave )
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave)
         })
     }
 }

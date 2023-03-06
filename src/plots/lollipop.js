@@ -103,6 +103,23 @@ export default class Lollipop {
             .attr("y2", mapper.map(input_range[0]))
             .attr("stroke", "grey")
 
+        // Tooltip
+        let tooltip = d3.select(this.chart_ref).append("g").attr("class", "tooltip")
+
+        // Mouse callbacks
+        let mouseover = function(event,d) {
+            tooltip.style("visibility", "visible")
+        }
+
+        let mousemove = (event, d) => {
+            tooltip.html("The " + dimension + " of" + d.id + " is:<br>" + mapper.map(d[dimension]))
+                .style("left", event.x + "px")
+                .style("top", (event.y + 20) + "px")
+        }
+        let mouseleave = function(d) {
+            tooltip.style("visibility", "hidden")
+        }
+
         // Circles
         base_svg.selectAll("mycircle")
             .data(data)
@@ -112,6 +129,9 @@ export default class Lollipop {
             .attr("r", "4")
             .style("fill", "#69b3a2")
             .attr("stroke", "black")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
 }
 
 }

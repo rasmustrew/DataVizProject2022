@@ -48,6 +48,7 @@ export default class ScatterPlot {
         let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
         let x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
         let y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
+        let color_mapper = this.mappers[this.color_dim]
 
         for (var i = 0; i < x_ranges.length; i++) {
             const x_range = x_ranges[i]
@@ -56,6 +57,35 @@ export default class ScatterPlot {
                 this.add_chart_tile(svg, i, j, x_range, y_range, x_mapper, y_mapper)
                 console.log(x_range.toString() + "; " + y_range.toString())
             }
+        }
+
+        // Tooltip
+        const tooltip = d3.select(this.chart_ref).append("g").attr("class", "tooltip")
+        let tooltip_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 5 })
+
+        // Mouse callbacks
+        let mouseover = function(event,d) {
+            tooltip.style("visibility", "visible")
+        }
+
+        let mousemove = (event, d) => {
+            const x = tooltip_format.format(x_mapper.map_inverse(d.x_val))
+            const y = tooltip_format.format(y_mapper.map_inverse(d.y_val))
+            let color = ""
+            if (this.dimensions.length > 2) {
+                color = tooltip_format.format(color_mapper.map_inverse(d.color_val))
+            }
+
+            tooltip
+                .html(d.id + "<br>"
+                    + this.x_dim + ": " + x + "<br>"
+                    + this.y_dim + ": " + y
+                    + (this.dimensions.length > 2 ? "<br>" + this.color_dim + ": " + color : ""))
+                .style("left", event.x + "px")
+                .style("top", (event.y + 20) + "px")
+        }
+        let mouseleave = function(d) {
+            tooltip.style("visibility", "hidden")
         }
 
         // Color scale
@@ -68,7 +98,8 @@ export default class ScatterPlot {
             .data(this.data.map(d => {
                 d.x_val = x_mapper.map(d[this.x_dim])
                 d.y_val = y_mapper.map(d[this.y_dim])
-                d.color_val = this.mappers[this.color_dim].map(d[this.color_dim])
+                if (this.dimensions.length > 2)
+                    d.color_val = color_mapper.map(d[this.color_dim])
                 return d
             }))
             .enter()
@@ -81,6 +112,9 @@ export default class ScatterPlot {
                     return 0
                 return colorScale(d.color_val)
             })
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
 
         // Add X axis label:
         svg.append("text")
@@ -114,7 +148,7 @@ export default class ScatterPlot {
             y_ticks.push(y_range_screen[1] + k / no_y_ticks * tile_height)
         }
 
-        const tick_formatter = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
+        let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
 
         //base_svg = base_svg.append("g").attr("style", "outline: thin solid red;")
 
@@ -128,7 +162,7 @@ export default class ScatterPlot {
                 .tickSize(-tile_height)
                 .tickValues(x_ticks)
                 .tickFormat(tick_val => j === 0
-                    ? tick_formatter.format(x_mapper.map_inverse(tick_val))
+                    ? tick_format.format(x_mapper.map_inverse(tick_val))
                     : "")
             ).select(".domain").remove()
 
@@ -142,7 +176,7 @@ export default class ScatterPlot {
                 .tickSize(-tile_width)
                 .tickValues(y_ticks)
                 .tickFormat(tick_val => i === 0
-                    ? tick_formatter.format(y_mapper.map_inverse(tick_val))
+                    ? tick_format.format(y_mapper.map_inverse(tick_val))
                     : "")
             ).select(".domain").remove()
         return base_svg;
