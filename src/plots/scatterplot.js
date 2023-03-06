@@ -52,7 +52,7 @@ export default class ScatterPlot {
             const x_range = x_ranges[i]
             for (var j = 0; j < y_ranges.length; j++) {
                 const y_range = y_ranges[j]
-                this.add_chart_tile(svg, i, j, x_range, y_range, x_mapper, y_mapper)
+                this.add_chart_tile(base_svg, i, j, x_range, y_range, x_mapper, y_mapper)
                 console.log(x_range.toString() + "; " + y_range.toString())
             }
         }
@@ -155,16 +155,16 @@ export default class ScatterPlot {
         }
         y_ticks.push(y_range[0])
         y_ticks.reverse()
-        let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 3 })
+        let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
         //base_svg = base_svg.append("g").attr("style", "outline: thin solid red;")
-
+        console.log("x_range_screen: ", x_range_screen)
         var x = d3.scaleLinear()
             .domain(x_range)
             .range(x_range_screen)
 
         base_svg.append("g")
-            .attr("transform", "translate(" + this.chart_spacing * i + "," + (y_range_screen[0] - this.chart_spacing * j) + ")")
+            .attr("transform", "translate(" + 0 + "," + y_range_screen[0] + ")")
             .call(d3.axisBottom(x)
                 .tickSize(-tile_height)
                 .tickValues(x_ticks)
@@ -176,7 +176,7 @@ export default class ScatterPlot {
             .range(y_range_screen)
 
         base_svg.append("g")
-            .attr("transform", "translate(" + (x_range_screen[0] + this.chart_spacing * i) + ","+ (-this.chart_spacing * j) + ")")
+            .attr("transform", "translate(" + x_range_screen[0] + "," + 0 + ")")
             .call(d3.axisLeft(y)
                 .tickSize(-tile_width)
                 .tickValues(y_ticks)
