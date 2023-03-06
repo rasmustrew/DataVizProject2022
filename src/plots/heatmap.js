@@ -54,30 +54,25 @@ export default class HeatMap {
         svg.append("g")
             .call(d3.axisLeft(y));
 
-        // create a tooltip
+        // Tooltip
         const tooltip = d3.select(this.chart_ref)
-            .append("div")
-            .style("opacity", 0)
+            .append("g")
             .attr("class", "tooltip")
-            .style("background-color", "white")
-            .style("border", "solid")
-            .style("border-width", "2px")
-            .style("border-radius", "5px")
-            .style("padding", "5px")
 
-        // Three function that change the tooltip when user hover / move / leave a cell
+        // Mouse callbacks
         const mouseover = function(event,d) {
-            tooltip.style("opacity", 1)
+            tooltip.style("visibility", "visible")
         }
         let value_row = this.dimension
         const mousemove = (event, d) => {
             tooltip
-                .html("The exact value of<br>this cell is: " + d[value_row])
-                .style("left", (event.x)/2 + "px")
-                .style("top", (event.y)/2 + "px")
+                .html("(" + d.x + ", " + d.y + ")" + "<br>"
+                    + d[value_row] + " " + this.dimension)
+                .style("left", event.x + "px")
+                .style("top", (event.y + 20) + "px")
         }
         const mouseleave = function(d) {
-            tooltip.style("opacity", 0)
+            tooltip.style("visibility", "hidden")
         }
 
         // Build color scale
