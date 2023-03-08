@@ -11,6 +11,7 @@ import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
 import PowMapper from "../mappings/pow_mapping";
 import BoxCoxMapper from "../mappings/box_cox_mapping";
+import {MIL_splits} from "../algorithms/surprise_split";
 
 const algo_selector_ref = "#algorithm-select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
@@ -51,6 +52,11 @@ let algorithm_selection_map = {
     },
     kmeans_opt: {
         algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "optimal"),
+        arguments_id: "#num_clusters_argument",
+        read_args: read_number_of_clusters
+    },
+    osaragi: {
+        algo: (sorted_data, args, dimension) => MIL_splits(sorted_data, args, dimension, "optimal"),
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },

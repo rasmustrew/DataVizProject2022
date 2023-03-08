@@ -52,7 +52,7 @@ export default class ScatterPlot {
             const x_range = x_ranges[i]
             for (var j = 0; j < y_ranges.length; j++) {
                 const y_range = y_ranges[j]
-                this.add_chart_tile(base_svg, i, j, x_range, y_range, x_mapper, y_mapper)
+                this.make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper)
                 console.log(x_range.toString() + "; " + y_range.toString())
             }
         }
@@ -130,9 +130,7 @@ export default class ScatterPlot {
             .text(this.dimensions[1])
     }
 
-    add_chart_tile(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
-        // const x_range_screen = x_range.map(v => x_mapper.map(v))
-        // const y_range_screen = y_range.map(v => y_mapper.map(v))
+    make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
         const x_range_screen = x_mapper.get_output_space_ranges()[i]
         const y_range_screen = y_mapper.get_output_space_ranges()[j]
         const tile_width = Math.abs(x_range_screen[0] - x_range_screen[1])

@@ -4,6 +4,7 @@ import {is_value_in_range} from "./util";
 export default class ProportionateSplitMapper {
 
     constructor(sorted_data, split_points) {
+        this.split_points = split_points
         this.min = sorted_data[0];
         this.max = sorted_data[sorted_data.length - 1]
         let points = [this.min, ...split_points, this.max]

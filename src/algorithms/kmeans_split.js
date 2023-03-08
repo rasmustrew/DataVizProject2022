@@ -1,15 +1,15 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
 
-let init_map = {
+let algorithm_map = {
     "random": (sorted_data, k) => lloyds_1d(sorted_data, k, rand_init),
     "++": (sorted_data, k) => lloyds_1d(sorted_data, k, kMeansPlusPlus1D),
     "optimal": optimal_kmeans_1d
 }
 
 // In general for kmeans, k = number of clusters
-export function kmeans_splits(sorted_data, args, _, version="++") {
+export function kmeans_splits(sorted_data, args, _, version="optimal") {
     let k = args["clusters"]
-    let centers = init_map[version](sorted_data, k)
+    let centers = algorithm_map[version](sorted_data, k)
     let split_points = compute_split_points(sorted_data, centers);
     return new ProportionateSplitMapper(sorted_data, split_points)
 }
@@ -85,7 +85,7 @@ function lloyds_1d(data, k, init_function=kMeansPlusPlus1D, max_iter=10) {
     return centers
 }
 
-function rand_init(sorted_data, k) {
+export function rand_init(sorted_data, k) {
     let centers = []
     let non_picked_values = sorted_data
     for (let i = 0; i < k; i++) {
