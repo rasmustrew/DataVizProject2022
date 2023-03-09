@@ -155,7 +155,6 @@ export default class ScatterPlot {
         y_ticks.reverse()
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
-        //base_svg = base_svg.append("g").attr("style", "outline: thin solid red;")
         console.log("x_range_screen: ", x_range_screen)
         var x = d3.scaleLinear()
             .domain(x_range)

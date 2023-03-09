@@ -12,6 +12,7 @@ import SqrtMapper from "../mappings/sqrt_mapping";
 import PowMapper from "../mappings/pow_mapping";
 import BoxCoxMapper from "../mappings/box_cox_mapping";
 import {MIL_splits} from "../algorithms/surprise_split";
+import UniformMapper from "../mappings/uniform_mapping";
 
 const algo_selector_ref = "#algorithm-select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
@@ -56,7 +57,7 @@ let algorithm_selection_map = {
         read_args: read_number_of_clusters
     },
     osaragi: {
-        algo: (sorted_data, args, dimension) => MIL_splits(sorted_data, args, dimension, "kmeans"),
+        algo: (sorted_data, args, dimension) => MIL_splits(sorted_data, args, dimension, "random"),
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
@@ -80,6 +81,11 @@ let algorithm_selection_map = {
         arguments_id: "#lambda_argument",
         read_args: read_lambda
     },
+    uniform: {
+        algo: (sorted_data, args, dimension) => new UniformMapper(sorted_data),
+        arguments_id: null,
+        read_args: () => {}
+    }
 }
 
 export function algorithm_selection_update(arguments_id) {

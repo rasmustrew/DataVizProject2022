@@ -1,6 +1,6 @@
-import { kmeans_splits } from "./kmeans_split";
+import {kmeans_splits} from "./kmeans_split";
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-import { k_random_items, nlgn, one_to_n, sum } from "./util";
+import {k_random_items, nlgn, one_to_n, sum} from "./util";
 
 let init_map = {
     random: (sorted_data, n_segments) => k_random_items(sorted_data, n_segments - 1),
@@ -50,7 +50,7 @@ class SurpriseSplit {
         // Transform point values to probability mass
         const p_x = sorted_data.map((x) => x / total_data_mass);
         // Original level of entropy in the non segmented data
-        const entropy = p_x.map((p_i) => p_i * Math.log2(p_i)).reduce(sum);
+        const original_entropy = p_x.map((p_i) => p_i * Math.log2(p_i)).reduce(sum);
         // Initial entropy contribution of segments
         const q = this.compute_segment_probabilities(sorted_data, split_indices, total_data_mass);
         let entropy_contributions = [];
@@ -58,7 +58,7 @@ class SurpriseSplit {
             const segment_start = k === 0 ? 0 : split_indices[k - 1];
             const segment_end = k === n_segments - 1 ? sorted_data.length : split_indices[k];
             const segment_size = segment_end - segment_start;
-            entropy_contributions.push(segment_size * nlgn(q[k]));
+            entropy_contributions.push(segment_size * -nlgn(q[k]));
         }
         // Loop until no improvement is made
         let split_changed = true;
@@ -119,19 +119,18 @@ class SurpriseSplit {
                 }
             }
         }
-        const split_points = split_indices.map((i) => sorted_data[i]);
-        return split_points;
+        return split_indices.map((i) => sorted_data[i]);
     }
 
     compute_segment_probabilities(sorted_data, split_indices, total_data_mass) {
         const q_k = [];
         let segment_start_index = 0;
-        for (let k = 0; k < split_indices.length; k++) {
-            const split_index = split_indices[k];
-            const segment = sorted_data.slice(segment_start_index, split_index);
+        for (let k = 0; k < split_indices.length + 1; k++) {
+            const segment_end_index = k === split_indices.length ? sorted_data.length : split_indices[k];
+            const segment = sorted_data.slice(segment_start_index, segment_end_index);
             const segment_probability_mass = this.segment_probability_mass(segment, total_data_mass);
             q_k.push(segment_probability_mass);
-            segment_start_index = split_index;
+            segment_start_index = segment_end_index;
         }
         return q_k;
     }
@@ -144,6 +143,6 @@ class SurpriseSplit {
     segment_entropy_contribution(segment, total_data_mass) {
         const segment_size = segment.length;
         const segment_q = this.segment_probability_mass(segment, total_data_mass);
-        return segment_size * nlgn(segment_q);
+        return segment_size * -nlgn(segment_q);
     }
 }
