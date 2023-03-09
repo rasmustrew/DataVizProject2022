@@ -1,7 +1,8 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
+import {k_random_items, mean} from "./util";
 
 let algorithm_map = {
-    "random": (sorted_data, k) => lloyds_1d(sorted_data, k, rand_init),
+    "random": (sorted_data, k) => lloyds_1d(sorted_data, k, k_random_items),
     "++": (sorted_data, k) => lloyds_1d(sorted_data, k, kMeansPlusPlus1D),
     "optimal": optimal_kmeans_1d
 }
@@ -85,17 +86,6 @@ function lloyds_1d(data, k, init_function=kMeansPlusPlus1D, max_iter=10) {
     return centers
 }
 
-export function rand_init(sorted_data, k) {
-    let centers = []
-    let non_picked_values = sorted_data
-    for (let i = 0; i < k; i++) {
-        const randomInt = Math.floor(Math.random() * sorted_data.length);
-        centers.push(sorted_data[randomInt])
-        non_picked_values = non_picked_values.filter(item => item !== sorted_data[randomInt])
-    }
-    return centers
-}
-
 // Initialize centers with k-means++ method
 function kMeansPlusPlus1D(sorted_data, k) {
     let centers = [sorted_data[Math.floor(Math.random() * sorted_data.length)]];
@@ -141,10 +131,6 @@ function faster_single_cluster_cost(cum_sum, square_cum_sum, from, to) {
     let sum_of_squares = square_cum_sum[to] - square_cum_sum[from]
     let factor = 1.0 / (to - from)
     return sum_of_squares - factor * squared_sum
-}
-
-function mean(points) {
-    return points.reduce((a, b) => a + b, 0) / points.length;
 }
 
 function single_cluster_cost(points) {
