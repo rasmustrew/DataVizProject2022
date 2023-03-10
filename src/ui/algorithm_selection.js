@@ -57,7 +57,7 @@ let algorithm_selection_map = {
         read_args: read_number_of_clusters
     },
     osaragi: {
-        algo: (sorted_data, args, dimension) => MIL_splits(sorted_data, args, dimension, "random"),
+        algo: (sorted_data, args, dimension) => MIL_splits(sorted_data, args, dimension, "kmeans"),
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },

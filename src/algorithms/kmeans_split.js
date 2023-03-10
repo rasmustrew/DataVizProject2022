@@ -1,8 +1,8 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-import {k_random_items, mean} from "./util";
+import {k_random_values, mean} from "./util";
 
 let algorithm_map = {
-    "random": (sorted_data, k) => lloyds_1d(sorted_data, k, k_random_items),
+    "random": (sorted_data, k) => lloyds_1d(sorted_data, k, k_random_values),
     "++": (sorted_data, k) => lloyds_1d(sorted_data, k, kMeansPlusPlus1D),
     "optimal": optimal_kmeans_1d
 }

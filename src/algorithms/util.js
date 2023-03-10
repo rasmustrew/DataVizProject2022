@@ -1,6 +1,6 @@
 
 
-export function k_random_items(sorted_data, k) {
+export function k_random_values(sorted_data, k) {
     let centers = []
     let non_picked_values = sorted_data
     for (let i = 0; i < k; i++) {
@@ -11,12 +11,16 @@ export function k_random_items(sorted_data, k) {
     return centers
 }
 
+export function k_random_integers(n, k) {
+    return k_random_values(one_to_n(n), k)
+}
+
 export function one_to_n(n) {
     return Array.from(Array(n).keys())
 }
 
 export function mean(points) {
-    return points.reduce((a, b) => a + b, 0) / points.length;
+    return points.reduce(sum, 0) / points.length;
 }
 
 export function sum(x1, x2) {

@@ -1,9 +1,9 @@
 import {kmeans_splits} from "./kmeans_split";
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-import {k_random_items, nlgn, one_to_n, sum} from "./util";
+import {k_random_integers, k_random_values, mean, nlgn, one_to_n, sum} from "./util";
 
 let init_map = {
-    random: (sorted_data, n_segments) => k_random_items(sorted_data, n_segments - 1),
+    random: (sorted_data, n_segments) => k_random_values(sorted_data, n_segments - 1),
     kmeans: (sorted_data, n_segments) => kmeans_splits(sorted_data, { clusters: n_segments }, null, "optimal").split_points
 };
 
@@ -17,48 +17,20 @@ export function MIL_splits(sorted_data, args, _, version = "kmeajsns") {
 }
 
 class SurpriseSplit {
-    init_map = {
-        random: (sorted_data, n_segments) => k_random_items(sorted_data, n_segments - 1),
-        kmeans: (sorted_data, n_segments) => {
-            const mapper = kmeans_splits(sorted_data, { clusters: n_segments }, null, "optimal");
-            min_information_loss(sorted_data, n_segments, mapper.split_points);
-        },
-    };
-
-    MIL_splits(sorted_data, args, _, version = "kmeajsns") {
-        const n_clusters = args["clusters"];
-        let algorithm = init_map[version];
-        const initial_splits = algorithm(sorted_data, n_clusters);
-        const splits = min_information_loss(sorted_data, n_clusters, initial_splits);
-        return new ProportionateSplitMapper(sorted_data, splits);
-    }
 
     min_information_loss(sorted_data, n_segments, initial_splits) {
         const n_splits = n_segments - 1;
-        initial_splits = initial_splits.sort();
-        let split_no = 0;
-        let split_indices = [];
-        for (let i = 0; i < sorted_data.length; i++) {
-            const x = sorted_data[i];
-            if (x >= initial_splits[split_no]) {
-                split_indices.push(i);
-                split_no += 1;
-            }
-        }
+        let split_indices = this.splits_to_indexes_of_next_point(sorted_data, initial_splits.sort((i1, i2) => i1 - i2));
 
         const total_data_mass = sorted_data.reduce(sum);
-        // Transform point values to probability mass
-        const p_x = sorted_data.map((x) => x / total_data_mass);
-        // Original level of entropy in the non segmented data
-        const original_entropy = p_x.map((p_i) => p_i * Math.log2(p_i)).reduce(sum);
         // Initial entropy contribution of segments
-        const q = this.compute_segment_probabilities(sorted_data, split_indices, total_data_mass);
         let entropy_contributions = [];
         for (let k = 0; k < n_segments; k++) {
             const segment_start = k === 0 ? 0 : split_indices[k - 1];
             const segment_end = k === n_segments - 1 ? sorted_data.length : split_indices[k];
-            const segment_size = segment_end - segment_start;
-            entropy_contributions.push(segment_size * -nlgn(q[k]));
+            const segment = sorted_data.slice(segment_start, segment_end)
+            const entropy_contribution = this.entropy_contribution(segment, total_data_mass)
+            entropy_contributions.push(entropy_contribution);
         }
         // Loop until no improvement is made
         let split_changed = true;
@@ -68,39 +40,40 @@ class SurpriseSplit {
                 // Indices into the data array
                 const segment1_start = k === 0 ? 0 : split_indices[k - 1];
                 const split_index = split_indices[k];
-                const segment2_end = k === n_splits - 1 ? sorted_data.length : split_indices[k + 1];
+                const segment2_end = k === n_splits ? sorted_data.length : split_indices[k + 1];
 
                 // Compute entropy of 3 cases
                 // For entropy of non-affected segments use precomputed values
                 const stay_entropy = entropy_contributions.reduce(sum);
-                const entropy_of_non_affected_segments = one_to_n(n_splits)
-                    .filter((i) => ![split_index, split_index - 1].includes(i))
+                const affected_segments = [k, k + 1]
+                const entropy_of_non_affected_segments = one_to_n(n_segments)
+                    .filter((i) => !(affected_segments.includes(i)))
                     .map((i) => entropy_contributions[i])
-                    .reduce(sum, []);
+                    .reduce(sum, 0);
 
                 // Moving split point left
-                let move_left_entropy = 0;
+                let move_left_entropy = -1;
                 let move_left_segment1_entropy = 0;
                 let move_left_segment2_entropy = 0;
                 // If left segment has only one point we cannot move split point left
                 if (split_index - segment1_start > 1) {
                     const segment1 = sorted_data.slice(segment1_start, split_index - 1);
-                    move_left_segment1_entropy = this.segment_entropy_contribution(segment1, total_data_mass);
+                    move_left_segment1_entropy = this.entropy_contribution(segment1, total_data_mass);
                     const segment2 = sorted_data.slice(split_index - 1, segment2_end);
-                    move_left_segment2_entropy = this.segment_entropy_contribution(segment2, total_data_mass);
+                    move_left_segment2_entropy = this.entropy_contribution(segment2, total_data_mass);
                     move_left_entropy = move_left_segment1_entropy + move_left_segment2_entropy + entropy_of_non_affected_segments;
                 }
 
                 // Moving split point right
-                let move_right_entropy = 0;
+                let move_right_entropy = -1;
                 let move_right_segment1_entropy = 0;
                 let move_right_segment2_entropy = 0;
                 // If right segment has only one point we cannot move split point right
                 if (segment2_end - split_index > 1) {
                     const segment1 = sorted_data.slice(segment1_start, split_index + 1);
-                    move_right_segment1_entropy = this.segment_entropy_contribution(segment1, total_data_mass);
+                    move_right_segment1_entropy = this.entropy_contribution(segment1, total_data_mass);
                     const segment2 = sorted_data.slice(split_index + 1, segment2_end);
-                    move_right_segment2_entropy = this.segment_entropy_contribution(segment2, total_data_mass);
+                    move_right_segment2_entropy = this.entropy_contribution(segment2, total_data_mass);
                     move_right_entropy = move_right_segment1_entropy + move_right_segment2_entropy + entropy_of_non_affected_segments;
                 }
 
@@ -117,32 +90,40 @@ class SurpriseSplit {
                     entropy_contributions[k + 1] = move_right_segment2_entropy;
                     split_indices[k]++;
                 }
+                console.log(best_entropy)
             }
         }
         return split_indices.map((i) => sorted_data[i]);
     }
 
-    compute_segment_probabilities(sorted_data, split_indices, total_data_mass) {
-        const q_k = [];
-        let segment_start_index = 0;
-        for (let k = 0; k < split_indices.length + 1; k++) {
-            const segment_end_index = k === split_indices.length ? sorted_data.length : split_indices[k];
-            const segment = sorted_data.slice(segment_start_index, segment_end_index);
-            const segment_probability_mass = this.segment_probability_mass(segment, total_data_mass);
-            q_k.push(segment_probability_mass);
-            segment_start_index = segment_end_index;
+    splits_to_indexes_of_next_point(sorted_data, initial_splits) {
+        let split_no = 0;
+        let split_indices = [];
+        for (let i = 0; i < sorted_data.length; i++) {
+            if (sorted_data[i] > initial_splits[split_no]) {
+                split_indices.push(i);
+                split_no += 1;
+            }
         }
-        return q_k;
+        if (split_indices.length < initial_splits.length) {
+            split_indices.push(sorted_data.length - 1)
+        }
+        return split_indices;
     }
 
-    segment_probability_mass(segment, total_data_mass) {
-        const segment_mass = segment.reduce(sum);
-        return segment_mass / (segment.length * total_data_mass);
+    // Computes entropy of a dataset when the values are perceived as probabilities
+    data_entropy(sorted_data, total_data_mass) {
+        // Transform point values to probability mass
+        const p_x = sorted_data.map((x) => x / total_data_mass);
+        // Original level of entropy in the non segmented data
+        return -p_x.map(nlgn).reduce(sum);
     }
 
-    segment_entropy_contribution(segment, total_data_mass) {
+    // Computes contribution of single segment towards the entropy of the full dataset
+    entropy_contribution(segment, total_data_mass) {
         const segment_size = segment.length;
-        const segment_q = this.segment_probability_mass(segment, total_data_mass);
-        return segment_size * -nlgn(segment_q);
+        const segment_mass = segment.reduce(sum);
+        const segment_mean_mass = segment_mass / segment_size
+        return -segment_mass / total_data_mass * Math.log2(segment_mean_mass / total_data_mass);
     }
 }
