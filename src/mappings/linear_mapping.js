@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {data_range} from "../algorithms/util";
 export default class LinearMapper {
 
     //input_space_ranges is assumed to be continous- i.e. there are no gaps in the input space ranges
@@ -28,4 +29,15 @@ export default class LinearMapper {
     get_output_space_ranges() {
         return [this.output_range]
     }
+}
+
+export class NormalizingMapper {
+    constructor(sorted_data) {
+        this.mapper = new LinearMapper([data_range(sorted_data)], [0, 1])
+    }
+
+    map(input) {return this.mapper.map(input)}
+    map_inverse(output) {return this.mapper.map_inverse(output)}
+    get_input_space_ranges() {return this.mapper.get_input_space_ranges()}
+    get_output_space_ranges() {return this.mapper.get_output_space_ranges()}
 }

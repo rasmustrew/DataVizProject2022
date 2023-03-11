@@ -62,25 +62,31 @@
         </div>
 
         <div id='arguments_div'>
-            <div id='metrics_div'>
+            <div id='metrics_div' style="text-align:right;">
                 <div id='entropy' class='metric_label'>
                     entropy:
                 </div>
                 <div id='sqrt_kmeans_cost' class='metric_label'>
                     kmeans_cost:
                 </div>
+                <div id='distortion' class='metric_label'>
+                    distortion:
+                </div>
+                <div id='skewness' class='metric_label'>
+                    skewness:
+                </div>
             </div>
 
             <div id='greedy_guided_split_arguments' class='argument_input'>
-                <div id='distortion'>
+                <div id='distortion_argument'>
                     Distortion:
                     <input type='number' value='1'/>
                 </div>
-                <div id='fragmentation'>
+                <div id='fragmentation_argument'>
                     Fragmentation:
                     <input type='number' value='0.05' />
                 </div>
-                <div id='skewness'>
+                <div id='skewness_argument'>
                     Skewness:
                     <input type='number' value='1.5' />
                 </div>

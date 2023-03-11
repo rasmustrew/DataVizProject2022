@@ -1,3 +1,4 @@
+import LinearMapper from "../mappings/linear_mapping";
 
 
 export function k_random_values(sorted_data, k) {
@@ -59,4 +60,8 @@ export function entropy(sorted_data, mapper, avg_bin = 3) {
     const distribution = hist.map(count => count / sorted_data.length)
     const negative_entropy = distribution.map(p => nlgn(p)).reduce(sum)
     return -negative_entropy
+}
+
+export function data_range(sorted_data) {
+    return [sorted_data[0], sorted_data[sorted_data.length - 1]]
 }

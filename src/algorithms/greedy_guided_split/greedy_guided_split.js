@@ -1,19 +1,23 @@
-import LinearMapper from "../../mappings/linear_mapping";
+import LinearMapper, {NormalizingMapper} from "../../mappings/linear_mapping";
 import UniqueIndexMapper from "../../mappings/unique_index_mapping";
 import CompositeMapper from "../../mappings/composite_mapping";
 import ProportionateSplitMapper from "../../mappings/proportionate_split_mapping";
 import * as d3 from "d3";
 
+export function make_extreme_mapper(sorted_data) {
+    let unique_index_mapper = new UniqueIndexMapper(sorted_data)
+    return new CompositeMapper([
+        unique_index_mapper,
+        new LinearMapper(unique_index_mapper.get_output_space_ranges(), [0, 1])
+    ]);
+}
+
 export function greedy_guided_split(sorted_data, weights, dimension) {
     console.log(dimension)
     let suggested_split_points = sorted_data;
     let input_range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
-    let linear_mapper = new LinearMapper([input_range], [0, 1])
-    let unique_index_mapper = new UniqueIndexMapper(sorted_data)
-    let extreme_mapper = new CompositeMapper([
-        unique_index_mapper,
-        new LinearMapper(unique_index_mapper.get_output_space_ranges(), [0, 1])
-    ])
+    let linear_mapper = new NormalizingMapper(sorted_data)
+    let extreme_mapper = make_extreme_mapper(sorted_data);
 
     let metrics_without_splits = compute_metrics(sorted_data, linear_mapper, linear_mapper, extreme_mapper)
     let metric_without_splits = compute_total_metric(metrics_without_splits, weights)
@@ -85,7 +89,7 @@ function compute_total_metric(metrics, weights) {
     return metrics.skewness * weights.skewness + metrics.distortion * weights.distortion + metrics.fragmentation * weights.fragmentation
 }
 
-function mapping_difference(data, mapping1, mapping2) {
+export function mapping_difference(data, mapping1, mapping2) {
     let summed_diff = 0
     for (let i = 0; i < data.length; i++) {
         let input = data[i]
@@ -99,8 +103,8 @@ function mapping_difference(data, mapping1, mapping2) {
 
 export function read_greedy_guided_split_args() {
     let weights = {}
-    weights["distortion"] = parseFloat(d3.select("#distortion input").property("value"))
-    weights["fragmentation"] = parseFloat(d3.select("#fragmentation input").property("value"))
-    weights["skewness"] = parseFloat(d3.select("#skewness input").property("value"))
+    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value"))
+    weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value"))
+    weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
     return weights
 }

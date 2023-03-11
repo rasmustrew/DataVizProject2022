@@ -5,7 +5,7 @@ import {
 import {hardcoded_periodic_table_get_mapper} from "../algorithms/hardcoded_splits";
 import {quantile_splits} from "../algorithms/quantile_splits";
 import {kmeans_splits} from "../algorithms/kmeans_split";
-import LinearMapper from "../mappings/linear_mapping";
+import LinearMapper, {NormalizingMapper} from "../mappings/linear_mapping";
 import * as d3 from "d3";
 import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
@@ -14,6 +14,7 @@ import BoxCoxMapper from "../mappings/box_cox_mapping";
 import {OsaragiSplit} from "../algorithms/surprise_split";
 import UniformMapper from "../mappings/uniform_mapping";
 import InterpolationMapper from "../mappings/interpolation_mapping";
+import {data_range, normalizing_mapper} from "../algorithms/util";
 
 const algo_selector_ref = "#algorithm-select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
@@ -21,12 +22,10 @@ let read_exponent = () => ({exponent: parseInt(d3.select("#exponent input").prop
 let read_lambda = () => ({lambda: parseInt(d3.select("#lambda input").property("value"))})
 let read_interpolation_slider = () => ({interpolation: parseInt(d3.select("#interpolation input").property("value")) / 100})
 
-let data_range = (sorted_data) => [sorted_data[0], sorted_data[sorted_data.length - 1]]
-
 let algorithm_selection_map = {
     none: {
         algo: (sorted_data, args, dimension) => {
-            return new LinearMapper([data_range(sorted_data)], [0, 1])
+            return new NormalizingMapper(sorted_data)
         },
         arguments_id: null,
         read_args: () => {},
@@ -89,7 +88,7 @@ let algorithm_selection_map = {
         read_args: read_lambda
     },
     uniform: {
-        algo: (sorted_data, args, dimension) => new InterpolationMapper(new LinearMapper([data_range(sorted_data)], [0, 1]), new UniformMapper(sorted_data), args.interpolation),
+        algo: (sorted_data, args, dimension) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.interpolation),
         arguments_id: "#interpolation_argument",
         read_args: read_interpolation_slider
     }

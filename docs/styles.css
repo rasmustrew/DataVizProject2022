@@ -29,7 +29,6 @@ body, html {
 
 #arguments_div {
     display: flex;
-    justify-content: flex-end;
     flex-direction: row;
     align-items: flex-start;
     background-color: lightgray;
