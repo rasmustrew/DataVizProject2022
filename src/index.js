@@ -2,6 +2,7 @@ import {data_selection_map, get_selected_data} from "./ui/data_selection";
 import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimension_selection";
 import {algorithm_selection_update, get_selected_algorithm} from "./ui/algorithm_selection";
 import {get_chart_selection, get_selected_chart} from "./ui/chart_selection";
+import {update_metrics_display} from "./ui/metric_display";
 
 console.log("starting")
 
@@ -22,6 +23,8 @@ function select_algorithm() {
     for (let dimension of dimensions) {
         mappers[dimension] = algo(sorted_data[dimension], args, dimension)
     }
+    let dimension = dimensions[0]
+    update_metrics_display(sorted_data[dimension], mappers[dimension])
 }
 
 function select_dimensions() {

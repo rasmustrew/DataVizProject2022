@@ -1,113 +1,122 @@
 <!DOCTYPE html>
-<meta charset="utf-8" xmlns="http://www.w3.org/1999/html">
+<meta charset='utf-8' xmlns='http://www.w3.org/1999/html'>
 
 <head>
     <title>Axis Splitting</title>
 
 
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="par_coords.css">
-    <link rel="stylesheet" href="arguments.css">
-    <link rel="stylesheet" href="lollipop.css">
-    <link rel="stylesheet" href="chart.css">
+    <link rel='stylesheet' href='styles.css'>
+    <link rel='stylesheet' href='par_coords.css'>
+    <link rel='stylesheet' href='arguments.css'>
+    <link rel='stylesheet' href='lollipop.css'>
+    <link rel='stylesheet' href='chart.css'>
 </head>
 
 <body>
 
-    <div id="body">
+    <div id='body'>
         <div id='header_div'>
             <div id='title_div'>Axis Splits</div>
-            <select name="data" id="data-select" onChange="window.select_data()" required>
-                <option value="numbeo_country_data">country data Numbeo</option>
-                <option value="un_country_data">country data UN</option>
-                <option value="heatmap_data">example data (heatmap)</option>
-                <option value="heatmap_denmark">OSM Denmark amenity density (heatmap)</option>
-                <option value="heatmap_europe">OSM Europe amenity density (heatmap)</option>
-                <option value="periodic_table" selected>periodic table</option>
+            <select name='data' id='data-select' onChange='window.select_data()' required>
+                <option value='numbeo_country_data'>country data Numbeo</option>
+                <option value='un_country_data'>country data UN</option>
+                <option value='heatmap_data'>example data (heatmap)</option>
+                <option value='heatmap_denmark'>OSM Denmark amenity density (heatmap)</option>
+                <option value='heatmap_europe'>OSM Europe amenity density (heatmap)</option>
+                <option value='periodic_table' selected>periodic table</option>
             </select>
 
-            <select name="data_dimension" id="dimension-select" onChange="window.select_dimensions()" multiple required></select>
+            <select name='data_dimension' id='dimension-select' onChange='window.select_dimensions()' multiple required></select>
 
-            <select name="chart" id="chart-select" onChange="window.select_chart();" required>
-                <option value="choropleth">Choropleth</option>
-                <option value="heatmap">Heatmap</option>
-                <option value="lollipop">Lollipop</option>
-                <option value="scatter_plot" selected>Scatter plot</option>
-                <option value="spc">Parallel coordinates</option>
+            <select name='chart' id='chart-select' onChange='window.select_chart();' required>
+                <option value='choropleth'>Choropleth</option>
+                <option value='heatmap'>Heatmap</option>
+                <option value='lollipop'>Lollipop</option>
+                <option value='scatter_plot' selected>Scatter plot</option>
+                <option value='spc'>Parallel coordinates</option>
             </select>
 
-            <select name="algorithm" id="algorithm-select" onChange="window.select_algorithm()" required>
-                <optgroup label="Split">
-                    <option value="hardcoded_periodic_table">Hardcoded (periodic table data)</option>
-                    <option value="quantile">Quantile</option>
-    <!--                <option value="kmeans">KMeans</option>-->
-    <!--                <option value="kmeans_plusplus">KMeans++</option>-->
-                    <option value="kmeans_opt">KMeansOPT</option>
-                    <option value="osaragi">Osaragi</option>
-                    <option value="greedy_guided_split">Greedy Guided Split</option>
+            <select name='algorithm' id='algorithm-select' onChange='window.select_algorithm()' required>
+                <optgroup label='Split'>
+                    <option value='hardcoded_periodic_table'>Hardcoded (periodic table data)</option>
+                    <option value='quantile'>Quantile</option>
+    <!--                <option value='kmeans'>KMeans</option>-->
+    <!--                <option value='kmeans_plusplus'>KMeans++</option>-->
+                    <option value='kmeans_opt'>KMeansOPT</option>
+                    <option value='osaragi'>Osaragi</option>
+                    <option value='greedy_guided_split'>Greedy Guided Split</option>
                 </optgroup>
-                <optgroup label="Standard">
-                    <option value="none" selected>None</option>
-                    <option value="log">Log</option>
-                    <option value="sqrt">Square root</option>
-                    <option value="pow">Power</option>
-                    <option value="box_cox">Box Cox</option>
-                    <option value="uniform">Uniform</option>
+                <optgroup label='Standard'>
+                    <option value='none' selected>None</option>
+                    <option value='log'>Log</option>
+                    <option value='sqrt'>Square root</option>
+                    <option value='pow'>Power</option>
+                    <option value='box_cox'>Box Cox</option>
+                    <option value='uniform'>Uniform</option>
                 </optgroup>
             </select>
 
-            <button class="button" id="submitDiv" onclick="window.on_recompute_button();">
+            <button class='button' id='submitDiv' onclick='window.on_recompute_button();'>
                 Recompute
             </button>
         </div>
 
-        <div id="arguments_div">
-            <div id='greedy_guided_split_arguments' >
-                <div id="distortion">
+        <div id='arguments_div'>
+            <div id='metrics_div'>
+                <div id='entropy' class='metric_label'>
+                    entropy:
+                </div>
+                <div id='sqrt_kmeans_cost' class='metric_label'>
+                    kmeans_cost:
+                </div>
+            </div>
+
+            <div id='greedy_guided_split_arguments' class='argument_input'>
+                <div id='distortion'>
                     Distortion:
-                    <input type="number" value="1"/>
+                    <input type='number' value='1'/>
                 </div>
-                <div id="fragmentation">
+                <div id='fragmentation'>
                     Fragmentation:
-                    <input type="number" value="0.05" />
+                    <input type='number' value='0.05' />
                 </div>
-                <div id="skewness">
+                <div id='skewness'>
                     Skewness:
-                    <input type="number" value="1.5" />
+                    <input type='number' value='1.5' />
                 </div>
             </div>
-            <div id="num_clusters_argument">
-                <div id="clusters">
+            <div id='num_clusters_argument' class='argument_input'>
+                <div id='clusters'>
                     Clusters:
-                    <input type="number" min="1" step="1" value="3" />
+                    <input type='number' min='1' step='1' value='3' />
                 </div>
             </div>
-            <div id="exponent_argument">
-                <div id="exponent">
+            <div id='exponent_argument' class='argument_input'>
+                <div id='exponent'>
                     Exponent:
-                    <input type="number" min="1" step="1" value="2" />
+                    <input type='number' min='1' step='1' value='2' />
                 </div>
             </div>
-            <div id="lambda_argument">
-                <div id="lambda">
+            <div id='lambda_argument' class='argument_input'>
+                <div id='lambda'>
                     Lambda:
-                    <input type="number" min="-5" max="5" step="1" value="2" />
+                    <input type='number' min='-5' max='5' step='1' value='2' />
                 </div>
             </div>
-            <div id="interpolation_argument">
-                <div id="interpolation">
+            <div id='interpolation_argument' class='argument_input'>
+                <div id='interpolation'>
                     Interpolation:
-                    <input type="range" min="0" max="100" value="100" class="slider" oninput="window.on_recompute_button();">
+                    <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
                 </div>
             </div>
         </div>
         <div id='plot_container_id'></div>
 
     </div>
-<!--    <div id="hoverBox" />-->
+<!--    <div id='hoverBox' />-->
 
-<!--    <button id="saveLogData">SAVE LOG DATA</button>-->
+<!--    <button id='saveLogData'>SAVE LOG DATA</button>-->
 </body>
-<script src="main.js"></script>
+<script src='main.js'></script>
 
 

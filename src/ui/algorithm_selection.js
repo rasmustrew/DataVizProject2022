@@ -11,9 +11,8 @@ import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
 import PowMapper from "../mappings/pow_mapping";
 import BoxCoxMapper from "../mappings/box_cox_mapping";
-import {MIL_splits, OsaragiSplit} from "../algorithms/surprise_split";
+import {OsaragiSplit} from "../algorithms/surprise_split";
 import UniformMapper from "../mappings/uniform_mapping";
-import IdentityMapper from "../mappings/identity_mapping";
 import InterpolationMapper from "../mappings/interpolation_mapping";
 
 const algo_selector_ref = "#algorithm-select";
@@ -97,7 +96,7 @@ let algorithm_selection_map = {
 }
 
 export function algorithm_selection_update(arguments_id) {
-    let args = d3.select("#arguments_div").selectChildren();
+    let args = d3.selectAll(".argument_input");
     args.style("display", "none")
     if (arguments_id !== null) {
         d3.select(arguments_id).style("display", null)

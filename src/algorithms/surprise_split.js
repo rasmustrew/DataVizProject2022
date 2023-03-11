@@ -1,7 +1,6 @@
 import {kmeans_splits} from "./kmeans_split";
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-import {k_random_integers, k_random_values, mean, nlgn, one_to_n, sum} from "./util";
-import {quantile_splits} from "./quantile_splits";
+import {make_histogram, k_random_values, nlgn, one_to_n, sum} from "./util";
 
 export class OsaragiSplit {
 
@@ -19,31 +18,11 @@ export class OsaragiSplit {
         const bins = Math.floor(sorted_data.length / avg_bin_elements)
         const range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
         const bin_size = (range[1] - range[0]) / bins
-        const histogram = this.histogram(bins, sorted_data)
+        const histogram = make_histogram(bins, sorted_data)
         const initial_splits = this.init_algorithm(histogram, n_clusters);
         const split_indices = this.min_information_loss(histogram, n_clusters, initial_splits);
         const splits = split_indices.map(index => bin_size * (index + 1) + range[0])
         return new ProportionateSplitMapper(sorted_data, splits);
-    }
-
-    histogram(bins, sorted_data) {
-        const range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
-        const bin_size = (range[1] - range[0]) / bins
-        let histogram = []
-        let i = 0
-        for (let k = 1; k <= bins; k++) {
-            let bin_elements = 0
-            const bin_end = range[0] + (k * bin_size)
-            while (sorted_data[i] <= bin_end && i < sorted_data.length) {
-                bin_elements++
-                i++
-            }
-            histogram.push(bin_elements)
-        }
-        if (sorted_data.length !== histogram.reduce(sum)) {
-            histogram[bins - 1]++
-        }
-        return histogram;
     }
 
     min_information_loss(histogram, n_segments, initial_splits) {

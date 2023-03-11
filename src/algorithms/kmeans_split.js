@@ -1,5 +1,5 @@
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-import {k_random_values, mean} from "./util";
+import {k_random_values, mean, sum} from "./util";
 
 let algorithm_map = {
     "random": (sorted_data, k) => lloyds_1d(sorted_data, k, k_random_values),
@@ -125,7 +125,7 @@ function kMeansPlusPlus1D(sorted_data, k) {
 }
 
 // from and to are both included in the segment
-function faster_single_cluster_cost(cum_sum, square_cum_sum, from, to) {
+function precomputed_single_cluster_cost(cum_sum, square_cum_sum, from, to) {
     if (from + 1 === to) return 0
     let squared_sum = (cum_sum[to] - cum_sum[from]) ** 2
     let sum_of_squares = square_cum_sum[to] - square_cum_sum[from]
@@ -137,6 +137,28 @@ function single_cluster_cost(points) {
     let center = mean(points);
     // Calculate total squared distance to mean
     return points.reduce((total, point) => total + (point - center) ** 2, 0)
+}
+
+export function mapper_kmeans_cost(sorted_data, mapper) {
+    const ranges = mapper.get_output_space_ranges()
+    let range_index = 0
+    let clusters = []
+    let cluster = []
+    for (const x of sorted_data) {
+        const x_mapped = mapper.map(x)
+        if (x_mapped < ranges[range_index][1]) {
+            cluster.push(x)
+        } else {
+            clusters.push(cluster)
+            cluster = [x]
+            range_index++
+        }
+    }
+    return kmeans_cost(clusters)
+}
+
+export function kmeans_cost(clusters) {
+    return clusters.map(single_cluster_cost).reduce(sum, 0)
 }
 
 // Based on building a dynamic programming table of optimal k-means clustering of n points
@@ -160,7 +182,7 @@ function optimal_kmeans_1d(sorted_data, k) {
             // Look up cells to the left in the previous row
             for (let j = m - 1; j < i; j++) {
                 let optimal_cost_first_j_points = cost_table[m - 1][j]
-                let new_cluster_from_j_to_i_cost = faster_single_cluster_cost(cum_sum, square_cum_sum, j + 1, i + 1)
+                let new_cluster_from_j_to_i_cost = precomputed_single_cluster_cost(cum_sum, square_cum_sum, j + 1, i + 1)
                 let combined_cost = optimal_cost_first_j_points + new_cluster_from_j_to_i_cost
                 if (combined_cost < optimal_cost_so_far) {
                     optimal_cost_so_far = combined_cost
