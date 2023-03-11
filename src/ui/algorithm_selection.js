@@ -11,7 +11,7 @@ import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
 import PowMapper from "../mappings/pow_mapping";
 import BoxCoxMapper from "../mappings/box_cox_mapping";
-import {MIL_splits} from "../algorithms/surprise_split";
+import {MIL_splits, OsaragiSplit} from "../algorithms/surprise_split";
 import UniformMapper from "../mappings/uniform_mapping";
 
 const algo_selector_ref = "#algorithm-select";
@@ -57,7 +57,10 @@ let algorithm_selection_map = {
         read_args: read_number_of_clusters
     },
     osaragi: {
-        algo: (sorted_data, args, dimension) => MIL_splits(sorted_data, args, dimension, "kmeans"),
+        algo: (sorted_data, args, dimension) => {
+            const splitter = new OsaragiSplit()
+            return splitter.MIL_splits(sorted_data, args, dimension)
+        },
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },

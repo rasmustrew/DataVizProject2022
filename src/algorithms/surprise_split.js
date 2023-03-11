@@ -1,34 +1,62 @@
 import {kmeans_splits} from "./kmeans_split";
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
 import {k_random_integers, k_random_values, mean, nlgn, one_to_n, sum} from "./util";
+import {quantile_splits} from "./quantile_splits";
 
-let init_map = {
-    random: (sorted_data, n_segments) => k_random_values(sorted_data, n_segments - 1),
-    kmeans: (sorted_data, n_segments) => kmeans_splits(sorted_data, { clusters: n_segments }, null, "optimal").split_points
-};
+export class OsaragiSplit {
 
-export function MIL_splits(sorted_data, args, _, version = "kmeajsns") {
-    const n_clusters = args["clusters"];
-    let algorithm = init_map[version];
-    const initial_splits = algorithm(sorted_data, n_clusters);
-    let surprise_split = new SurpriseSplit();
-    const splits = surprise_split.min_information_loss(sorted_data, n_clusters, initial_splits);
-    return new ProportionateSplitMapper(sorted_data, splits);
-}
+    init_map = {
+        random: (sorted_data, n_segments) => k_random_values(sorted_data, n_segments - 1),
+        kmeans: (sorted_data, n_segments) => kmeans_splits(sorted_data, { clusters: n_segments }, null, "optimal").split_points
+    };
 
-class SurpriseSplit {
+    constructor(version = "random") {
+        this.init_algorithm = this.init_map[version];
+    }
 
-    min_information_loss(sorted_data, n_segments, initial_splits) {
+    MIL_splits(sorted_data, args, _, avg_bin_elements = 5) {
+        const n_clusters = args["clusters"];
+        const bins = Math.floor(sorted_data.length / avg_bin_elements)
+        const range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
+        const bin_size = (range[1] - range[0]) / bins
+        const histogram = this.histogram(bins, sorted_data)
+        const initial_splits = this.init_algorithm(histogram, n_clusters);
+        const split_indices = this.min_information_loss(histogram, n_clusters, initial_splits);
+        const splits = split_indices.map(index => bin_size * (index + 1) + range[0])
+        return new ProportionateSplitMapper(sorted_data, splits);
+    }
+
+    histogram(bins, sorted_data) {
+        const range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
+        const bin_size = (range[1] - range[0]) / bins
+        let histogram = []
+        let i = 0
+        for (let k = 1; k <= bins; k++) {
+            let bin_elements = 0
+            const bin_end = range[0] + (k * bin_size)
+            while (sorted_data[i] <= bin_end && i < sorted_data.length) {
+                bin_elements++
+                i++
+            }
+            histogram.push(bin_elements)
+        }
+        if (sorted_data.length !== histogram.reduce(sum)) {
+            histogram[bins - 1]++
+        }
+        return histogram;
+    }
+
+    min_information_loss(histogram, n_segments, initial_splits) {
         const n_splits = n_segments - 1;
-        let split_indices = this.splits_to_indexes_of_next_point(sorted_data, initial_splits.sort((i1, i2) => i1 - i2));
+        let split_indices = this.splits_to_indexes_of_next_point(histogram, initial_splits.sort((i1, i2) => i1 - i2));
 
-        const total_data_mass = sorted_data.reduce(sum);
+        const total_data_mass = histogram.reduce(sum);
         // Initial entropy contribution of segments
         let entropy_contributions = [];
         for (let k = 0; k < n_segments; k++) {
             const segment_start = k === 0 ? 0 : split_indices[k - 1];
-            const segment_end = k === n_segments - 1 ? sorted_data.length : split_indices[k];
-            const segment = sorted_data.slice(segment_start, segment_end)
+            const segment_end = k === n_segments - 1 ? histogram.length : split_indices[k];
+            const segment = histogram.slice(segment_start, segment_end)
             const entropy_contribution = this.entropy_contribution(segment, total_data_mass)
             entropy_contributions.push(entropy_contribution);
         }
@@ -40,7 +68,7 @@ class SurpriseSplit {
                 // Indices into the data array
                 const segment1_start = k === 0 ? 0 : split_indices[k - 1];
                 const split_index = split_indices[k];
-                const segment2_end = k === n_splits ? sorted_data.length : split_indices[k + 1];
+                const segment2_end = k === n_splits - 1 ? histogram.length : split_indices[k + 1];
 
                 // Compute entropy of 3 cases
                 // For entropy of non-affected segments use precomputed values
@@ -57,9 +85,9 @@ class SurpriseSplit {
                 let move_left_segment2_entropy = 0;
                 // If left segment has only one point we cannot move split point left
                 if (split_index - segment1_start > 1) {
-                    const segment1 = sorted_data.slice(segment1_start, split_index - 1);
+                    const segment1 = histogram.slice(segment1_start, split_index - 1);
                     move_left_segment1_entropy = this.entropy_contribution(segment1, total_data_mass);
-                    const segment2 = sorted_data.slice(split_index - 1, segment2_end);
+                    const segment2 = histogram.slice(split_index - 1, segment2_end);
                     move_left_segment2_entropy = this.entropy_contribution(segment2, total_data_mass);
                     move_left_entropy = move_left_segment1_entropy + move_left_segment2_entropy + entropy_of_non_affected_segments;
                 }
@@ -70,9 +98,9 @@ class SurpriseSplit {
                 let move_right_segment2_entropy = 0;
                 // If right segment has only one point we cannot move split point right
                 if (segment2_end - split_index > 1) {
-                    const segment1 = sorted_data.slice(segment1_start, split_index + 1);
+                    const segment1 = histogram.slice(segment1_start, split_index + 1);
                     move_right_segment1_entropy = this.entropy_contribution(segment1, total_data_mass);
-                    const segment2 = sorted_data.slice(split_index + 1, segment2_end);
+                    const segment2 = histogram.slice(split_index + 1, segment2_end);
                     move_right_segment2_entropy = this.entropy_contribution(segment2, total_data_mass);
                     move_right_entropy = move_right_segment1_entropy + move_right_segment2_entropy + entropy_of_non_affected_segments;
                 }
@@ -90,10 +118,10 @@ class SurpriseSplit {
                     entropy_contributions[k + 1] = move_right_segment2_entropy;
                     split_indices[k]++;
                 }
-                console.log(best_entropy)
+                console.log(split_indices + ": " + best_entropy)
             }
         }
-        return split_indices.map((i) => sorted_data[i]);
+        return split_indices;
     }
 
     splits_to_indexes_of_next_point(sorted_data, initial_splits) {
@@ -122,7 +150,7 @@ class SurpriseSplit {
     // Computes contribution of single segment towards the entropy of the full dataset
     entropy_contribution(segment, total_data_mass) {
         const segment_size = segment.length;
-        const segment_mass = segment.reduce(sum);
+        const segment_mass = segment.reduce(sum,0);
         const segment_mean_mass = segment_mass / segment_size
         return -segment_mass / total_data_mass * Math.log2(segment_mean_mass / total_data_mass);
     }
