@@ -155,3 +155,6 @@ export class OsaragiSplit {
         return -segment_mass / total_data_mass * Math.log2(segment_mean_mass / total_data_mass);
     }
 }
+
+export class MIL_splits {
+}

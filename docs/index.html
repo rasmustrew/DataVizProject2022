@@ -94,6 +94,12 @@
                     <input type="number" min="-5" max="5" step="1" value="2" />
                 </div>
             </div>
+            <div id="interpolation_argument">
+                <div id="interpolation">
+                    Interpolation:
+                    <input type="range" min="0" max="100" value="100" class="slider" oninput="window.on_recompute_button();">
+                </div>
+            </div>
         </div>
         <div id='plot_container_id'></div>
 
