@@ -1,6 +1,3 @@
-import LinearMapper from "../mappings/linear_mapping";
-
-
 export function k_random_values(sorted_data, k) {
     let centers = []
     let non_picked_values = sorted_data
@@ -13,10 +10,10 @@ export function k_random_values(sorted_data, k) {
 }
 
 export function k_random_integers(n, k) {
-    return k_random_values(one_to_n(n), k)
+    return k_random_values(zero_to_n(n), k)
 }
 
-export function one_to_n(n) {
+export function zero_to_n(n) {
     return Array.from(Array(n).keys())
 }
 
@@ -54,12 +51,30 @@ export function make_histogram(bins, sorted_data) {
 }
 
 export function entropy(sorted_data, mapper, avg_bin = 3) {
-    const bins = Math.floor(sorted_data.length / avg_bin)
     const mapped_data = sorted_data.map(x => mapper.map(x))
-    const hist = make_histogram(bins, mapped_data)
-    const distribution = hist.map(count => count / sorted_data.length)
+    const distribution = get_data_distribution(mapped_data, avg_bin)
     const negative_entropy = distribution.map(p => nlgn(p)).reduce(sum)
     return -negative_entropy
+}
+
+export function get_data_distribution(sorted_data, avg_bin = 3) {
+    const n = sorted_data.length
+    const bins = Math.floor(n / avg_bin)
+    const hist = make_histogram(bins, sorted_data)
+    return hist.map(count => count / n)
+}
+
+function kl_divergence(p, q) {
+    return zero_to_n(p.length)
+        .map(i => p[i] * Math.log(p[i] / q[i]))
+        .reduce(sum);
+}
+
+export function mapper_kl_divergence(sorted_data, mapper, avg_bin = 10) {
+    const distribution = get_data_distribution(sorted_data, avg_bin)
+    const mapped_data = sorted_data.map(x => mapper.map(x))
+    const mapped_distribution = get_data_distribution(mapped_data, avg_bin)
+    return kl_divergence(distribution, mapped_distribution)
 }
 
 export function data_range(sorted_data) {

@@ -1,6 +1,6 @@
 import {kmeans_splits} from "./kmeans_split";
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-import {make_histogram, k_random_values, nlgn, one_to_n, sum} from "./util";
+import {make_histogram, k_random_values, nlgn, zero_to_n, sum} from "./util";
 
 export class OsaragiSplit {
 
@@ -53,7 +53,7 @@ export class OsaragiSplit {
                 // For entropy of non-affected segments use precomputed values
                 const stay_entropy = entropy_contributions.reduce(sum);
                 const affected_segments = [k, k + 1]
-                const entropy_of_non_affected_segments = one_to_n(n_segments)
+                const entropy_of_non_affected_segments = zero_to_n(n_segments)
                     .filter((i) => !(affected_segments.includes(i)))
                     .map((i) => entropy_contributions[i])
                     .reduce(sum, 0);
