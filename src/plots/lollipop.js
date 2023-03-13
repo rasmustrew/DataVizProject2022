@@ -121,7 +121,7 @@ export default class Lollipop {
         }
 
         // Circles
-        base_svg.selectAll("mycircle")
+        base_svg.selectAll("circle")
             .data(data)
             .join("circle")
             .attr("cx", function(d) { return x(d.id); })
