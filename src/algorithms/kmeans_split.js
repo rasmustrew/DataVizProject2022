@@ -8,7 +8,7 @@ let algorithm_map = {
 }
 
 // In general for kmeans, k = number of clusters
-export function kmeans_splits(sorted_data, args, _, version="optimal") {
+export function kmeans_splits(sorted_data, args, version="optimal") {
     let k = args["clusters"]
     let centers = algorithm_map[version](sorted_data, k)
     let split_points = compute_split_points(sorted_data, centers);

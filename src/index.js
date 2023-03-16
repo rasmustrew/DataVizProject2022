@@ -21,7 +21,7 @@ function select_algorithm() {
     let args = read_args()
     mappers = {}
     for (let dimension of dimensions) {
-        mappers[dimension] = algo(sorted_data[dimension], args, dimension)
+        mappers[dimension] = algo(sorted_data[dimension], args)
     }
     let dimension = dimensions[0]
     update_metrics_display(sorted_data[dimension], mappers[dimension])

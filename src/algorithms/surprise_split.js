@@ -13,7 +13,7 @@ export class OsaragiSplit {
         this.init_algorithm = this.init_map[version];
     }
 
-    MIL_splits(sorted_data, args, _, avg_bin_elements = 5) {
+    MIL_splits(sorted_data, args, avg_bin_elements = 5) {
         const n_clusters = args["clusters"];
         const bins = Math.floor(sorted_data.length / avg_bin_elements)
         const range = [sorted_data[0], sorted_data[sorted_data.length - 1]]

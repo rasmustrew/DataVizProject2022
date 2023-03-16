@@ -24,7 +24,7 @@ let read_interpolation_slider = () => ({interpolation: parseInt(d3.select("#inte
 
 let algorithm_selection_map = {
     none: {
-        algo: (sorted_data, args, dimension) => {
+        algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)
         },
         arguments_id: null,
@@ -45,50 +45,50 @@ let algorithm_selection_map = {
         read_args: read_number_of_clusters
     },
     kmeans: {
-        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "random"),
+        algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     kmeans_plusplus: {
-        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "++"),
+        algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     kmeans_opt: {
-        algo: (sorted_data, args, dimension) => kmeans_splits(sorted_data, args, dimension, "optimal"),
+        algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     osaragi: {
-        algo: (sorted_data, args, dimension) => {
+        algo: (sorted_data, args) => {
             const splitter = new OsaragiSplit()
-            return splitter.MIL_splits(sorted_data, args, dimension)
+            return splitter.MIL_splits(sorted_data, args)
         },
         arguments_id: "#num_clusters_argument",
         read_args: read_number_of_clusters
     },
     log: {
-        algo: (sorted_data, args, dimension) => new LogMapper([data_range(sorted_data)], [0, 1]),
+        algo: (sorted_data, args) => new LogMapper([data_range(sorted_data)], [0, 1]),
         arguments_id: null,
         read_args: () => {}
     },
     sqrt: {
-        algo: (sorted_data, args, dimension) => new SqrtMapper([data_range(sorted_data)], [0, 1]),
+        algo: (sorted_data, args) => new SqrtMapper([data_range(sorted_data)], [0, 1]),
         arguments_id: null,
         read_args: () => {}
     },
     pow: {
-        algo: (sorted_data, args, dimension) => new PowMapper([data_range(sorted_data)], [0, 1], args.exponent),
+        algo: (sorted_data, args) => new PowMapper([data_range(sorted_data)], [0, 1], args.exponent),
         arguments_id: "#exponent_argument",
         read_args: read_exponent
     },
     box_cox: {
-        algo: (sorted_data, args, dimension) => new BoxCoxMapper([data_range(sorted_data)], args.lambda),
+        algo: (sorted_data, args) => new BoxCoxMapper([data_range(sorted_data)], args.lambda),
         arguments_id: "#lambda_argument",
         read_args: read_lambda
     },
     uniform: {
-        algo: (sorted_data, args, dimension) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.interpolation),
+        algo: (sorted_data, args) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.interpolation),
         arguments_id: "#interpolation_argument",
         read_args: read_interpolation_slider
     }

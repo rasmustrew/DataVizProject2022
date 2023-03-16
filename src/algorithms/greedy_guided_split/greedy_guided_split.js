@@ -12,8 +12,7 @@ export function make_extreme_mapper(sorted_data) {
     ]);
 }
 
-export function greedy_guided_split(sorted_data, weights, dimension) {
-    console.log(dimension)
+export function greedy_guided_split(sorted_data, weights) {
     let suggested_split_points = sorted_data;
     let input_range = [sorted_data[0], sorted_data[sorted_data.length - 1]]
     let linear_mapper = new NormalizingMapper(sorted_data)
@@ -107,4 +106,121 @@ export function read_greedy_guided_split_args() {
     weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value"))
     weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
     return weights
+}
+
+function compute_total_skewness(segment) {
+    let max_val = Math.max(...segment)
+    let min_val = Math.min(...segment)
+    let n = segment.length
+    let total_distance = 0
+    for (let i = 0; i < n; i++) {
+        let actual_pos = (segment[i] - min_val) / (max_val - min_val)
+        let uniform_pos = i + 1 / n
+        total_distance += Math.abs(actual_pos - uniform_pos)
+    }
+    return total_distance;
+}
+
+// Construct segments index ranges based on reversing through segment table
+function get_segmentation_index_ranges(n, k, segment_table) {
+    let next_segment_start = n
+    let ranges = []
+    for (let m = k; m > 0; m--) {
+        let segment_start = segment_table[m][next_segment_start - 1]
+        ranges.push([segment_start, next_segment_start])
+        next_segment_start = segment_start
+    }
+    return ranges;
+}
+
+// Choose splits as means of range borders
+function ranges_to_splits(ranges) {
+    let splits = []
+    for (let i = 1; i < ranges.length; i++) {
+        let split = (ranges[i][0] - ranges[i - 1][1]) / 2 + ranges[i - 1][1]
+        splits.push()
+    }
+    return splits;
+}
+
+function compute_total_distortion(ranges, sorted_data) {
+    let total_distortion = 0
+    let n = sorted_data.length
+    let min_val = sorted_data[0]
+    let max_val = sorted_data[n - 1]
+    let data_space_size = max_val - min_val
+    let cur_segment = 0
+    let cur_segment_offset = (ranges[cur_segment][0] - 1) / n
+    let cur_segment_prop = (ranges[cur_segment][1] - ranges[cur_segment][0]) / n
+    let cur_seg_min_val = sorted_data[ranges[cur_segment][0]]
+    let cur_seg_max_val = sorted_data[ranges[cur_segment][1]]
+    let cur_segment_size = cur_seg_max_val - cur_seg_min_val
+    for (let i = 0; i < sorted_data.length; i++) {
+        let x = sorted_data[i]
+        if (x > cur_seg_max_val) {
+            cur_segment++
+            cur_segment_offset = (ranges[cur_segment][0] - 1) / n
+            cur_segment_prop = (ranges[cur_segment][1] - ranges[cur_segment][0]) / n
+            cur_seg_min_val = sorted_data[ranges[cur_segment][0]]
+            cur_seg_max_val = sorted_data[ranges[cur_segment][1]]
+            cur_segment_size = cur_seg_max_val - cur_seg_min_val
+        }
+        let x_position_in_segment = cur_segment_prop * (x - cur_seg_min_val) / cur_segment_size
+        let x_projected_position = x_position_in_segment + cur_segment_offset
+        let x_original_position = (x - min_val) / data_space_size
+        total_distortion += Math.abs(x_projected_position - x_original_position)
+    }
+    return total_distortion;
+}
+
+// Based on building a dynamic programming table of optimal k-means clustering of n points
+// Each cell only depends on the cells to the left of it in the previous row of the table
+function optimal_guided_splits(sorted_data, k, weights) {
+    const n = sorted_data.length
+    let cost_table = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    let segment_table = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    let opt_skew_table =  [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    let single_segment_total_skew = [[]];
+    for (let i = 0; i < n; i++) {
+        let skewness_row = [0]
+        for (let j = 0; j < i; j++) {
+            let segment = sorted_data.slice(j, i)
+            let total_skew = compute_total_skewness(segment)
+            skewness_row.push(total_skew)
+        }
+        single_segment_total_skew.push(skewness_row)
+    }
+    // Init first row with 1 cluster error
+    for (let i = 1; i <= n; i++) {
+        cost_table[1][i] = single_segment_total_skew[i][0] / i
+    }
+    // Fill tables
+    for (let m = 2; m <= k; m++) {
+        for (let i = m + 1; i <= n; i++) {
+            let optimal_cost_so_far = Infinity
+            let skew_of_optimal_cost = 0
+            let splitting_point = 0
+            // Look up cells to the left in the previous row
+            for (let j = m - 1; j < i; j++) {
+                let skewness_first_j_points = j / i * (opt_skew_table[m - 1][j])
+                let new_segment_skew = (i - j) / i * single_segment_total_skew[i][j]
+                let total_skew = skewness_first_j_points + new_segment_skew
+                let old_ranges = get_segmentation_index_ranges(j, m - 1, segment_table)
+                let ranges = old_ranges.push([j + 1, i])
+                let total_distortion = compute_total_distortion(ranges, sorted_data.slice(0, i))
+                let cost = 1 / i * (weights.skewness * total_skew + weights.distortion * total_distortion)
+                if (cost < optimal_cost_so_far) {
+                    optimal_cost_so_far = cost
+                    splitting_point = j
+                    skew_of_optimal_cost = total_skew
+                }
+            }
+            cost_table[m][i] = optimal_cost_so_far
+            segment_table[m][i] = splitting_point
+            opt_skew_table[m][i] = skew_of_optimal_cost
+        }
+    }
+    let index_ranges = get_segmentation_index_ranges(n, k, segment_table, sorted_data);
+    let ranges = index_ranges.map(range => range.map(i => sorted_data[i - 1]))
+    return ranges_to_splits(ranges)
 }
