@@ -6,7 +6,7 @@ export default class Lollipop {
     constructor(chart_ref, data, dimension, raw_mapper) {
         let plot = document.querySelector(chart_ref)
 
-        let buffer_size = 20;
+        let buffer_size = 40;
         let margin = {top: 80, right: 16, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
@@ -121,7 +121,7 @@ export default class Lollipop {
         }
 
         // Circles
-        base_svg.selectAll("mycircle")
+        base_svg.selectAll("circle")
             .data(data)
             .join("circle")
             .attr("cx", function(d) { return x(d.id); })

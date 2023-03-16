@@ -5,6 +5,7 @@ import Lollipop from "../plots/lollipop";
 import * as d3 from "d3";
 import ScatterPlot from "../plots/scatterplot";
 import {v4 as uuidv4} from "uuid";
+import Beeswarm from "../plots/beeswarm";
 
 const chart_selector_ref = "#chart-select";
 
@@ -41,7 +42,12 @@ let chart_selection_map = {
         let chart_ref = make_chart_div(chart_container_ref)
         let chosen_dimensions = dimensions.slice(0, 3)
         new ScatterPlot(chart_ref, data, chosen_dimensions, mappers)
-    }
+    },
+    beeswarm:  (chart_container_ref, data, dimensions, mappers) => {
+    let chart_ref = make_chart_div(chart_container_ref, "beeswarm")
+    let chosen_dimension = dimensions[0]
+    new Beeswarm(chart_ref, data, chosen_dimension, mappers[chosen_dimension])
+},
 }
 
 export function get_selected_chart() {

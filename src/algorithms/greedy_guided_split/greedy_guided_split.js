@@ -58,6 +58,8 @@ export function greedy_guided_split(sorted_data, weights) {
     // console.log(current_best_metrics)
     // console.log(current_best_metric)
     // console.log("improvement: ", metric_without_splits - current_best_metric)
+    console.log(dimension)
+    console.log(current_best_mapper.get_input_space_ranges())
     return current_best_mapper
 }
 

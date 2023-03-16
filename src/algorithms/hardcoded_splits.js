@@ -37,7 +37,9 @@ export const hardcoded_animals_range = {
 
 const hardcoded_periodic_table_splits = {
     'boiling_point': [400],
-    'abundance/universe': [ 8e-7,  8e-5, 8e-3, 8e-1, ],
+    // 'abundance/universe': [ 8e-7,  8e-5, 8e-3, 8e-1, ],
+    // 'abundance/universe': [1.48872008e-02,  8.66795019e-01,  1.14295692e+01],
+    'abundance/universe': [0.0009273414413707938, 0.13437282585692462, 1.2912620979636045],
     'conductivity/thermal': [1, 250],
     'density/stp': [2.25],
     'ionization_energies/0': [],
@@ -45,6 +47,8 @@ const hardcoded_periodic_table_splits = {
     'electron_affinity': [],
     'discovered/year': [1650]
 }
+//[-7.06262354e-03  1.48872008e-02  8.66795019e-01  1.14295692e+01
+//   7.50000000e+01]
 
 export function hardcoded_periodic_table_get_mapper(data, args, dimension) {
     let mapper = new ProportionateSplitMapper(data, hardcoded_periodic_table_splits[dimension])
