@@ -58,7 +58,6 @@ export function greedy_guided_split(sorted_data, weights) {
     // console.log(current_best_metrics)
     // console.log(current_best_metric)
     // console.log("improvement: ", metric_without_splits - current_best_metric)
-    console.log(dimension)
     console.log(current_best_mapper.get_input_space_ranges())
     return current_best_mapper
 }
@@ -110,7 +109,8 @@ export function read_greedy_guided_split_args() {
     return weights
 }
 
-function compute_total_skewness(segment) {
+function compute_total_squared_skewness(segment) {
+    if (segment.length < 2) return 0
     let max_val = Math.max(...segment)
     let min_val = Math.min(...segment)
     let n = segment.length
@@ -118,18 +118,18 @@ function compute_total_skewness(segment) {
     for (let i = 0; i < n; i++) {
         let actual_pos = (segment[i] - min_val) / (max_val - min_val)
         let uniform_pos = i + 1 / n
-        total_distance += Math.abs(actual_pos - uniform_pos)
+        total_distance += (actual_pos - uniform_pos) ** 2
     }
     return total_distance;
 }
 
 // Construct segments index ranges based on reversing through segment table
-function get_segmentation_index_ranges(n, k, segment_table) {
-    let next_segment_start = n
+function get_segmentation_index_ranges(n, k, T) {
+    let next_segment_start = n + 1
     let ranges = []
-    for (let m = k; m > 0; m--) {
-        let segment_start = segment_table[m][next_segment_start - 1]
-        ranges.push([segment_start, next_segment_start])
+    for (let m = k; m >= 1; m--) {
+        let segment_start = T[m][next_segment_start - 1] + 1
+        ranges.push([segment_start, next_segment_start - 1])
         next_segment_start = segment_start
     }
     return ranges;
@@ -139,90 +139,103 @@ function get_segmentation_index_ranges(n, k, segment_table) {
 function ranges_to_splits(ranges) {
     let splits = []
     for (let i = 1; i < ranges.length; i++) {
-        let split = (ranges[i][0] - ranges[i - 1][1]) / 2 + ranges[i - 1][1]
-        splits.push()
+        let split = (ranges[i - 1][0] - ranges[i][1]) / 2 + ranges[i][1]
+        splits.push(split)
     }
     return splits;
 }
 
-function compute_total_distortion(ranges, sorted_data) {
+function compute_total_squared_distortion(ranges, X) {
     let total_distortion = 0
-    let n = sorted_data.length
-    let min_val = sorted_data[0]
-    let max_val = sorted_data[n - 1]
+    let n = X.length
+    let min_val = X[0]
+    let max_val = X[n - 1]
     let data_space_size = max_val - min_val
     let cur_segment = 0
     let cur_segment_offset = (ranges[cur_segment][0] - 1) / n
     let cur_segment_prop = (ranges[cur_segment][1] - ranges[cur_segment][0]) / n
-    let cur_seg_min_val = sorted_data[ranges[cur_segment][0]]
-    let cur_seg_max_val = sorted_data[ranges[cur_segment][1]]
+    let cur_seg_min_val = X[ranges[cur_segment][0]]
+    let cur_seg_max_val = X[ranges[cur_segment][1]]
     let cur_segment_size = cur_seg_max_val - cur_seg_min_val
-    for (let i = 0; i < sorted_data.length; i++) {
-        let x = sorted_data[i]
+    for (let i = 0; i < X.length; i++) {
+        let x = X[i]
         if (x > cur_seg_max_val) {
             cur_segment++
             cur_segment_offset = (ranges[cur_segment][0] - 1) / n
             cur_segment_prop = (ranges[cur_segment][1] - ranges[cur_segment][0]) / n
-            cur_seg_min_val = sorted_data[ranges[cur_segment][0]]
-            cur_seg_max_val = sorted_data[ranges[cur_segment][1]]
+            cur_seg_min_val = X[ranges[cur_segment][0]]
+            cur_seg_max_val = X[ranges[cur_segment][1]]
             cur_segment_size = cur_seg_max_val - cur_seg_min_val
         }
         let x_position_in_segment = cur_segment_prop * (x - cur_seg_min_val) / cur_segment_size
         let x_projected_position = x_position_in_segment + cur_segment_offset
         let x_original_position = (x - min_val) / data_space_size
-        total_distortion += Math.abs(x_projected_position - x_original_position)
+        total_distortion += (x_projected_position - x_original_position) ** 2
     }
     return total_distortion;
 }
 
 // Based on building a dynamic programming table of optimal k-means clustering of n points
 // Each cell only depends on the cells to the left of it in the previous row of the table
-function optimal_guided_splits(sorted_data, k, weights) {
-    const n = sorted_data.length
-    let cost_table = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
-    let segment_table = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
-    let opt_skew_table =  [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
-    let single_segment_total_skew = [[]];
-    for (let i = 0; i < n; i++) {
-        let skewness_row = [0]
-        for (let j = 0; j < i; j++) {
-            let segment = sorted_data.slice(j, i)
-            let total_skew = compute_total_skewness(segment)
-            skewness_row.push(total_skew)
-        }
-        single_segment_total_skew.push(skewness_row)
-    }
-    // Init first row with 1 cluster error
+// Assumes X is sorted
+export function optimal_guided_splits(sorted_data, weights, k = 3) {
+    let X = [...new Set(sorted_data)]
+    const n = X.length
+    X = [-Infinity].concat(X)
+    let C = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    let T = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    // Set up cumulative arrays for prefix sums
+    let D = [0], D2 = [0], H = [0], I = [0], I2 = [0]
     for (let i = 1; i <= n; i++) {
-        cost_table[1][i] = single_segment_total_skew[i][0] / i
+        D.push(D[i - 1] + X[i])
+        D2.push(D2[i - 1] + X[i] ** 2)
+        H.push(H[i - 1] + i * X[i])
+        I.push(I[i - 1] + i)
+        I2.push(I2[i - 1] + i ** 2)
+    }
+    // Init first row with skewness of X_i, runs O(n^2)
+    for (let i = 2; i <= n + 1; i++) {
+        C[1][i - 1] = compute_total_squared_skewness(X.slice(1, i))
+    }
+    // Init diagonal of T to fit segmentations with one point per segment
+    for (let m = 2; m <= k; m++) {
+        T[m][m] = m - 1
     }
     // Fill tables
     for (let m = 2; m <= k; m++) {
         for (let i = m + 1; i <= n; i++) {
             let optimal_cost_so_far = Infinity
-            let skew_of_optimal_cost = 0
-            let splitting_point = 0
+            let split_index = 0
             // Look up cells to the left in the previous row
             for (let j = m - 1; j < i; j++) {
-                let skewness_first_j_points = j / i * (opt_skew_table[m - 1][j])
-                let new_segment_skew = (i - j) / i * single_segment_total_skew[i][j]
-                let total_skew = skewness_first_j_points + new_segment_skew
-                let old_ranges = get_segmentation_index_ranges(j, m - 1, segment_table)
-                let ranges = old_ranges.push([j + 1, i])
-                let total_distortion = compute_total_distortion(ranges, sorted_data.slice(0, i))
-                let cost = 1 / i * (weights.skewness * total_skew + weights.distortion * total_distortion)
+                //let ranges = get_segmentation_index_ranges(j, m - 1, segment_table)
+                //ranges.push([j + 1, i])
+                let j_squared = j ** 2
+                let cost_Xj = j_squared * C[m - 1][j]
+                let cost_Xji = 0
+                if (j !== i - 1) {
+                    let len_new_seg = X[i] - X[j + 1]
+                    let size_new_seg = i - j
+                    let v = j * (I[i] - I[j])
+                    let term1 = (D2[i] - D2[j] - (D[i] - D[j]) / X[j + 1])/ (len_new_seg ** 2)
+                    let term2 = (I2[i] - I2[j] - 2 * v) / (size_new_seg ** 2)
+                    let term3 = 2 * (H[i] - H[j] - v + X[j + 1] * I[size_new_seg]) / (len_new_seg * size_new_seg)
+                    let term4 = size_new_seg * (X[j + 1] ** 2) / (len_new_seg ** 2) + j_squared / size_new_seg
+                    cost_Xji = size_new_seg ** 2 * (term1 + term2 + term3 + term4)
+                }
+                let cost = cost_Xj + cost_Xji
                 if (cost < optimal_cost_so_far) {
-                    optimal_cost_so_far = cost
-                    splitting_point = j
-                    skew_of_optimal_cost = total_skew
+                    optimal_cost_so_far = cost / (i ** 2)
+                    split_index = j
                 }
             }
-            cost_table[m][i] = optimal_cost_so_far
-            segment_table[m][i] = splitting_point
-            opt_skew_table[m][i] = skew_of_optimal_cost
+            C[m][i] = optimal_cost_so_far
+            T[m][i] = split_index
         }
     }
-    let index_ranges = get_segmentation_index_ranges(n, k, segment_table, sorted_data);
-    let ranges = index_ranges.map(range => range.map(i => sorted_data[i - 1]))
-    return ranges_to_splits(ranges)
+    let index_ranges = get_segmentation_index_ranges(n, k, T, X);
+    let ranges = index_ranges.map(range => range.map(i => X[i]))
+    let splits = ranges_to_splits(ranges)
+    splits.sort((i, j) => i - j)
+    return new ProportionateSplitMapper(sorted_data, splits)
 }

@@ -1,5 +1,5 @@
 import {
-    greedy_guided_split,
+    greedy_guided_split, optimal_guided_splits,
     read_greedy_guided_split_args
 } from "../algorithms/greedy_guided_split/greedy_guided_split";
 import {hardcoded_periodic_table_get_mapper} from "../algorithms/hardcoded_splits";
@@ -33,7 +33,13 @@ let algorithm_selection_map = {
     greedy_guided_split: {
         algo: greedy_guided_split,
         arguments_id: "#greedy_guided_split_arguments",
-        read_args: read_greedy_guided_split_args},
+        read_args: read_greedy_guided_split_args
+    },
+    optimal_guided_split: {
+        algo: optimal_guided_splits,
+        arguments_id: "#greedy_guided_split_arguments",
+        read_args: read_greedy_guided_split_args
+    },
     hardcoded_periodic_table: {
         algo: hardcoded_periodic_table_get_mapper,
         arguments_id: null,
