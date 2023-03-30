@@ -38,6 +38,10 @@ body, html {
     padding: 5px;
 }
 
+#interpolation {
+    margin-right: 5px;
+}
+
 #metrics_div {
     margin-right: auto;
 }

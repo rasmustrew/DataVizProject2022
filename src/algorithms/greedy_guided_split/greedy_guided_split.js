@@ -86,7 +86,7 @@ function compute_metrics(data, current_mapping, linear_mapping, extreme_mapping)
 }
 
 function compute_total_metric(metrics, weights) {
-    return metrics.skewness * weights.skewness + metrics.distortion * weights.distortion + metrics.fragmentation * weights.fragmentation
+    return metrics.skewness * weights.skewness + metrics.distortion * weights.interpolation + metrics.fragmentation * weights.fragmentation
 }
 
 export function mapping_difference(data, mapping1, mapping2) {
@@ -117,7 +117,7 @@ function compute_total_squared_skewness(segment) {
     let total_distance = 0
     for (let i = 0; i < n; i++) {
         let actual_pos = (segment[i] - min_val) / (max_val - min_val)
-        let uniform_pos = i + 1 / n
+        let uniform_pos = (i + 1) / n
         total_distance += (actual_pos - uniform_pos) ** 2
     }
     return total_distance;
@@ -145,26 +145,26 @@ function ranges_to_splits(ranges) {
     return splits;
 }
 
-function compute_total_squared_distortion(ranges, X) {
+function compute_total_squared_distortion(index_ranges, X) {
     let total_distortion = 0
     let n = X.length
     let min_val = X[0]
     let max_val = X[n - 1]
     let data_space_size = max_val - min_val
     let cur_segment = 0
-    let cur_segment_offset = (ranges[cur_segment][0] - 1) / n
-    let cur_segment_prop = (ranges[cur_segment][1] - ranges[cur_segment][0]) / n
-    let cur_seg_min_val = X[ranges[cur_segment][0]]
-    let cur_seg_max_val = X[ranges[cur_segment][1]]
+    let cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
+    let cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
+    let cur_seg_min_val = X[index_ranges[cur_segment][0]]
+    let cur_seg_max_val = X[index_ranges[cur_segment][1]]
     let cur_segment_size = cur_seg_max_val - cur_seg_min_val
     for (let i = 0; i < X.length; i++) {
         let x = X[i]
         if (x > cur_seg_max_val) {
             cur_segment++
-            cur_segment_offset = (ranges[cur_segment][0] - 1) / n
-            cur_segment_prop = (ranges[cur_segment][1] - ranges[cur_segment][0]) / n
-            cur_seg_min_val = X[ranges[cur_segment][0]]
-            cur_seg_max_val = X[ranges[cur_segment][1]]
+            cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
+            cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
+            cur_seg_min_val = X[index_ranges[cur_segment][0]]
+            cur_seg_max_val = X[index_ranges[cur_segment][1]]
             cur_segment_size = cur_seg_max_val - cur_seg_min_val
         }
         let x_position_in_segment = cur_segment_prop * (x - cur_seg_min_val) / cur_segment_size
@@ -179,6 +179,16 @@ function compute_total_squared_distortion(ranges, X) {
 // Each cell only depends on the cells to the left of it in the previous row of the table
 // Assumes X is sorted
 export function optimal_guided_splits(sorted_data, weights, k = 3) {
+    let distortion_weight = 0
+    let fragmentation_weight = 0
+    const automate_k = !weights["auto_k"]
+    if (automate_k) {
+        distortion_weight = weights["interpolation"]
+        fragmentation_weight = weights["fragmentation"]
+        k = 2
+    } else if ("clusters" in weights) {
+        k = weights["clusters"]
+    }
     let X = [...new Set(sorted_data)]
     const n = X.length
     X = [-Infinity].concat(X)
@@ -202,7 +212,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
         T[m][m] = m - 1
     }
     // Fill tables
-    for (let m = 2; m <= k; m++) {
+    for (let m = 2; m <= Math.min(k, 10); m++) {
         for (let i = m + 1; i <= n; i++) {
             let optimal_cost_so_far = Infinity
             let split_index = 0
@@ -213,9 +223,10 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
                 let j_squared = j ** 2
                 let cost_Xj = j_squared * C[m - 1][j]
                 let cost_Xji = 0
+                let cost_Xji_slow = (i - j) ** 2 * compute_total_squared_skewness(X.slice(j + 1, i + 1))
                 if (j !== i - 1) {
-                    let len_new_seg = X[i] - X[j + 1]
                     let size_new_seg = i - j
+                    let len_new_seg = X[i] - X[j + 1]
                     let v = j * (I[i] - I[j])
                     let term1 = (D2[i] - D2[j] - (D[i] - D[j]) / X[j + 1])/ (len_new_seg ** 2)
                     let term2 = (I2[i] - I2[j] - 2 * v) / (size_new_seg ** 2)
@@ -223,17 +234,33 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
                     let term4 = size_new_seg * (X[j + 1] ** 2) / (len_new_seg ** 2) + j_squared / size_new_seg
                     cost_Xji = size_new_seg ** 2 * (term1 + term2 + term3 + term4)
                 }
-                let cost = cost_Xj + cost_Xji
+                let cost = cost_Xj + cost_Xji_slow
                 if (cost < optimal_cost_so_far) {
-                    optimal_cost_so_far = cost / (i ** 2)
+                    optimal_cost_so_far = cost
                     split_index = j
                 }
             }
-            C[m][i] = optimal_cost_so_far
+            C[m][i] = optimal_cost_so_far / (i ** 2)
             T[m][i] = split_index
         }
+        if (automate_k) {
+            let ranges = get_segmentation_index_ranges(n, m, T, X).map(range => [range[0] - 1, range[1] - 1])
+            ranges.sort((x1, x2) => x1[0] - x2[0])
+            let distortion = compute_total_squared_distortion(ranges, X.slice(1, n + 1));
+            let threshold = fragmentation_weight * m + distortion_weight ** 4 * distortion
+            if (C[m][n] < threshold) {
+                k = m - 1
+                break;
+            } else {
+                k = Math.min(k + 1, 10)
+                C.push(new Array(n + 1).fill(0))
+                T.push(new Array(n + 1).fill(0))
+                T[k][k] = k - 1
+            }
+        }
     }
-    let index_ranges = get_segmentation_index_ranges(n, k, T, X);
+
+    let index_ranges = get_segmentation_index_ranges(n, k, T, X)
     let ranges = index_ranges.map(range => range.map(i => X[i]))
     let splits = ranges_to_splits(ranges)
     splits.sort((i, j) => i - j)

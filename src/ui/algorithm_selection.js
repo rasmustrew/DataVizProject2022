@@ -22,6 +22,17 @@ let read_exponent = () => ({exponent: parseInt(d3.select("#exponent input").prop
 let read_lambda = () => ({lambda: parseInt(d3.select("#lambda input").property("value"))})
 let read_interpolation_slider = () => ({interpolation: parseInt(d3.select("#interpolation input").property("value")) / 100})
 
+function read_segment_args() {
+    let weights = {}
+    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value"))
+    weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
+    weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value"))
+    weights["clusters"] = parseFloat(d3.select("#clusters input").property("value"))
+    weights["interpolation"] = parseInt(d3.select("#interpolation input").property("value")) / 100
+    weights["auto_k"] = document.querySelector('#decide_k_checkbox input').checked
+    return weights
+}
+
 let algorithm_selection_map = {
     none: {
         algo: (sorted_data, args) => {
@@ -32,13 +43,13 @@ let algorithm_selection_map = {
     },
     greedy_guided_split: {
         algo: greedy_guided_split,
-        arguments_id: "#greedy_guided_split_arguments",
-        read_args: read_greedy_guided_split_args
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: "#greedy_guided_split_arguments",
-        read_args: read_greedy_guided_split_args
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     hardcoded_periodic_table: {
         algo: hardcoded_periodic_table_get_mapper,
@@ -47,31 +58,31 @@ let algorithm_selection_map = {
     },
     quantile: {
         algo: quantile_splits,
-        arguments_id: "#num_clusters_argument",
-        read_args: read_number_of_clusters
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     kmeans: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
-        arguments_id: "#num_clusters_argument",
-        read_args: read_number_of_clusters
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     kmeans_plusplus: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
-        arguments_id: "#num_clusters_argument",
-        read_args: read_number_of_clusters
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     kmeans_opt: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
-        arguments_id: "#num_clusters_argument",
-        read_args: read_number_of_clusters
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     osaragi: {
         algo: (sorted_data, args) => {
             const splitter = new OsaragiSplit()
             return splitter.MIL_splits(sorted_data, args)
         },
-        arguments_id: "#num_clusters_argument",
-        read_args: read_number_of_clusters
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     },
     log: {
         algo: (sorted_data, args) => new LogMapper([data_range(sorted_data)], [0, 1]),
@@ -95,8 +106,8 @@ let algorithm_selection_map = {
     },
     uniform: {
         algo: (sorted_data, args) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.interpolation),
-        arguments_id: "#interpolation_argument",
-        read_args: read_interpolation_slider
+        arguments_id: "#unskew_split_arguments",
+        read_args: read_segment_args
     }
 }
 
@@ -110,4 +121,9 @@ export function algorithm_selection_update(arguments_id) {
 
 export function get_selected_algorithm() {
     return algorithm_selection_map[d3.select(algo_selector_ref).property("value")]
+}
+
+export function update_cluster_amount(k) {
+    let cluster_input = document.querySelector("#clusters input")
+    cluster_input.value = k
 }

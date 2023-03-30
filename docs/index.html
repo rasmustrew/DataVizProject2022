@@ -83,7 +83,11 @@
                 </div>
             </div>
 
-            <div id='greedy_guided_split_arguments' class='argument_input'>
+            <div id='unskew_split_arguments' class='argument_input'>
+                <div id='interpolation'>
+                    Distortion:
+                    <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
+                </div>
                 <div id='distortion_argument'>
                     Distortion:
                     <input type='number' value='1'/>
@@ -96,12 +100,17 @@
                     Skewness:
                     <input type='number' value='1.5' />
                 </div>
-            </div>
-            <div id='num_clusters_argument' class='argument_input'>
+                <div id='decide_k_checkbox'>
+                    Use custom k
+                    <input type='checkbox'>
+                </div>
                 <div id='clusters'>
                     Clusters:
                     <input type='number' min='1' step='1' value='3' />
                 </div>
+            </div>
+            <div id='num_clusters_argument' class='argument_input'>
+
             </div>
             <div id='exponent_argument' class='argument_input'>
                 <div id='exponent'>
@@ -113,12 +122,6 @@
                 <div id='lambda'>
                     Lambda:
                     <input type='number' min='-5' max='5' step='1' value='2' />
-                </div>
-            </div>
-            <div id='interpolation_argument' class='argument_input'>
-                <div id='interpolation'>
-                    Interpolation:
-                    <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
                 </div>
             </div>
         </div>
