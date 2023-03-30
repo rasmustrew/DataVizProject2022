@@ -109,19 +109,6 @@ export function read_greedy_guided_split_args() {
     return weights
 }
 
-function compute_total_squared_skewness(segment) {
-    if (segment.length < 2) return 0
-    let max_val = Math.max(...segment)
-    let min_val = Math.min(...segment)
-    let n = segment.length
-    let total_distance = 0
-    for (let i = 0; i < n; i++) {
-        let actual_pos = (segment[i] - min_val) / (max_val - min_val)
-        let uniform_pos = (i + 1) / n
-        total_distance += (actual_pos - uniform_pos) ** 2
-    }
-    return total_distance;
-}
 
 // Construct segments index ranges based on reversing through segment table
 function get_segmentation_index_ranges(n, k, T) {
@@ -145,6 +132,20 @@ function ranges_to_splits(ranges) {
     return splits;
 }
 
+function compute_total_squared_skewness_segment(segment) {
+    if (segment.length < 2) return 0
+    let max_val = Math.max(...segment)
+    let min_val = Math.min(...segment)
+    let n = segment.length
+    let total_distance = 0
+    for (let i = 0; i < n; i++) {
+        let actual_pos = (segment[i] - min_val) / (max_val - min_val)
+        let uniform_pos = (i + 1) / n
+        total_distance += (actual_pos - uniform_pos) ** 2
+    }
+    return total_distance;
+}
+
 function compute_total_squared_distortion(index_ranges, X) {
     let total_distortion = 0
     let n = X.length
@@ -157,7 +158,7 @@ function compute_total_squared_distortion(index_ranges, X) {
     let cur_seg_min_val = X[index_ranges[cur_segment][0]]
     let cur_seg_max_val = X[index_ranges[cur_segment][1]]
     let cur_segment_size = cur_seg_max_val - cur_seg_min_val
-    for (let i = 0; i < X.length; i++) {
+    for (let i = 0; i < n; i++) {
         let x = X[i]
         if (x > cur_seg_max_val) {
             cur_segment++
@@ -173,6 +174,93 @@ function compute_total_squared_distortion(index_ranges, X) {
         total_distortion += (x_projected_position - x_original_position) ** 2
     }
     return total_distortion;
+}
+
+
+function compute_total_squared_interpolation_cost(index_ranges, X, interpolation_weight) {
+    let total_cost = 0
+    let n = X.length
+    let min_val = X[0]
+    let max_val = X[n - 1]
+    let data_space_size = max_val - min_val
+    let cur_segment = 0
+    let cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
+    let cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
+    let cur_seg_min_val = X[index_ranges[cur_segment][0]]
+    let cur_seg_max_val = X[index_ranges[cur_segment][1]]
+    let cur_segment_size = cur_seg_max_val - cur_seg_min_val
+    for (let i = 0; i < n; i++) {
+        let x = X[i]
+        if (x > cur_seg_max_val) {
+            cur_segment++
+            cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
+            cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
+            cur_seg_min_val = X[index_ranges[cur_segment][0]]
+            cur_seg_max_val = X[index_ranges[cur_segment][1]]
+            cur_segment_size = cur_seg_max_val - cur_seg_min_val
+        }
+        let x_position_in_segment = cur_segment_prop * (x - cur_seg_min_val) / cur_segment_size
+        let x_projected_position = x_position_in_segment + cur_segment_offset
+        let x_original_position = (x - min_val) / data_space_size
+        let x_uniform_position = (i + 1) / n;
+        let x_ideal_interpolated_position = interpolation_weight * x_uniform_position + (1 - interpolation_weight) * x_original_position
+        total_cost += (x_projected_position - x_ideal_interpolated_position) ** 2
+    }
+    return total_cost;
+}
+
+
+export function greedy_interpolated_splits(sorted_data, weights) {
+    let interpolation_weight = weights["interpolation"]
+    let distortion_weight = 0
+    let fragmentation_weight = 0
+    let k = 1
+    const automate_k = !weights["auto_k"]
+    if (automate_k) {
+        distortion_weight = weights["distortion"]
+        fragmentation_weight = weights["fragmentation"]
+    } else {
+        k = weights["clusters"]
+    }
+    // Remove duplicate values
+    let X = [...new Set(sorted_data)]
+    const n = X.length
+    // Compute single segment cost
+    let single_segment_cost = compute_total_squared_interpolation_cost([[0, n - 1]], X, interpolation_weight)
+    let split_indices = []
+    let threshold = fragmentation_weight
+    for (let m = 1; m < 10; m++) {
+        let best_cost_so_far = Infinity
+        let best_index = 0
+        // Test the cost of any split between i - 1 and i
+        for (let i = 1; i < n; i++) {
+            if (split_indices.includes(i)) continue
+            let index_ranges = []
+            let new_split_not_added = true
+            for (let j = 0; j <= split_indices.length; j++) {
+                let index_begin = j === 0 ? 0 : split_indices[j - 1]
+                let index_end = j === split_indices.length ? n - 1 : split_indices[j]
+                if (new_split_not_added && i < index_end && i > index_begin) {
+                    index_ranges.push([index_begin, i])
+                    index_ranges.push([i, index_end])
+                } else {
+                    index_ranges.push([index_begin, index_end])
+                }
+            }
+            let cost = compute_total_squared_interpolation_cost(index_ranges, X, interpolation_weight)
+            if (cost < best_cost_so_far) {
+                best_cost_so_far = cost
+                best_index = i
+            }
+        }
+        if (split_indices.length / 10 > threshold) {
+            break
+        }
+        split_indices.push(best_index)
+        split_indices.sort()
+    }
+    let splits = split_indices.map(index => (X[index] - X[index - 1]) / 2 + X[index - 1])
+    return new ProportionateSplitMapper(sorted_data, splits)
 }
 
 // Based on building a dynamic programming table of optimal k-means clustering of n points
@@ -205,7 +293,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     }
     // Init first row with skewness of X_i, runs O(n^2)
     for (let i = 2; i <= n + 1; i++) {
-        C[1][i - 1] = compute_total_squared_skewness(X.slice(1, i))
+        C[1][i - 1] = compute_total_squared_skewness_segment(X.slice(1, i))
     }
     // Init diagonal of T to fit segmentations with one point per segment
     for (let m = 2; m <= k; m++) {
@@ -223,7 +311,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
                 let j_squared = j ** 2
                 let cost_Xj = j_squared * C[m - 1][j]
                 let cost_Xji = 0
-                let cost_Xji_slow = (i - j) ** 2 * compute_total_squared_skewness(X.slice(j + 1, i + 1))
+                let cost_Xji_slow = (i - j) ** 2 * compute_total_squared_skewness_segment(X.slice(j + 1, i + 1))
                 if (j !== i - 1) {
                     let size_new_seg = i - j
                     let len_new_seg = X[i] - X[j + 1]
