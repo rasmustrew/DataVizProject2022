@@ -44,7 +44,7 @@ export function make_histogram(bins, sorted_data) {
         }
         histogram.push(bin_elements)
     }
-    if (sorted_data.length !== histogram.reduce(sum)) {
+    if (sorted_data.length !== histogram.reduce(sum, 0)) {
         histogram[bins - 1]++
     }
     return histogram;
@@ -67,7 +67,7 @@ export function get_data_distribution(sorted_data, avg_bin = 3) {
 function kl_divergence(p, q) {
     return zero_to_n(p.length)
         .map(i => p[i] * Math.log(p[i] / q[i]))
-        .reduce(sum);
+        .reduce(sum, 0);
 }
 
 export function mapper_kl_divergence(sorted_data, mapper, avg_bin = 10) {

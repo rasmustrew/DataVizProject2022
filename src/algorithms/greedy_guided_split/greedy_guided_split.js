@@ -341,6 +341,8 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     }
     // Fill tables
     for (let m = 2; m <= Math.min(k, 10); m++) {
+        // For visualizing the cost matrix of split point location
+        let B = Array(n + 1).fill(null).map(() => Array(n + 1).fill(0))
         for (let i = m + 1; i <= n; i++) {
             let optimal_cost_so_far = Infinity
             let split_index = 0
@@ -362,6 +364,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
                     cost_Xji = (seg_size ** 2) * (term1 + term2 - term3)
                 }
                 let cost = cost_Xj + cost_Xji
+                B[i][j] = cost
                 if (cost < optimal_cost_so_far) {
                     optimal_cost_so_far = cost
                     split_index = j

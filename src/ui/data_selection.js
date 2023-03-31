@@ -12,7 +12,8 @@ const data_selection_map = {
     numbeo_country_data: load_numbeo_data,
     heatmap_data: () => load_heatmap_data("data"),
     heatmap_denmark: () => load_heatmap_data("denmark"),
-    heatmap_europe: () => load_heatmap_data("europe")
+    heatmap_europe: () => load_heatmap_data("europe"),
+    monotonicity_example: () => {return {data: [{"v": 0}, {"v": 2}, {"v": 3}, {"v": 7}, {"v": 8}, {"v": 10}], dimensions: "v"}}
 }
 
 async function prepare_data_set(data_selection) {
