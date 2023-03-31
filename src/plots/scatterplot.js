@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
+import ticks from "ticks";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -138,6 +139,7 @@ export default class ScatterPlot {
         const no_x_ticks = Math.floor(tile_width / this.tick_spacing)
         const no_y_ticks = Math.floor(tile_height / this.tick_spacing)
 
+        // Old ticks
         const x_ticks = [x_range[0]]
         for (let k = 1; k < no_x_ticks; k++) {
             let screen_value = x_range_screen[0] + k / no_x_ticks * tile_width
@@ -146,6 +148,7 @@ export default class ScatterPlot {
         x_ticks.push(x_range[1])
 
 
+        // Old ticks
         const y_ticks = [y_range[1]]
         for (let k = 1; k < no_y_ticks; k++) {
             let screen_value = y_range_screen[1] + k / no_y_ticks * tile_height
@@ -160,11 +163,17 @@ export default class ScatterPlot {
             .domain(x_range)
             .range(x_range_screen)
 
+        let x_ticks_ew = ticks(x_range[0], x_range[1], no_x_ticks)
+        let y_ticks_ew = ticks(y_range[0], y_range[1], no_y_ticks)
+        x_ticks_ew = x_ticks_ew.slice(1, x_ticks_ew.length - 1)
+        y_ticks_ew = y_ticks_ew.slice(1, y_ticks_ew.length - 1)
+
         base_svg.append("g")
             .attr("transform", "translate(" + 0 + "," + y_range_screen[0] + ")")
+            .attr("class", "tickline")
             .call(d3.axisBottom(x)
                 .tickSize(-tile_height)
-                .tickValues(x_ticks)
+                .tickValues(x_ticks_ew)
                 .tickFormat((tick) => j === 0? tick_format.format(tick): "")
             )
 
@@ -174,9 +183,10 @@ export default class ScatterPlot {
 
         base_svg.append("g")
             .attr("transform", "translate(" + x_range_screen[0] + "," + 0 + ")")
+            .attr("class", "tickline")
             .call(d3.axisLeft(y)
                 .tickSize(-tile_width)
-                .tickValues(y_ticks)
+                .tickValues(y_ticks_ew)
                 .tickFormat((tick) => i === 0? tick_format.format(tick): "")
             )
         return base_svg;

@@ -129,3 +129,15 @@ body, html {
     border-width: 2px;
     visibility: hidden;
 }
+
+.tickline line{
+    stroke: lightgray;
+}
+
+.tickline path{
+    stroke: black;
+}
+
+.tickline text{
+    fill: black;
+}
