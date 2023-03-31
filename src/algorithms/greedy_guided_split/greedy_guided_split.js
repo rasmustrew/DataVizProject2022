@@ -86,7 +86,7 @@ function compute_metrics(data, current_mapping, linear_mapping, extreme_mapping)
 }
 
 function compute_total_metric(metrics, weights) {
-    return metrics.skewness * weights.skewness + metrics.distortion * weights.interpolation + metrics.fragmentation * weights.fragmentation
+    return metrics.skewness * weights.skewness + metrics.distortion * (1 - weights.interpolation) + metrics.fragmentation * weights.fragmentation
 }
 
 export function mapping_difference(data, mapping1, mapping2) {
@@ -133,6 +133,20 @@ function ranges_to_splits(ranges) {
 }
 
 function compute_total_squared_skewness_segment(segment) {
+    if (segment.length < 2) return 0
+    let max_val = Math.max(...segment)
+    let min_val = Math.min(...segment)
+    let n = segment.length
+    let total_distance = 0
+    for (let i = 0; i < n; i++) {
+        let actual_pos = (segment[i] - min_val) / (max_val - min_val)
+        let uniform_pos = (i + 1) / n
+        total_distance += (actual_pos - uniform_pos) ** 2
+    }
+    return total_distance;
+}
+
+function compute_total_squared_skewness_segment_2(segment) {
     if (segment.length < 2) return 0
     let max_val = Math.max(...segment)
     let min_val = Math.min(...segment)
@@ -263,9 +277,35 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     return new ProportionateSplitMapper(sorted_data, splits)
 }
 
-// Based on building a dynamic programming table of optimal k-means clustering of n points
-// Each cell only depends on the cells to the left of it in the previous row of the table
-// Assumes X is sorted
+function compute_term_3(X, i, j) {
+    let sum = 0
+    for (let l = j + 1; l <= i; l++) {
+        sum += (X[l] - X[j + 1]) * (l - j)
+    }
+    let divisor = (X[i] - X[j + 1]) * (i - j)
+    return 2 * sum / divisor;
+}
+
+function compute_term_3_2(X, i, j) {
+    let sum_1 = 0
+    let sum_2 = 0
+    let sum_3 = 0
+    for (let l = j + 1; l <= i; l++) {
+        sum_1 += X[l] * l
+        sum_2 += X[l]
+        sum_3 += j - l
+    }
+    for (let l = 1; l <= i - j; l++) {
+        //sum_3 += l
+    }
+    let divisor = (X[i] - X[j + 1]) * (i - j)
+    return 2 * (sum_1 - j * sum_2 + X[j + 1] * sum_3) / divisor;
+}
+
+/* Based on building a dynamic programming table of optimal k-means clustering of n points
+ * Each cell only depends on the cells to the left of it in the previous row of the table
+ * Assumes X is sorted
+*/
 export function optimal_guided_splits(sorted_data, weights, k = 3) {
     let distortion_weight = 0
     let fragmentation_weight = 0
@@ -311,18 +351,17 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
                 let j_squared = j ** 2
                 let cost_Xj = j_squared * C[m - 1][j]
                 let cost_Xji = 0
-                let cost_Xji_slow = (i - j) ** 2 * compute_total_squared_skewness_segment(X.slice(j + 1, i + 1))
+                //let cost_Xji_slow = (i - j) ** 2 * compute_total_squared_skewness_segment(X.slice(j + 1, i + 1))
                 if (j !== i - 1) {
-                    let size_new_seg = i - j
-                    let len_new_seg = X[i] - X[j + 1]
-                    let v = j * (I[i] - I[j])
-                    let term1 = (D2[i] - D2[j] - (D[i] - D[j]) / X[j + 1])/ (len_new_seg ** 2)
-                    let term2 = (I2[i] - I2[j] - 2 * v) / (size_new_seg ** 2)
-                    let term3 = 2 * (H[i] - H[j] - v + X[j + 1] * I[size_new_seg]) / (len_new_seg * size_new_seg)
-                    let term4 = size_new_seg * (X[j + 1] ** 2) / (len_new_seg ** 2) + j_squared / size_new_seg
-                    cost_Xji = size_new_seg ** 2 * (term1 + term2 + term3 + term4)
+                    let seg_size = i - j
+                    let seg_len = X[i] - X[j + 1]
+                    let v = D[i] - D[j]
+                    let term1 = (seg_size * (X[j + 1] ** 2) + D2[i] - D2[j] - 2 * X[j + 1] * v)/ (seg_len ** 2)
+                    let term2 = I2[seg_size] / (seg_size ** 2)
+                    let term3 = 2 * (H[i] - H[j] - j * v - X[j + 1] * I[seg_size]) / (seg_len * seg_size)
+                    cost_Xji = (seg_size ** 2) * (term1 + term2 - term3)
                 }
-                let cost = cost_Xj + cost_Xji_slow
+                let cost = cost_Xj + cost_Xji
                 if (cost < optimal_cost_so_far) {
                     optimal_cost_so_far = cost
                     split_index = j
