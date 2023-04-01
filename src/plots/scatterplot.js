@@ -139,34 +139,19 @@ export default class ScatterPlot {
         const no_x_ticks = Math.floor(tile_width / this.tick_spacing)
         const no_y_ticks = Math.floor(tile_height / this.tick_spacing)
 
-        // Old ticks
-        const x_ticks = [x_range[0]]
-        for (let k = 1; k < no_x_ticks; k++) {
-            let screen_value = x_range_screen[0] + k / no_x_ticks * tile_width
-            x_ticks.push(x_mapper.map_inverse(screen_value))
-        }
-        x_ticks.push(x_range[1])
+        // Wilkinson ticks
+        let x_ticks_ew = ticks(x_range[0], x_range[1], no_x_ticks)
+        let y_ticks_ew = ticks(y_range[0], y_range[1], no_y_ticks)
+        x_ticks_ew = x_ticks_ew.slice(1, x_ticks_ew.length - 1)
+        y_ticks_ew = y_ticks_ew.slice(1, y_ticks_ew.length - 1)
+        y_ticks_ew.reverse()
 
-
-        // Old ticks
-        const y_ticks = [y_range[1]]
-        for (let k = 1; k < no_y_ticks; k++) {
-            let screen_value = y_range_screen[1] + k / no_y_ticks * tile_height
-            y_ticks.push(y_mapper.map_inverse(screen_value))
-        }
-        y_ticks.push(y_range[0])
-        y_ticks.reverse()
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
         console.log("x_range_screen: ", x_range_screen)
         var x = d3.scaleLinear()
             .domain(x_range)
             .range(x_range_screen)
-
-        let x_ticks_ew = ticks(x_range[0], x_range[1], no_x_ticks)
-        let y_ticks_ew = ticks(y_range[0], y_range[1], no_y_ticks)
-        x_ticks_ew = x_ticks_ew.slice(1, x_ticks_ew.length - 1)
-        y_ticks_ew = y_ticks_ew.slice(1, y_ticks_ew.length - 1)
 
         base_svg.append("g")
             .attr("transform", "translate(" + 0 + "," + y_range_screen[0] + ")")

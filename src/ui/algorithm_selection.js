@@ -24,9 +24,9 @@ let read_interpolation_slider = () => ({interpolation: parseInt(d3.select("#inte
 
 function read_segment_args() {
     let weights = {}
-    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value"))
-    weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
-    weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value"))
+    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value")) / 100
+    //weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
+    weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value")) / 100
     weights["clusters"] = parseFloat(d3.select("#clusters input").property("value"))
     weights["interpolation"] = parseInt(d3.select("#interpolation input").property("value")) / 100
     weights["auto_k"] = document.querySelector('#decide_k_checkbox input').checked

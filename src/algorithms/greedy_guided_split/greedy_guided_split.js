@@ -86,7 +86,7 @@ function compute_metrics(data, current_mapping, linear_mapping, extreme_mapping)
 }
 
 function compute_total_metric(metrics, weights) {
-    return metrics.skewness * weights.skewness + metrics.distortion * (1 - weights.interpolation) + metrics.fragmentation * weights.fragmentation
+    return metrics.skewness * weights.interpolation + metrics.distortion * (1 - weights.distortion) + metrics.fragmentation * (0.1 - weights.fragmentation / 10)
 }
 
 export function mapping_difference(data, mapping1, mapping2) {
@@ -231,7 +231,7 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     let k = 1
     const automate_k = !weights["auto_k"]
     if (automate_k) {
-        distortion_weight = weights["distortion"]
+        distortion_weight =1 - weights["distortion"]
         fragmentation_weight = weights["fragmentation"]
     } else {
         k = weights["clusters"]
@@ -242,7 +242,6 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     // Compute single segment cost
     let single_segment_cost = compute_total_squared_interpolation_cost([[0, n - 1]], X, interpolation_weight)
     let split_indices = []
-    let threshold = fragmentation_weight
     for (let m = 1; m < 10; m++) {
         let best_cost_so_far = Infinity
         let best_index = 0
@@ -267,6 +266,18 @@ export function greedy_interpolated_splits(sorted_data, weights) {
                 best_index = i
             }
         }
+        let distortion_reduction = 0
+        if (distortion_weight !== 0) {
+            let index_ranges = []
+            for (let j = 0; j <= split_indices.length; j++) {
+                let index_begin = j === 0 ? 0 : split_indices[j - 1]
+                let index_end = j === split_indices.length ? n - 1 : split_indices[j]
+                index_ranges.push([index_begin, index_end])
+            }
+            let total_distortion = compute_total_squared_distortion(index_ranges, X)
+            distortion_reduction = distortion_weight ** 4 * total_distortion
+        }
+        let threshold = fragmentation_weight - distortion_reduction
         if (split_indices.length / 10 > threshold) {
             break
         }
@@ -275,31 +286,6 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     }
     let splits = split_indices.map(index => (X[index] - X[index - 1]) / 2 + X[index - 1])
     return new ProportionateSplitMapper(sorted_data, splits)
-}
-
-function compute_term_3(X, i, j) {
-    let sum = 0
-    for (let l = j + 1; l <= i; l++) {
-        sum += (X[l] - X[j + 1]) * (l - j)
-    }
-    let divisor = (X[i] - X[j + 1]) * (i - j)
-    return 2 * sum / divisor;
-}
-
-function compute_term_3_2(X, i, j) {
-    let sum_1 = 0
-    let sum_2 = 0
-    let sum_3 = 0
-    for (let l = j + 1; l <= i; l++) {
-        sum_1 += X[l] * l
-        sum_2 += X[l]
-        sum_3 += j - l
-    }
-    for (let l = 1; l <= i - j; l++) {
-        //sum_3 += l
-    }
-    let divisor = (X[i] - X[j + 1]) * (i - j)
-    return 2 * (sum_1 - j * sum_2 + X[j + 1] * sum_3) / divisor;
 }
 
 /* Based on building a dynamic programming table of optimal k-means clustering of n points
@@ -311,8 +297,8 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     let fragmentation_weight = 0
     const automate_k = !weights["auto_k"]
     if (automate_k) {
-        distortion_weight = weights["interpolation"]
-        fragmentation_weight = weights["fragmentation"]
+        distortion_weight = 1 - weights["distortion"]
+        fragmentation_weight = 1 - weights["fragmentation"]
         k = 2
     } else if ("clusters" in weights) {
         k = weights["clusters"]
