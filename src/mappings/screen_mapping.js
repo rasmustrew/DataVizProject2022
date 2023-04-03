@@ -43,6 +43,7 @@ export default class ScreenMapper {
         let input_range_index = this.get_input_space_ranges().findIndex((range) =>
             is_value_in_range(input, range, this.input_start, this.input_end))
         // console.log(input_range_index)
+        if (input_range_index === -1) return -1
         return this.inner_mappers[input_range_index].map(input)
     }
 

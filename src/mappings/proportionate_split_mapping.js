@@ -18,8 +18,8 @@ export default class ProportionateSplitMapper {
             let points_in_range = sorted_data.filter((data_point) => {
                 return is_value_in_range(data_point, range, this.min, this.max)
             })
-            let percent_points_in_range = points_in_range.length / sorted_data.length
-            return percent_points_in_range
+            let share_of_points = points_in_range.length / sorted_data.length
+            return share_of_points
         })
 
         //Create proportional mapping from 0 to 1
@@ -34,9 +34,9 @@ export default class ProportionateSplitMapper {
             this.output_ranges.push(output_range)
             this.piecewise_linear_maps.push(piecewise_linear_map)
             proportions_processed += proportion
-
         }
     }
+
     map(input) {
         for (let i = 0; i < this.input_ranges.length; i++) {
             let range = this.input_ranges[i]
