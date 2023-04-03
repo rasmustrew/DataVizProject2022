@@ -22,13 +22,13 @@ let read_exponent = () => ({exponent: parseInt(d3.select("#exponent input").prop
 let read_lambda = () => ({lambda: parseInt(d3.select("#lambda input").property("value"))})
 let read_interpolation_slider = () => ({interpolation: parseInt(d3.select("#interpolation input").property("value")) / 100})
 
-function read_segment_args() {
+function read_skew_algo_args() {
     let weights = {}
-    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value")) / 100
     //weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
+    weights["uniformity"] = parseInt(d3.select("#uniformity input").property("value")) / 100
+    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value")) / 100
     weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value")) / 100
     weights["clusters"] = parseFloat(d3.select("#clusters input").property("value"))
-    weights["interpolation"] = parseInt(d3.select("#interpolation input").property("value")) / 100
     weights["auto_k"] = document.querySelector('#decide_k_checkbox input').checked
     return weights
 }
@@ -43,18 +43,18 @@ let algorithm_selection_map = {
     },
     greedy_guided_split: {
         algo: greedy_guided_split,
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        read_args: read_skew_algo_args
     },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: ["#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        read_args: read_skew_algo_args
     },
     hardcoded_periodic_table: {
         algo: hardcoded_periodic_table_get_mapper,
@@ -63,31 +63,31 @@ let algorithm_selection_map = {
     },
     quantile: {
         algo: quantile_splits,
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: "#clusters",
+        read_args: read_number_of_clusters
     },
     kmeans: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: "#clusters",
+        read_args: read_number_of_clusters
     },
     kmeans_plusplus: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: "#clusters",
+        read_args: read_number_of_clusters
     },
     kmeans_opt: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: "#clusters",
+        read_args: read_number_of_clusters
     },
     osaragi: {
         algo: (sorted_data, args) => {
             const splitter = new OsaragiSplit()
             return splitter.MIL_splits(sorted_data, args)
         },
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        arguments_id: "#clusters",
+        read_args: read_number_of_clusters
     },
     log: {
         algo: (sorted_data, args) => new LogMapper([data_range(sorted_data)], [0, 1]),
@@ -110,9 +110,9 @@ let algorithm_selection_map = {
         read_args: read_lambda
     },
     uniform: {
-        algo: (sorted_data, args) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.interpolation),
-        arguments_id: "#unskew_split_arguments",
-        read_args: read_segment_args
+        algo: (sorted_data, args) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.uniformity),
+        arguments_id: "#uniformity",
+        read_args: read_skew_algo_args
     }
 }
 
@@ -120,7 +120,13 @@ export function algorithm_selection_update(arguments_id) {
     let args = d3.selectAll(".argument_input");
     args.style("display", "none")
     if (arguments_id !== null) {
-        d3.select(arguments_id).style("display", null)
+        if (typeof arguments_id === "string") {
+            d3.select(arguments_id).style("display", null)
+        } else {
+            for (const argument_id of arguments_id) {
+                d3.select(argument_id).style("display", null)
+            }
+        }
     }
 }
 

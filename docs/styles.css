@@ -38,8 +38,8 @@ body, html {
     padding: 5px;
 }
 
-.slider_argument {
-    margin-right: 5px;
+.argument_input {
+    margin-right: 10px;
 }
 
 #metrics_div {

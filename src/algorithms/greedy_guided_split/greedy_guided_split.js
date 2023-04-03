@@ -86,7 +86,7 @@ function compute_metrics(data, current_mapping, linear_mapping, extreme_mapping)
 }
 
 function compute_total_metric(metrics, weights) {
-    return metrics.skewness * weights.interpolation + metrics.distortion * (1 - weights.distortion) + metrics.fragmentation * (0.1 - weights.fragmentation / 10)
+    return metrics.skewness * weights.uniformity + metrics.distortion * (1 - weights.distortion) + metrics.fragmentation * (0.1 - weights.fragmentation / 10)
 }
 
 export function mapping_difference(data, mapping1, mapping2) {
@@ -99,14 +99,6 @@ export function mapping_difference(data, mapping1, mapping2) {
         summed_diff += diff
     }
     return summed_diff / data.length
-}
-
-export function read_greedy_guided_split_args() {
-    let weights = {}
-    weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value"))
-    weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value"))
-    weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
-    return weights
 }
 
 
@@ -225,7 +217,7 @@ function compute_total_squared_interpolation_cost(index_ranges, X, interpolation
 
 
 export function greedy_interpolated_splits(sorted_data, weights) {
-    let interpolation_weight = weights["interpolation"]
+    let interpolation_weight = weights["uniformity"]
     let distortion_weight = 0
     let fragmentation_weight = 0
     let k = 1

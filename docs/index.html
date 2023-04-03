@@ -85,28 +85,31 @@
                 </div>
             </div>
 
-            <div id='unskew_split_arguments' class='argument_input'>
-                <div id='interpolation' class="slider_argument">
-                    Uniformity:
-                    <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
-                </div>
-                <div id='distortion_argument' class="slider_argument">
-                    Distortion:
-                    <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
-                </div>
-                <div id='fragmentation_argument' class="slider_argument">
-                    Fragmentation:
-                    <input type='range' min='0' max='100' value='10' class='slider' oninput='window.on_recompute_button();'>
-                </div>
-                <div id='decide_k_checkbox'>
-                    Use custom k
-                    <input type='checkbox'>
-                </div>
-                <div id='clusters'>
-                    Clusters:
-                    <input type='number' min='1' step='1' value='3' />
-                </div>
+            <div id='uniformity' class="argument_input">
+                Uniformity:
+                <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
             </div>
+
+            <div id='distortion_argument' class="argument_input">
+                Distortion:
+                <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
+            </div>
+
+            <div id='fragmentation_argument' class="argument_input">
+                Fragmentation:
+                <input type='range' min='0' max='100' value='10' class='slider' oninput='window.on_recompute_button();'>
+            </div>
+
+            <div id='decide_k_checkbox' class="argument_input">
+                Use custom k
+                <input type='checkbox'>
+            </div>
+
+            <div id='clusters' class="argument_input">
+                Clusters:
+                <input type='number' min='1' step='1' value='3' />
+            </div>
+
             <div id='num_clusters_argument' class='argument_input'>
 
             </div>
