@@ -149,10 +149,11 @@ export default class ScatterPlot {
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
         console.log("x_range_screen: ", x_range_screen)
-        var x = d3.scaleLinear()
+        let x = d3.scaleLinear()
             .domain(x_range)
             .range(x_range_screen)
 
+        // Inner tick lines
         base_svg.append("g")
             .attr("transform", "translate(" + 0 + "," + y_range_screen[0] + ")")
             .attr("class", "tickline")
@@ -162,10 +163,21 @@ export default class ScatterPlot {
                 .tickFormat((tick) => j === 0? tick_format.format(tick): "")
             )
 
-        var y = d3.scaleLinear()
+        // Edge tick labels
+        base_svg.append("g")
+            .attr("transform", "translate(" + 0 + "," + (y_range_screen[0] + 10) + ")")
+            .attr("class", "edgetick")
+            .call(d3.axisBottom(x)
+                .tickSize(-tile_height)
+                .tickValues(x_range)
+                .tickFormat((tick) => j === 0 ? tick_format.format(tick): "")
+            )
+
+        let y = d3.scaleLinear()
             .domain(y_range)
             .range(y_range_screen)
 
+        // Inner tick lines
         base_svg.append("g")
             .attr("transform", "translate(" + x_range_screen[0] + "," + 0 + ")")
             .attr("class", "tickline")
@@ -174,6 +186,17 @@ export default class ScatterPlot {
                 .tickValues(y_ticks_ew)
                 .tickFormat((tick) => i === 0? tick_format.format(tick): "")
             )
+
+        // Edge tick labels
+        base_svg.append("g")
+            .attr("transform", "translate(" + (x_range_screen[0] - 10) + "," + 0 + ")")
+            .attr("class", "edgetick")
+            .call(d3.axisLeft(y)
+                .tickSize(-tile_width)
+                .tickValues(y_range)
+                .tickFormat((tick) => i === 0 ? tick_format.format(tick): "")
+            )
+
         return base_svg;
     }
 }

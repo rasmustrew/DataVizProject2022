@@ -139,5 +139,18 @@ body, html {
 }
 
 .tickline text{
+    fill: grey;
+}
+
+.edgetick line{
+    stroke: none;
+}
+
+.edgetick path{
+    stroke: none;
+}
+
+.edgetick text{
     fill: black;
+    font-weight: bold;
 }
