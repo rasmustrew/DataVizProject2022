@@ -142,8 +142,8 @@ export default class ScatterPlot {
         // Wilkinson ticks
         let x_ticks_ew = ticks(x_range[0], x_range[1], no_x_ticks)
         let y_ticks_ew = ticks(y_range[0], y_range[1], no_y_ticks)
-        x_ticks_ew = x_ticks_ew.slice(1, x_ticks_ew.length - 1)
-        y_ticks_ew = y_ticks_ew.slice(1, y_ticks_ew.length - 1)
+        x_ticks_ew = x_ticks_ew.filter(tick => tick > x_range[0] && tick < x_range[1])
+        y_ticks_ew = y_ticks_ew.filter(tick => tick > y_range[0] && tick < y_range[1])
         y_ticks_ew.reverse()
 
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })

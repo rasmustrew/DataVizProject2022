@@ -1,7 +1,6 @@
 import ticks from "ticks";
 import LinearMapper from "./linear_mapping";
 import {is_value_in_range} from "./util";
-import {data_range} from "../algorithms/util";
 
 export default class PrettySegmentMapper {
 
@@ -44,11 +43,15 @@ export default class PrettySegmentMapper {
         for (let i = 0; i < tick_ranges.length; i++) {
             let tick_range = tick_ranges[i]
             let pretty_range_start = tick_range[0]
-            if (i !== 0 && pretty_ranges[i - 1][1] > pretty_range_start) {
+            const range_overlaps_previous = i !== 0 && pretty_ranges[i - 1][1] > pretty_range_start
+            const data_left_of_range = this.data_ranges[i][0] < pretty_range_start
+            if (range_overlaps_previous || data_left_of_range) {
                 pretty_range_start = this.data_ranges[i][0]
             }
             let pretty_range_end = tick_range[1]
-            if (i !== tick_ranges.length - 1 && this.data_ranges[i + 1][0] < pretty_range_end) {
+            const range_overlaps_next = i !== tick_ranges.length - 1 && this.data_ranges[i + 1][0] < pretty_range_end
+            const data_right_of_range = this.data_ranges[i][1] > pretty_range_end
+            if (range_overlaps_next || data_right_of_range) {
                 pretty_range_end = this.data_ranges[i][1]
             }
             pretty_ranges.push([pretty_range_start, pretty_range_end])
@@ -59,8 +62,18 @@ export default class PrettySegmentMapper {
     map(input) {
         for (let i = 0; i < this.input_ranges.length; i++) {
             let range = this.input_ranges[i]
-            if (is_value_in_range(input, range, this.input_ranges[0][0], this.input_ranges[this.input_ranges.length - 1])) {
+            if (is_value_in_range(input, range, range[0], range[1])) {
                 return this.piecewise_linear_maps[i].map(input)
+            }
+        }
+    }
+
+    map_inverse(output) {
+        for (let i = 0; i < this.output_ranges.length; i++) {
+            let range = this.output_ranges[i]
+            if (is_value_in_range(output, range, range[0], range[1])) {
+                let range_mapper = this.piecewise_linear_maps[i]
+                return range_mapper.map_inverse(output)
             }
         }
     }

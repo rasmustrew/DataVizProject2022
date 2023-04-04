@@ -3,6 +3,7 @@ import UniqueIndexMapper from "../../mappings/unique_index_mapping";
 import CompositeMapper from "../../mappings/composite_mapping";
 import ProportionateSplitMapper from "../../mappings/proportionate_split_mapping";
 import * as d3 from "d3";
+import PrettySegmentMapper from "../../mappings/pretty_segment_mapping";
 
 export function make_extreme_mapper(sorted_data) {
     let unique_index_mapper = new UniqueIndexMapper(sorted_data)
@@ -277,7 +278,7 @@ export function greedy_interpolated_splits(sorted_data, weights) {
         split_indices.sort()
     }
     let splits = split_indices.map(index => (X[index] - X[index - 1]) / 2 + X[index - 1])
-    return new ProportionateSplitMapper(sorted_data, splits)
+    return new PrettySegmentMapper(sorted_data, new ProportionateSplitMapper(sorted_data, splits))
 }
 
 /* Based on building a dynamic programming table of optimal k-means clustering of n points
@@ -372,5 +373,5 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     let ranges = index_ranges.map(range => range.map(i => X[i]))
     let splits = ranges_to_splits(ranges)
     splits.sort((i, j) => i - j)
-    return new ProportionateSplitMapper(sorted_data, splits)
+    return new PrettySegmentMapper(sorted_data, new ProportionateSplitMapper(sorted_data, splits))
 }
