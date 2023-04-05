@@ -1,7 +1,7 @@
 import {
-    greedy_guided_split, greedy_interpolated_splits, optimal_guided_splits,
-    read_greedy_guided_split_args
-} from "../algorithms/greedy_guided_split/greedy_guided_split";
+    greedy_interpolated_splits, guided_splits, optimal_guided_splits,
+} from "../algorithms/guided_splits";
+import {greedy_guided_split} from "../algorithms/greedy_guided_split/greedy_guided_split"
 import {hardcoded_periodic_table_get_mapper} from "../algorithms/hardcoded_splits";
 import {quantile_splits} from "../algorithms/quantile_splits";
 import {kmeans_splits} from "../algorithms/kmeans_split";
@@ -43,17 +43,22 @@ let algorithm_selection_map = {
     },
     greedy_guided_split: {
         algo: greedy_guided_split,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
         read_args: read_skew_algo_args
     },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"], //, "#decide_k_checkbox", "#clusters"],
         read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
         arguments_id: ["#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        read_args: read_skew_algo_args
+    },
+    guided_splits: {
+        algo: guided_splits,
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
         read_args: read_skew_algo_args
     },
     hardcoded_periodic_table: {

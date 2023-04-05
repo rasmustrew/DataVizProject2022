@@ -45,13 +45,13 @@ export default class PrettySegmentMapper {
             let pretty_range_start = tick_range[0]
             const range_overlaps_previous = i !== 0 && pretty_ranges[i - 1][1] > pretty_range_start
             const data_left_of_range = this.data_ranges[i][0] < pretty_range_start
-            if (range_overlaps_previous || data_left_of_range) {
+            if (range_overlaps_previous || data_left_of_range || isNaN(pretty_range_start)) {
                 pretty_range_start = this.data_ranges[i][0]
             }
             let pretty_range_end = tick_range[1]
             const range_overlaps_next = i !== tick_ranges.length - 1 && this.data_ranges[i + 1][0] < pretty_range_end
             const data_right_of_range = this.data_ranges[i][1] > pretty_range_end
-            if (range_overlaps_next || data_right_of_range) {
+            if (range_overlaps_next || data_right_of_range || isNaN(pretty_range_end)) {
                 pretty_range_end = this.data_ranges[i][1]
             }
             pretty_ranges.push([pretty_range_start, pretty_range_end])

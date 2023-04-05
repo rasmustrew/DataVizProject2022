@@ -3,10 +3,6 @@ import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimensio
 import {algorithm_selection_update, get_selected_algorithm, update_cluster_amount} from "./ui/algorithm_selection";
 import {get_chart_selection, get_selected_chart} from "./ui/chart_selection";
 import {update_metrics_display} from "./ui/metric_display";
-import {hardcoded_periodic_table_get_mapper} from "./algorithms/hardcoded_splits";
-import LinearMapper from "./mappings/linear_mapping";
-import CompositeMapper from "./mappings/composite_mapping";
-import {greedy_guided_split} from "./algorithms/greedy_guided_split/greedy_guided_split";
 
 console.log("starting")
 
