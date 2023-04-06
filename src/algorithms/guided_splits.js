@@ -177,6 +177,8 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     return new PrettySegmentMapper(sorted_data, new ProportionateSplitMapper(sorted_data, splits))
 }
 
+let automate_k_cost_reduction = false
+
 /* Based on building a dynamic programming table of optimal k-means clustering of n points
  * Each cell only depends on the cells to the left of it in the previous row of the table
  * Assumes X is sorted
@@ -255,12 +257,19 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
             let threshold = fragmentation_weight * m + distortion_weight ** 4 * distortion
             if (C[m][n] < threshold) {
                 k = m - 1
-                break;
+                break
             } else {
                 k = Math.min(k + 1, 10)
                 C.push(new Array(n + 1).fill(0))
                 T.push(new Array(n + 1).fill(0))
                 T[k][k] = k - 1
+            }
+        }
+        if (automate_k_cost_reduction) {
+            let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][n]
+            if (cost_reduction < 0.8) {
+                k = m - 1
+                break
             }
         }
     }
