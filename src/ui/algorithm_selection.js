@@ -29,7 +29,7 @@ function read_skew_algo_args() {
     weights["distortion"] = parseFloat(d3.select("#distortion_argument input").property("value")) / 100
     weights["fragmentation"] = parseFloat(d3.select("#fragmentation_argument input").property("value")) / 100
     weights["clusters"] = parseFloat(d3.select("#clusters input").property("value"))
-    weights["auto_k"] = document.querySelector('#decide_k_checkbox input').checked
+    weights["stopping_condition"] = d3.select("#stopping_condition select").property("value")
     return weights
 }
 
@@ -48,17 +48,17 @@ let algorithm_selection_map = {
     },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"], //, "#decide_k_checkbox", "#clusters"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters"],
         read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: ["#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        arguments_id: ["#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters"],
         read_args: read_skew_algo_args
     },
     guided_splits: {
         algo: guided_splits,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#decide_k_checkbox", "#clusters"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters"],
         read_args: read_skew_algo_args
     },
     hardcoded_periodic_table: {

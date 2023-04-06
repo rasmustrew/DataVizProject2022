@@ -68,7 +68,7 @@
         </div>
 
         <div id='arguments_div'>
-            <div id='metrics_div' style="text-align:right;">
+            <div id='metrics_div' style="text-align:right;" hidden="hidden">
                 <div id='sqrt_kmeans_cost' class='metric_label'>
                     kmeans_cost:
                 </div>
@@ -101,9 +101,14 @@
                 <input type='range' min='0' max='100' value='10' class='slider' oninput='window.on_recompute_button();'>
             </div>
 
-            <div id='decide_k_checkbox' class="argument_input">
-                Use custom k
-                <input type='checkbox'>
+            <div id='stopping_condition' class="argument_input">
+                Stopping condition:
+                <select name='stopping condition' onChange='window.on_recompute_button();' required>
+                    <option value='k' selected>Custom k</option>
+                    <option value='dist_frac'>Distortion & Fragmentation</option>
+                    <option value='cost_reduction'>Cost reduction</option>
+                    <option value='threshold'>Cost threshold</option>
+                </select>
             </div>
 
             <div id='clusters' class="argument_input">
