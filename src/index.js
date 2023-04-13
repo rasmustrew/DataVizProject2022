@@ -24,7 +24,7 @@ function select_algorithm() {
         mappers[dimension] = algo(sorted_data[dimension], args)
     }
     let dimension = dimensions[0]
-    update_metrics_display(sorted_data[dimension], mappers[dimension])
+    //update_metrics_display(sorted_data[dimension], mappers[dimension])
     if (args != null && "auto_k" in args && !args["auto_k"]) {
         update_cluster_amount(mappers[dimensions[0]].get_output_space_ranges().length)
     }

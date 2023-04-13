@@ -3,6 +3,7 @@ import {load_un_data} from "../data/load_un_data";
 import {load_heatmap_data} from "../data/load_heatmap_csv";
 import * as d3 from "d3";
 import {load_numbeo_data} from "../data/load_numbeo_data";
+import {load_mouse_data} from "../data/load_mouse_data";
 
 const data_selector_ref = "#data-select";
 
@@ -13,6 +14,7 @@ const data_selection_map = {
     heatmap_data: () => load_heatmap_data("data"),
     heatmap_denmark: () => load_heatmap_data("denmark"),
     heatmap_europe: () => load_heatmap_data("europe"),
+    mouse_dna: load_mouse_data,
     monotonicity_example: () => {return {data: [{"v": 0}, {"v": 2}, {"v": 3}, {"v": 7}, {"v": 8}, {"v": 10}], dimensions: "v"}}
 }
 

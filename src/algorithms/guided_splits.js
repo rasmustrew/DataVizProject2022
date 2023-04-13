@@ -1,5 +1,3 @@
-
-
 // Construct segments index ranges based on reversing through segment table
 import PrettySegmentMapper from "../mappings/pretty_segment_mapping";
 import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
@@ -181,7 +179,6 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     return new PrettySegmentMapper(sorted_data, new ProportionateSplitMapper(sorted_data, splits))
 }
 
-let automate_k_cost_reduction = false
 
 /* Based on building a dynamic programming table of optimal k-means clustering of n points
  * Each cell only depends on the cells to the left of it in the previous row of the table
@@ -272,7 +269,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
         }
         if (stopping_condition === "cost_reduction") {
             let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][1]
-            if (cost_reduction < 0.1) {
+            if (cost_reduction < 0.9) {
                 k = m - 1
                 break
             }
