@@ -3,6 +3,7 @@ import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimensio
 import {algorithm_selection_update, get_selected_algorithm, update_cluster_amount} from "./ui/algorithm_selection";
 import {get_chart_selection, get_selected_chart} from "./ui/chart_selection";
 import {update_metrics_display} from "./ui/metric_display";
+import {get_range_function} from "./ui/range_selection";
 
 console.log("starting")
 
@@ -17,11 +18,12 @@ function select_chart() {
 
 function select_algorithm() {
     let {algo, arguments_id, read_args} = get_selected_algorithm()
+    let range_algo = get_range_function()
     algorithm_selection_update(arguments_id)
     let args = read_args()
     mappers = {}
     for (let dimension of dimensions) {
-        mappers[dimension] = algo(sorted_data[dimension], args)
+        mappers[dimension] = range_algo(sorted_data[dimension], algo(sorted_data[dimension], args))
     }
     let dimension = dimensions[0]
     //update_metrics_display(sorted_data[dimension], mappers[dimension])

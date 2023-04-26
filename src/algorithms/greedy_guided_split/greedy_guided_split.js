@@ -3,7 +3,6 @@ import UniqueIndexMapper from "../../mappings/unique_index_mapping";
 import CompositeMapper from "../../mappings/composite_mapping";
 import ProportionateSplitMapper from "../../mappings/proportionate_split_mapping";
 import * as d3 from "d3";
-import PrettySegmentMapper from "../../mappings/pretty_segment_mapping";
 
 export function make_extreme_mapper(sorted_data) {
     let unique_index_mapper = new UniqueIndexMapper(sorted_data)

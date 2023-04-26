@@ -139,13 +139,13 @@
             <!-- Step 3 parameters -->
             <div class="vl"></div>
 
-            <div id='range_argument'>
+            <div id='range_argument' class='argument_input'>
                 Scale ranges:
-                <select name='stopping condition' onChange='window.on_recompute_button();' required>
+                <select name='range argument' onChange='window.on_recompute_button();' required>
                     <option value='mean'>Mean</option>
                     <option value='tight' selected>Tight</option>
                     <option value='nice'>Nice</option>
-                    <option value='nice_swap'>Nice w. swaps</option>
+                    <option value='match_ticks'>Match ticks</option>
                 </select>
             </div>
         </div>

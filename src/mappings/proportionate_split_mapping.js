@@ -68,4 +68,19 @@ export default class ProportionateSplitMapper {
     get_output_space_ranges() {
         return this.output_ranges
     }
+
+    get_data_ranges(sorted_data) {
+        let data_ranges = []
+        let segment_begin = sorted_data[0]
+        let split_index = 0
+        for (let i = 0; i < sorted_data.length; i++) {
+            if (sorted_data[i] > this.split_points[split_index]) {
+                data_ranges.push([segment_begin, sorted_data[i - 1]])
+                segment_begin = sorted_data[i]
+                split_index++
+            }
+        }
+        data_ranges.push([segment_begin, sorted_data[sorted_data.length - 1]])
+        return data_ranges
+    }
 }

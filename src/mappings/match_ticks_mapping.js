@@ -2,24 +2,14 @@ import ticks from "ticks";
 import LinearMapper from "./linear_mapping";
 import {is_value_in_range} from "./util";
 
-export default class PrettySegmentMapper {
+export default class MatchTicksMapper {
 
     tick_spacing = 0.05
 
     constructor(sorted_data, proportionate_split_mapper) {
         this.segment_input_ranges = proportionate_split_mapper.get_input_space_ranges()
         this.output_ranges = proportionate_split_mapper.get_output_space_ranges()
-        this.data_ranges = []
-        let segment_begin = sorted_data[0]
-        let split_index = 0
-        for (let i = 0; i < sorted_data.length; i++) {
-            if (sorted_data[i] > proportionate_split_mapper.split_points[split_index]) {
-                this.data_ranges.push([segment_begin, sorted_data[i - 1]])
-                segment_begin = sorted_data[i]
-                split_index++
-            }
-        }
-        this.data_ranges.push([segment_begin, sorted_data[sorted_data.length - 1]])
+        this.data_ranges = proportionate_split_mapper.get_data_ranges(sorted_data)
         this.input_ranges = this.choose_pretty_ranges()
         //Create proportional mapping from 0 to 1
         this.piecewise_linear_maps = []

@@ -43,22 +43,22 @@ let algorithm_selection_map = {
     },
     greedy_guided_split: {
         algo: greedy_guided_split,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters", "#range_argument"],
         read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: ["#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters"],
+        arguments_id: ["#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters", "#range_argument"],
         read_args: read_skew_algo_args
     },
     guided_splits: {
         algo: guided_splits,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#stopping_condition", "#clusters", "#range_argument"],
         read_args: read_skew_algo_args
     },
     hardcoded_periodic_table: {
@@ -68,22 +68,22 @@ let algorithm_selection_map = {
     },
     quantile: {
         algo: quantile_splits,
-        arguments_id: "#clusters",
+        arguments_id: ["#clusters", "#range_argument"],
         read_args: read_number_of_clusters
     },
     kmeans: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
-        arguments_id: "#clusters",
+        arguments_id: ["#clusters", "#range_argument"],
         read_args: read_number_of_clusters
     },
     kmeans_plusplus: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
-        arguments_id: "#clusters",
+        arguments_id: ["#clusters", "#range_argument"],
         read_args: read_number_of_clusters
     },
     kmeans_opt: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
-        arguments_id: "#clusters",
+        arguments_id: ["#clusters", "#range_argument"],
         read_args: read_number_of_clusters
     },
     osaragi: {
@@ -91,7 +91,7 @@ let algorithm_selection_map = {
             const splitter = new OsaragiSplit()
             return splitter.MIL_splits(sorted_data, args)
         },
-        arguments_id: "#clusters",
+        arguments_id: ["#clusters", "#range_argument"],
         read_args: read_number_of_clusters
     },
     log: {

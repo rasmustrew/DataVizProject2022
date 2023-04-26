@@ -5,7 +5,6 @@ function simplicity(q, Q, j, lmin, lmax, lstep) {
     const n = Q.length;
     const i = match(q,Q)[0];
     const v = ((lmin % lstep < eps || lstep - (lmin % lstep) < eps) && lmin <=0 && lmin >=0) ? 1 : 0;
-
     return 1 - (i - 1)/(n - 1) - j + v;
 }
 
