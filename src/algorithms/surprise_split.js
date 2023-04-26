@@ -1,5 +1,8 @@
 import {kmeans_splits} from "./kmeans_split";
-import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
+import ProportionateSplitMapper, {
+    get_proportionate_split_mapper,
+    proportionate_split_mapper
+} from "../mappings/proportionate_split_mapping";
 import {make_histogram, k_random_values, nlgn, zero_to_n, sum} from "./util";
 
 export class OsaragiSplit {
@@ -22,7 +25,7 @@ export class OsaragiSplit {
         const initial_splits = this.init_algorithm(histogram, n_clusters);
         const split_indices = this.min_information_loss(histogram, n_clusters, initial_splits);
         const splits = split_indices.map(index => bin_size * (index + 1) + range[0])
-        return new ProportionateSplitMapper(sorted_data, splits);
+        return proportionate_split_mapper(sorted_data, splits);
     }
 
     min_information_loss(histogram, n_segments, initial_splits) {

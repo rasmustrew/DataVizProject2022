@@ -1,6 +1,6 @@
 import ticks from "ticks";
 import LinearMapper from "./linear_mapping";
-import {is_value_in_range} from "./util";
+import {is_value_in_range, get_data_ranges} from "./util";
 
 export default class MatchTicksMapper {
 
@@ -9,7 +9,7 @@ export default class MatchTicksMapper {
     constructor(sorted_data, proportionate_split_mapper) {
         this.segment_input_ranges = proportionate_split_mapper.get_input_space_ranges()
         this.output_ranges = proportionate_split_mapper.get_output_space_ranges()
-        this.data_ranges = proportionate_split_mapper.get_data_ranges(sorted_data)
+        this.data_ranges = get_data_ranges(sorted_data)
         this.input_ranges = this.choose_pretty_ranges()
         //Create proportional mapping from 0 to 1
         this.piecewise_linear_maps = []

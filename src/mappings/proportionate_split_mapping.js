@@ -1,20 +1,23 @@
 import LinearMapper from "./linear_mapping";
 import {is_value_in_range} from "./util";
 
-export default class ProportionateSplitMapper {
+export function proportionate_split_mapper(sorted_data, split_points) {
+    let min_val = sorted_data[0];
+    let max_val = sorted_data[sorted_data.length - 1]
+    let points = [min_val, ...split_points, max_val]
+    let input_ranges = []
+    for (let i = 0; i < points.length - 1; i++) {
+        input_ranges.push([points[i], points[i + 1]])
+    }
+    return new ProportionateRangeMapper(sorted_data, input_ranges)
+}
 
-    constructor(sorted_data, split_points) {
-        this.split_points = split_points
-        this.min = sorted_data[0];
-        this.max = sorted_data[sorted_data.length - 1]
-        let points = [this.min, ...split_points, this.max]
-        this.input_ranges = []
-        for (let i = 0; i < points.length - 1; i++) {
-            this.input_ranges.push([points[i], points[i+1]])
-        }
+export default class ProportionateRangeMapper {
 
+    constructor(sorted_data, input_ranges) {
+        this.input_ranges = input_ranges
         //Calculate how many percent of points is in each range
-        let proportions = this.input_ranges.map((range) => {
+        let proportions = input_ranges.map((range) => {
             let points_in_range = sorted_data.filter((data_point) => {
                 return is_value_in_range(data_point, range, this.min, this.max)
             })
@@ -67,20 +70,5 @@ export default class ProportionateSplitMapper {
 
     get_output_space_ranges() {
         return this.output_ranges
-    }
-
-    get_data_ranges(sorted_data) {
-        let data_ranges = []
-        let segment_begin = sorted_data[0]
-        let split_index = 0
-        for (let i = 0; i < sorted_data.length; i++) {
-            if (sorted_data[i] > this.split_points[split_index]) {
-                data_ranges.push([segment_begin, sorted_data[i - 1]])
-                segment_begin = sorted_data[i]
-                split_index++
-            }
-        }
-        data_ranges.push([segment_begin, sorted_data[sorted_data.length - 1]])
-        return data_ranges
     }
 }

@@ -1,7 +1,7 @@
 import LinearMapper, {NormalizingMapper} from "../../mappings/linear_mapping";
 import UniqueIndexMapper from "../../mappings/unique_index_mapping";
 import CompositeMapper from "../../mappings/composite_mapping";
-import ProportionateSplitMapper from "../../mappings/proportionate_split_mapping";
+import {proportionate_split_mapper} from "../../mappings/proportionate_split_mapping";
 import * as d3 from "d3";
 
 export function make_extreme_mapper(sorted_data) {
@@ -34,7 +34,7 @@ export function greedy_guided_split(sorted_data, weights) {
                 continue
             }
             let suggested_splits = insert_split(confirmed_splits, split_point)
-            let current_mapper = new ProportionateSplitMapper(sorted_data, suggested_splits)
+            let current_mapper = proportionate_split_mapper(sorted_data, suggested_splits)
             let metrics = compute_metrics(sorted_data, current_mapper, linear_mapper, extreme_mapper)
             let current_metric = compute_total_metric(metrics, weights)
             if (current_metric < current_best_metric) {

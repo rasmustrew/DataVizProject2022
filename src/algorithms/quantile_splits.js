@@ -1,4 +1,4 @@
-import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
+import {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 
 export function quantile_splits(sorted_data, args) {
     let unique_data = [...new Set(sorted_data)]
@@ -12,5 +12,5 @@ export function quantile_splits(sorted_data, args) {
         split_points.push(split_point)
     }
 
-    return new ProportionateSplitMapper(sorted_data, split_points)
+    return proportionate_split_mapper(sorted_data, split_points)
 }

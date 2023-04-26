@@ -1,5 +1,5 @@
 // Construct segments index ranges based on reversing through segment table
-import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
+import {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 
 function get_segmentation_index_ranges(n, k, T) {
     let next_segment_start = n + 1
@@ -175,7 +175,7 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     }
     let splits = split_indices.map(index => (X[index] - X[index - 1]) / 2 + X[index - 1])
     splits.sort((i, j) => i - j)
-    return new ProportionateSplitMapper(sorted_data, splits)
+    return proportionate_split_mapper(sorted_data, splits)
 }
 
 
@@ -285,7 +285,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     let ranges = index_ranges.map(range => range.map(i => X[i]))
     let splits = ranges_to_splits(ranges)
     splits.sort((i, j) => i - j)
-    return new ProportionateSplitMapper(sorted_data, splits)
+    return proportionate_split_mapper(sorted_data, splits)
 }
 
 
