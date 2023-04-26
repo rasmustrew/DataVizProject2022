@@ -42,6 +42,13 @@ body, html {
     margin-right: 10px;
 }
 
+.vl {
+    border-left: 1px solid dimgray;
+    height: 50px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
 #metrics_div {
     margin-right: auto;
 }

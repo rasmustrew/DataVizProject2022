@@ -87,9 +87,16 @@
                 </div>
             </div>
 
-            <div id='uniformity' class="argument_input">
-                Uniformity:
-                <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
+            <!-- Step 1 parameters -->
+
+            <div id='stopping_condition' class="argument_input">
+                Stopping condition:
+                <select name='stopping condition' onChange='window.on_recompute_button();' required>
+                    <option value='k' selected>Custom k</option>
+                    <option value='dist_frac'>Distortion & Fragmentation</option>
+                    <option value='cost_reduction'>Cost reduction</option>
+                    <option value='threshold'>Cost threshold</option>
+                </select>
             </div>
 
             <div id='distortion_argument' class="argument_input">
@@ -102,35 +109,44 @@
                 <input type='range' min='0' max='100' value='10' class='slider' oninput='window.on_recompute_button();'>
             </div>
 
-            <div id='stopping_condition' class="argument_input">
-                Stopping condition:
-                <select name='stopping condition' onChange='window.on_recompute_button();' required>
-                    <option value='k' selected>Custom k</option>
-                    <option value='dist_frac'>Distortion & Fragmentation</option>
-                    <option value='cost_reduction'>Cost reduction</option>
-                    <option value='threshold'>Cost threshold</option>
-                </select>
-            </div>
-
             <div id='clusters' class="argument_input">
                 Clusters:
                 <input type='number' min='1' step='1' value='3' />
             </div>
 
-            <div id='num_clusters_argument' class='argument_input'>
+            <!-- Step 2 parameters -->
+            <div class="vl"></div>
 
+            <div id='uniformity' class="argument_input">
+                Uniformity:
+                <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
             </div>
+
             <div id='exponent_argument' class='argument_input'>
                 <div id='exponent'>
                     Exponent:
                     <input type='number' min='1' step='1' value='2' />
                 </div>
             </div>
+
             <div id='lambda_argument' class='argument_input'>
                 <div id='lambda'>
                     Lambda:
                     <input type='number' min='-5' max='5' step='1' value='2' />
                 </div>
+            </div>
+
+            <!-- Step 3 parameters -->
+            <div class="vl"></div>
+
+            <div id='range_argument'>
+                Scale ranges:
+                <select name='stopping condition' onChange='window.on_recompute_button();' required>
+                    <option value='mean'>Mean</option>
+                    <option value='tight' selected>Tight</option>
+                    <option value='nice'>Nice</option>
+                    <option value='nice_swap'>Nice w. swaps</option>
+                </select>
             </div>
         </div>
         <div id='plot_container_id'></div>

@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import ticks from "ticks";
+import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -140,8 +141,8 @@ export default class ScatterPlot {
         const no_y_ticks = Math.floor(tile_height / this.tick_spacing)
 
         // Wilkinson ticks
-        let x_ticks_ew = ticks(x_range[0], x_range[1], no_x_ticks)
-        let y_ticks_ew = ticks(y_range[0], y_range[1], no_y_ticks)
+        let x_ticks_ew = ExtendedWilkinson(x_range, no_x_ticks).ticks
+        let y_ticks_ew = ExtendedWilkinson(y_range, no_y_ticks).ticks
         x_ticks_ew = x_ticks_ew.filter(tick => tick > x_range[0] && tick < x_range[1])
         y_ticks_ew = y_ticks_ew.filter(tick => tick > y_range[0] && tick < y_range[1])
         y_ticks_ew.reverse()
