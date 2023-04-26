@@ -1,12 +1,13 @@
 import * as d3 from "d3";
-import MatchTicksMapper from "../mappings/match_ticks_mapping";
+import {match_ticks_mapper} from "../mappings/match_ticks_mapping";
+import {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
+import {tight_range_mapper} from "../mappings/tight_range_mapping";
 
 let range_selection_map = {
-    mean: (sorted_data, split_mapper) => split_mapper,
-    tight: (sorted_data, split_mapper) => split_mapper,
-    nice: (sorted_data, split_mapper) => split_mapper,
-    nice_swap: (sorted_data, split_mapper) => split_mapper,
-    match_ticks: (sorted_data, split_mapper) => new MatchTicksMapper(sorted_data, split_mapper)
+    mean: proportionate_split_mapper,
+    tight: tight_range_mapper,
+    nice: proportionate_split_mapper,
+    match_ticks: match_ticks_mapper
 }
 
 export function get_range_function() {

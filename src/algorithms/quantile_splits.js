@@ -12,5 +12,5 @@ export function quantile_splits(sorted_data, args) {
         split_points.push(split_point)
     }
 
-    return proportionate_split_mapper(sorted_data, split_points)
+    return split_points
 }

@@ -25,7 +25,7 @@ export class OsaragiSplit {
         const initial_splits = this.init_algorithm(histogram, n_clusters);
         const split_indices = this.min_information_loss(histogram, n_clusters, initial_splits);
         const splits = split_indices.map(index => bin_size * (index + 1) + range[0])
-        return proportionate_split_mapper(sorted_data, splits);
+        return splits;
     }
 
     min_information_loss(histogram, n_segments, initial_splits) {

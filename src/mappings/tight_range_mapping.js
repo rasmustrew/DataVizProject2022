@@ -1,12 +1,8 @@
+import {get_data_ranges} from "./util";
+import ProportionateRangeMapper from "./proportionate_split_mapping";
 
 
-class TightRangeMapper {
-
-    constructor(sorted_data, proportionate_split_mapper) {
-        this.segment_input_ranges = proportionate_split_mapper.get_input_space_ranges()
-        this.output_ranges = proportionate_split_mapper.get_output_space_ranges()
-    }
-
-
-
+export function tight_range_mapper(sorted_data, splits) {
+    let ranges = get_data_ranges(sorted_data, splits)
+    return new ProportionateRangeMapper(sorted_data, ranges)
 }

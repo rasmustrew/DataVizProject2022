@@ -1,4 +1,3 @@
-import {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 import {k_random_values, mean, sum} from "./util";
 
 let algorithm_map = {
@@ -11,8 +10,7 @@ let algorithm_map = {
 export function kmeans_splits(sorted_data, args, version="optimal") {
     let k = args["clusters"]
     let centers = algorithm_map[version](sorted_data, k)
-    let splits = compute_split_points(sorted_data, centers);
-    return proportionate_split_mapper(sorted_data, splits)
+    return compute_split_points(sorted_data, centers)
 }
 
 function compute_split_points(sorted_data, centers) {

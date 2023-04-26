@@ -23,7 +23,12 @@ function select_algorithm() {
     let args = read_args()
     mappers = {}
     for (let dimension of dimensions) {
-        mappers[dimension] = range_algo(sorted_data[dimension], algo(sorted_data[dimension], args))
+        let algo_out = algo(sorted_data[dimension], args)
+        if (Array.isArray(arguments_id) && arguments_id.includes("#range_argument")) {
+            mappers[dimension] = range_algo(sorted_data[dimension], algo_out)
+        } else {
+            mappers[dimension] = algo_out
+        }
     }
     let dimension = dimensions[0]
     //update_metrics_display(sorted_data[dimension], mappers[dimension])

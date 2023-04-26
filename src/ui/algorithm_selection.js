@@ -43,7 +43,7 @@ let algorithm_selection_map = {
     },
     greedy_guided_split: {
         algo: greedy_guided_split,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument", "#range_argument"],
+        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
         read_args: read_skew_algo_args
     },
     greedy_guided_split_2: {
