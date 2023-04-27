@@ -3,6 +3,7 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import ticks from "ticks";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
+import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -42,12 +43,14 @@ export default class ScatterPlot {
         // Add tick marks and lines
         let x_ranges = this.mappers[this.x_dim].get_input_space_ranges()
         let y_ranges = this.mappers[this.y_dim].get_input_space_ranges()
-        let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
-        let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()
-        let x_screen_mapper = new ScreenMapper(x_ranges_norm, [0, width], this.chart_spacing)
-        let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
-        let x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
-        let y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
+        // let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
+        // let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()
+        // let x_screen_mapper = new ScreenMapper(x_ranges_norm, [0, width], this.chart_spacing)
+        // let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
+        // let x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
+        // let y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
+        let x_mapper = new SegmentScreenMapper(this.mappers[this.x_dim], [0, width], this.chart_spacing)
+        let y_mapper = new SegmentScreenMapper(this.mappers[this.y_dim], [height, 0], this.chart_spacing)
         let color_mapper = this.mappers[this.color_dim]
 
         for (var i = 0; i < x_ranges.length; i++) {

@@ -26,7 +26,7 @@ export default class ScreenMapper {
             if (this.reverse) {
                 new_output_range_end = current_output - new_output_range_size
             }
-             else {
+            else {
                  new_output_range_end = current_output + new_output_range_size
             }
             let mapper = new LinearMapper([range], [current_output, new_output_range_end])
@@ -58,15 +58,11 @@ export default class ScreenMapper {
     }
 
     get_input_space_ranges() {
-        return this.inner_mappers.map((inner_mapper) => {
-            return inner_mapper.get_input_space_ranges()[0]
-        })
+        return this.inner_mappers.map((mapper) => mapper.get_input_space_ranges()[0])
     }
 
     get_output_space_ranges() {
-        return this.inner_mappers.map((inner_mapper) => {
-            return inner_mapper.get_output_space_ranges()[0]
-        })
+        return this.inner_mappers.map((mapper) => mapper.get_output_space_ranges()[0])
     }
 
 

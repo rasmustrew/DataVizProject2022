@@ -27,5 +27,5 @@ export function is_value_in_range(value, range, min_value, max_value) {
     } else if (value === max_value) {
         return ((value >= min_range) && (value <= max_range))
     }
-    return ((value >= min_range) && (value < max_range))
+    return ((value >= min_range) && (value <= max_range))
 }
