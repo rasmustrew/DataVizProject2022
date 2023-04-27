@@ -1,6 +1,7 @@
 import ticks from "ticks";
 import {get_data_ranges} from "./util";
 import ProportionateRangeMapper from "./proportionate_split_mapping";
+import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 
 export function match_ticks_mapper(sorted_data, splits) {
     let data_ranges = get_data_ranges(sorted_data, splits)
@@ -17,7 +18,7 @@ function choose_pretty_ranges(data_ranges, output_ranges, tick_spacing = 0.05) {
         const tile_width = Math.abs(screen_range[0] - screen_range[1])
         const tick_no = Math.floor(tile_width / tick_spacing)
         let input_range = data_ranges[i]
-        let pretty_ticks = ticks(input_range[0], input_range[1], tick_no)
+        let pretty_ticks = ExtendedWilkinson(input_range, tick_no).ticks
         tick_ranges.push([pretty_ticks[0], pretty_ticks[pretty_ticks.length - 1]])
     }
     let pretty_ranges = []
