@@ -4,6 +4,7 @@ import CompositeMapper from "../mappings/composite_mapping";
 import ticks from "ticks";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
+import ProportionateRangeMapper, {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -43,19 +44,30 @@ export default class ScatterPlot {
         // Add tick marks and lines
         let x_ranges = this.mappers[this.x_dim].get_input_space_ranges()
         let y_ranges = this.mappers[this.y_dim].get_input_space_ranges()
-        // let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
-        // let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()
-        // let x_screen_mapper = new ScreenMapper(x_ranges_norm, [0, width], this.chart_spacing)
-        // let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
-        // let x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
-        // let y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
-        let x_mapper = new SegmentScreenMapper(this.mappers[this.x_dim], [0, width], this.chart_spacing)
-        let y_mapper = new SegmentScreenMapper(this.mappers[this.y_dim], [height, 0], this.chart_spacing)
+
+        let x_mapper = null
+        if (this.mappers[this.x_dim] instanceof ProportionateRangeMapper) {
+            x_mapper = new SegmentScreenMapper(this.mappers[this.x_dim], [0, width], this.chart_spacing)
+        } else {
+            let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
+            let x_screen_mapper = new ScreenMapper(x_ranges_norm, [0, width], this.chart_spacing)
+            x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
+        }
+
+        let y_mapper = null
+        if (this.mappers[this.y_dim] instanceof ProportionateRangeMapper) {
+            y_mapper = new SegmentScreenMapper(this.mappers[this.y_dim], [height, 0], this.chart_spacing)
+        } else {
+            let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()
+            let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
+            y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
+        }
+
         let color_mapper = this.mappers[this.color_dim]
 
-        for (var i = 0; i < x_ranges.length; i++) {
+        for (let i = 0; i < x_ranges.length; i++) {
             const x_range = x_ranges[i]
-            for (var j = 0; j < y_ranges.length; j++) {
+            for (let j = 0; j < y_ranges.length; j++) {
                 const y_range = y_ranges[j]
                 this.make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper)
                 console.log(x_range.toString() + "; " + y_range.toString())
