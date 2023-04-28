@@ -113,8 +113,7 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     let k = 10
     let stopping_condition = weights["stopping_condition"]
     let interpolation_weight = weights["uniformity"]
-    let distortion_weight = 1 - weights["distortion"]
-    let fragmentation_weight = weights["fragmentation"]
+    let fragmentation_weight = 1 - weights["fragmentation"]
     if (stopping_condition === "k") {
         k = weights["clusters"]
     }
@@ -123,6 +122,8 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     const n = X.length
     // Compute single segment cost
     let single_segment_cost = compute_total_squared_interpolation_cost([[0, n - 1]], X, interpolation_weight)
+    let previous_cost = single_segment_cost
+    let current_cost = single_segment_cost
     let split_indices = []
     for (let m = 1; m < k; m++) {
         let best_cost_so_far = Infinity
@@ -148,25 +149,16 @@ export function greedy_interpolated_splits(sorted_data, weights) {
                 best_index = i
             }
         }
-        if (stopping_condition === "dist_frac") {
-            let distortion_threshold = 0
-            if (distortion_weight !== 0) {
-                let index_ranges = []
-                for (let j = 0; j <= split_indices.length; j++) {
-                    let index_begin = j === 0 ? 0 : split_indices[j - 1]
-                    let index_end = j === split_indices.length ? n - 1 : split_indices[j]
-                    index_ranges.push([index_begin, index_end])
-                }
-                let total_distortion = compute_total_squared_distortion(index_ranges, X)
-                distortion_threshold = distortion_weight ** 4 * total_distortion
-            }
-            let threshold = fragmentation_weight - distortion_threshold
-            if (split_indices.length / 10 > threshold) {
+        current_cost = best_cost_so_far
+        if (stopping_condition === "threshold") {
+            if (current_cost < split_indices.length * fragmentation_weight) {
                 break
             }
         }
-        if (stopping_condition === "threshold") {
-            if (split_indices.length / 10 > fragmentation_weight) {
+        if (stopping_condition === "cost_reduction") {
+            let cost_reduction = (previous_cost - current_cost) / previous_cost
+            let reduction_threshold = fragmentation_weight * 0.8 + 0.2
+            if (cost_reduction < reduction_threshold) {
                 break
             }
         }
@@ -186,7 +178,6 @@ export function greedy_interpolated_splits(sorted_data, weights) {
 */
 export function optimal_guided_splits(sorted_data, weights, k = 3) {
     let stopping_condition = weights["stopping_condition"]
-    let distortion_weight = 1 - weights["distortion"]
     let fragmentation_weight = 1 - weights["fragmentation"]
     if (stopping_condition !== "k") {
         k = 2
@@ -250,25 +241,16 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
             T[m][i] = split_index
         }
         // Stopping conditions
-        if (stopping_condition === "dist_frac") {
-            let ranges = get_segmentation_index_ranges(n, m, T, X).map(range => [range[0] - 1, range[1] - 1])
-            ranges.sort((x1, x2) => x1[0] - x2[0])
-            let distortion = compute_total_squared_distortion(ranges, X.slice(1, n + 1));
-            let threshold = fragmentation_weight * m + distortion_weight ** 4 * distortion
-            if (C[m][n] < threshold) {
-                k = m - 1
-                break
-            }
-        }
         if (stopping_condition === "threshold") {
-            if (m / 10 > fragmentation_weight) {
+            if (C[m][n] < fragmentation_weight * m) {
                 k = m - 1
                 break;
             }
         }
         if (stopping_condition === "cost_reduction") {
-            let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][1]
-            if (cost_reduction < 0.9) {
+            let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][n]
+            let reduction_threshold = fragmentation_weight * 0.8 + 0.2
+            if (cost_reduction < reduction_threshold) {
                 k = m - 1
                 break
             }

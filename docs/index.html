@@ -4,7 +4,6 @@
 <head>
     <title>Axis Splitting</title>
 
-
     <link rel='stylesheet' href='styles.css'>
     <link rel='stylesheet' href='par_coords.css'>
     <link rel='stylesheet' href='arguments.css'>
@@ -35,21 +34,21 @@
                 <option value='choropleth'>Choropleth</option>
                 <option value='heatmap'>Heatmap</option>
                 <option value='lollipop'>Lollipop</option>
+                <option value='beeswarm'>Beeswarm</option>
                 <option value='scatter_plot' selected>Scatter plot</option>
                 <option value='spc'>Parallel coordinates</option>
-                <option value='beeswarm'>Beeswarm</option>
             </select>
 
             <select name='algorithm' id='algorithm-select' onChange='window.select_algorithm()' required>
                 <optgroup label='Split'>
                     <option value='hardcoded_periodic_table'>Hardcoded (periodic table data)</option>
                     <option value='quantile'>Quantile</option>
-    <!--                <option value='kmeans'>KMeans</option>-->
-    <!--                <option value='kmeans_plusplus'>KMeans++</option>-->
+<!--                <option value='kmeans'>KMeans</option>-->
+<!--                <option value='kmeans_plusplus'>KMeans++</option>-->
                     <option value='kmeans_opt'>KMeansOPT</option>
-                    <option value='osaragi'>Osaragi</option>
+<!--                <option value='osaragi'>Osaragi</option>-->
                     <option value='greedy_guided_split'>Greedy Guided Split</option>
-                    <option value='greedy_guided_split_2'>Greedy Guided Split 2</option>
+<!--                <option value='greedy_guided_split_2'>Greedy Guided Split 2</option>-->
                     <option value='optimal_guided_split'>Optimal Guided Split</option>
                     <option value='guided_splits'>Guided Splits v2</option>
                 </optgroup>
@@ -93,10 +92,14 @@
                 Stopping condition:
                 <select name='stopping condition' onChange='window.on_recompute_button();' required>
                     <option value='k' selected>Custom k</option>
-                    <option value='dist_frac'>Distortion & Fragmentation</option>
+                    <option value='threshold'>Fragmentation threshold</option>
                     <option value='cost_reduction'>Cost reduction</option>
-                    <option value='threshold'>Cost threshold</option>
                 </select>
+            </div>
+
+            <div id='clusters' class="argument_input">
+                Clusters:
+                <input type='number' min='1' step='1' value='3' />
             </div>
 
             <div id='distortion_argument' class="argument_input">
@@ -107,11 +110,6 @@
             <div id='fragmentation_argument' class="argument_input">
                 Fragmentation:
                 <input type='range' min='0' max='100' value='10' class='slider' oninput='window.on_recompute_button();'>
-            </div>
-
-            <div id='clusters' class="argument_input">
-                Clusters:
-                <input type='number' min='1' step='1' value='3' />
             </div>
 
             <!-- Step 2 parameters -->
