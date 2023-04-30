@@ -164,22 +164,22 @@ export default class ScatterPlot {
 
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
-        console.log("x_range_screen: ", x_range_screen)
         let x = d3.scaleLinear()
             .domain(x_range)
             .range(x_range_screen)
 
         // Inner tick lines
+        // Only place ticks if tile is large enough
         base_svg.append("g")
             .attr("transform", "translate(" + 0 + "," + y_range_screen[0] + ")")
             .attr("class", "tickline")
             .call(d3.axisBottom(x)
                 .tickSize(-tile_height)
-                .tickValues(x_ticks_ew)
+                .tickValues((tile_width >= this.tick_spacing) ? x_ticks_ew : [])
                 .tickFormat((tick) => j === 0? tick_format.format(tick): "")
             )
 
-        // Edge tick labels
+        // Edge labels
         base_svg.append("g")
             .attr("transform", "translate(" + 0 + "," + (y_range_screen[0] + 10) + ")")
             .attr("class", "edgetick")
@@ -188,6 +188,7 @@ export default class ScatterPlot {
                 .tickValues(x_range)
                 .tickFormat((tick) => j === 0 ? tick_format.format(tick): "")
             )
+
 
         let y = d3.scaleLinear()
             .domain(y_range)
@@ -199,11 +200,11 @@ export default class ScatterPlot {
             .attr("class", "tickline")
             .call(d3.axisLeft(y)
                 .tickSize(-tile_width)
-                .tickValues(y_ticks_ew)
-                .tickFormat((tick) => i === 0? tick_format.format(tick): "")
+                .tickValues((tile_height >= this.tick_spacing) ? y_ticks_ew : [])
+                .tickFormat((tick) => i === 0 ? tick_format.format(tick) : "")
             )
 
-        // Edge tick labels
+        // Edge labels
         base_svg.append("g")
             .attr("transform", "translate(" + (x_range_screen[0] - 10) + "," + 0 + ")")
             .attr("class", "edgetick")

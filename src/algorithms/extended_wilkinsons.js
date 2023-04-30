@@ -31,9 +31,9 @@ coverage.max = (dmin, dmax, span) => {
 }
 
 function density(k, m, dmin, dmax, lmin, lmax) {
-    const r = (k-1) / (lmax-lmin);
-    const rt = (m-1) / (Math.max(lmax,dmax) - Math.min(dmin,lmin));
-    return 2 - Math.max( r/rt, rt/r );
+    const r = (k - 1) / (lmax - lmin);
+    const rt = (m - 1) / (Math.max(lmax, dmax) - Math.min(dmin, lmin));
+    return 2 - Math.max( r / rt, rt / r );
 }
 
 let legibility = (lmin, lmax, lstep) => 1;
