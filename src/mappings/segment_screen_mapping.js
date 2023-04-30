@@ -1,5 +1,4 @@
 import {is_value_in_range} from "./util";
-import LinearMapper from "./linear_mapping";
 import ScreenMapper from "./screen_mapping";
 
 export default class SegmentScreenMapper {

@@ -1,10 +1,9 @@
 import * as d3 from "d3";
 import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
-import ticks from "ticks";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
-import ProportionateRangeMapper, {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
+import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -64,6 +63,8 @@ export default class ScatterPlot {
         }
 
         let color_mapper = this.mappers[this.color_dim]
+
+        this.tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
 
         for (let i = 0; i < x_ranges.length; i++) {
             const x_range = x_ranges[i]

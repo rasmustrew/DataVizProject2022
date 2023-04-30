@@ -1,5 +1,10 @@
 import * as d3 from "d3";
 
+/*
+    Code builds on top of the implementation by Carlo Zapponi
+    https://observablehq.com/@littleark/extended-wilkinson-algorithm
+ */
+
 function simplicity(q, Q, j, lmin, lmax, lstep) {
     const eps = Number.EPSILON * 100;
     const n = Q.length;
@@ -84,7 +89,6 @@ export function ExtendedWilkinson([dmin, dmax], m, Q=[1,5,2,2.5,4,3], onlyLoose 
                 let z = Math.ceil(Math.log10(delta));
                 while(z < 1000) {
                     const step = j * q * Math.pow(10,z);
-                    //const step = 60 * 60 * 1000 * 24;
                     const cm = coverage.max(dmin, dmax, step * (k-1));
                     if((w[0]*sm+w[1]*cm+w[2]*dm+w[3]) < best.score) {
                         break;

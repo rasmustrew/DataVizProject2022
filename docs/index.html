@@ -116,7 +116,7 @@
             <div class="vl"></div>
 
             <div id='uniformity' class="argument_input">
-                Uniformity:
+                Distributivity:
                 <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
             </div>
 
@@ -142,9 +142,15 @@
                 <select name='range argument' onChange='window.on_recompute_button();' required>
                     <option value='mean'>Mean</option>
                     <option value='tight' selected>Tight</option>
-                    <option value='nice'>Nice</option>
                     <option value='match_ticks'>Match ticks</option>
+                    <option value='match_tick_fractions'>Match tick fractions</option>
+                    <!--<option value='nice'>Nice</option>-->
                 </select>
+            </div>
+
+            <div id='tick_density_argument' class="argument_input">
+                Tick density:
+                <input type='range' min='0' max='100' value='66' class='slider' oninput='window.on_recompute_button();'>
             </div>
         </div>
         <div id='plot_container_id'></div>
