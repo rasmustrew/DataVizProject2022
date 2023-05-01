@@ -65,7 +65,8 @@ export default class ScatterPlot {
         let color_mapper = this.mappers[this.color_dim]
 
         this.tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
-
+        this.x_data_range_length = x_ranges[x_ranges.length - 1][1] - x_ranges[0][0]
+        this.y_data_range_length = y_ranges[y_ranges.length - 1][1] - y_ranges[0][0]
         for (let i = 0; i < x_ranges.length; i++) {
             const x_range = x_ranges[i]
             for (let j = 0; j < y_ranges.length; j++) {
@@ -148,13 +149,17 @@ export default class ScatterPlot {
             .text(this.dimensions[1])
     }
 
+    use_density_cues = false
+
     make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
         const x_range_screen = x_mapper.get_output_space_ranges()[i]
         const y_range_screen = y_mapper.get_output_space_ranges()[j]
         const tile_width = Math.abs(x_range_screen[0] - x_range_screen[1])
         const tile_height = Math.abs(y_range_screen[0] - y_range_screen[1])
-        const no_x_ticks = Math.floor(tile_width / this.tick_spacing)
-        const no_y_ticks = Math.floor(tile_height / this.tick_spacing)
+        let density_cue_x = 0.5 + (x_range[1] - x_range[0]) / this.x_data_range_length;
+        let density_cue_y = 0.5 + (y_range[1] - y_range[0]) / this.y_data_range_length;
+        const no_x_ticks = Math.floor(tile_width * (this.use_density_cues ? density_cue_x : 1) / this.tick_spacing)
+        const no_y_ticks = Math.floor(tile_height * (this.use_density_cues ? density_cue_y : 1) / this.tick_spacing)
 
         // Wilkinson ticks
         let x_ticks_ew = ExtendedWilkinson(x_range, no_x_ticks).ticks
