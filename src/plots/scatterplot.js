@@ -149,7 +149,7 @@ export default class ScatterPlot {
             .text(this.dimensions[1])
     }
 
-    use_density_cues = false
+    use_density_cues = true
 
     make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
         const x_range_screen = x_mapper.get_output_space_ranges()[i]
