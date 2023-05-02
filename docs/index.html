@@ -92,7 +92,7 @@
                 Stopping condition:
                 <select name='stopping condition' onChange='window.on_recompute_button();' required>
                     <option value='k' selected>Custom k</option>
-                    <option value='threshold'>Fragmentation threshold</option>
+                    <option value='threshold' selected>Fragmentation threshold</option>
                     <option value='cost_reduction'>Cost reduction</option>
                 </select>
             </div>
@@ -109,7 +109,7 @@
 
             <div id='fragmentation_argument' class="argument_input">
                 Fragmentation:
-                <input type='range' min='0' max='100' value='10' class='slider' oninput='window.on_recompute_button();'>
+                <input type='range' min='0' max='100' value='90' class='slider' oninput='window.on_recompute_button();'>
             </div>
 
             <!-- Step 2 parameters -->
@@ -141,11 +141,16 @@
                 Scale ranges:
                 <select name='range argument' onChange='window.on_recompute_button();' required>
                     <option value='mean'>Mean</option>
-                    <option value='tight' selected>Tight</option>
+                    <option value='tight'>Tight</option>
                     <option value='match_ticks'>Match ticks</option>
                     <option value='match_tick_fractions'>Match tick fractions</option>
-                    <option value='nice'>Nice numbers</option>
+                    <option value='nice' selected>Nice numbers</option>
                 </select>
+            </div>
+
+            <div id='tightness_argument'>
+                Range tightness:
+                <input type='range' min='0' max='100' value='80' class='slider' oninput='window.on_recompute_button();'>
             </div>
 
             <div id='tick_density_argument'>

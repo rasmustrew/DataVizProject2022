@@ -3,16 +3,30 @@ import ProportionateRangeMapper from "./proportionate_split_mapping";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import * as d3 from "d3";
 
+let tightness_weight = 0.9
+
 export function match_tick_fractions_mapper(sorted_data, splits, divisors = [1, 2, 5, 4], tick_spacing = 0.05) {
     tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 / 2
+    tightness_weight = parseInt(d3.select("#tightness_argument input").property("value")) / 100
     let data_ranges = get_data_ranges(sorted_data, splits)
     let proportional_range_mapper = new ProportionateRangeMapper(sorted_data, data_ranges)
     let output_ranges = proportional_range_mapper.get_output_space_ranges()
-    let pretty_ranges = choose_tick_ranges(data_ranges, output_ranges, tick_spacing, divisors)
+    let tick_candidates = tick_fraction_candidates(data_ranges, output_ranges, tick_spacing, divisors)
+    let pretty_ranges = nice_and_tight_ranges(data_ranges, output_ranges, tick_candidates)
     return new ProportionateRangeMapper(sorted_data, pretty_ranges)
 }
 
-function choose_tick_ranges(data_ranges, output_ranges, tick_spacing_target, divisors) {
+export function nice_number_mapper(sorted_data, splits, divisors = [1, 2, 5]) {
+    tightness_weight = parseInt(d3.select("#tightness_argument input").property("value")) / 100
+    let data_ranges = get_data_ranges(sorted_data, splits)
+    let proportional_range_mapper = new ProportionateRangeMapper(sorted_data, data_ranges)
+    let output_ranges = proportional_range_mapper.get_output_space_ranges()
+    let nice_candidates = nice_range_candidates(data_ranges, divisors);
+    let pretty_ranges = nice_and_tight_ranges(data_ranges, output_ranges, nice_candidates)
+    return new ProportionateRangeMapper(sorted_data, pretty_ranges)
+}
+
+function tick_fraction_candidates(data_ranges, output_ranges, tick_spacing_target, divisors) {
     let tick_ranges = []
     for (let i = 0; i < data_ranges.length; i++) {
         let data_range = data_ranges[i]
@@ -36,12 +50,11 @@ function choose_tick_ranges(data_ranges, output_ranges, tick_spacing_target, div
             while (j < data_range[1]) {
                 j += frac_step_size
             }
-            min_candidates.push(j)
+            max_candidates.push(j)
         }
         tick_ranges.push([min_candidates, max_candidates])
     }
-    let valid_candidates = filter_valid_range_candidates(data_ranges, tick_ranges)
-    return nicest_bounds(valid_candidates)
+    return tick_ranges
 }
 
 function get_ticks(data_range, screen_range, tick_spacing) {
@@ -50,8 +63,7 @@ function get_ticks(data_range, screen_range, tick_spacing) {
     return ExtendedWilkinson(data_range, tick_no)
 }
 
-export function nice_number_mapper(sorted_data, splits, divisors = [1, 2, 5]) {
-    let data_ranges = get_data_ranges(sorted_data, splits)
+function nice_range_candidates(data_ranges, divisors) {
     let nice_range_candidates = []
     for (const range of data_ranges) {
         let range_start = range[0]
@@ -72,84 +84,69 @@ export function nice_number_mapper(sorted_data, splits, divisors = [1, 2, 5]) {
         }
         nice_range_candidates.push([nice_start_candidates, nice_end_candidates])
     }
-    let valid_ranges = filter_valid_range_candidates(data_ranges, nice_range_candidates)
-    let pretty_ranges = nice_and_tight_bounds(data_ranges, valid_ranges)
-    return new ProportionateRangeMapper(sorted_data, pretty_ranges)
+    return nice_range_candidates;
 }
 
-function filter_valid_range_candidates(data_ranges, nice_range_candidates) {
-    let valid_candidates = []
+function nice_and_tight_ranges(data_ranges, output_ranges, nice_range_candidates) {
+    let pretty_ranges = []
+    let full_data_length = data_ranges[data_ranges.length - 1][1] - data_ranges[0][0]
+    let full_screen_space_length = output_ranges[output_ranges.length - 1][1] - output_ranges[0][0]
     for (let i = 0; i < nice_range_candidates.length; i++) {
-        let nice_range_bounds = nice_range_candidates[i]
-        let nice_range_starts = nice_range_bounds[0]
-        let valid_range_starts = []
-        for (const nice_start of nice_range_starts) {
-            const range_overlaps_previous = i !== 0 && valid_candidates[i - 1][1][0] > nice_start
-            const data_left_of_range = data_ranges[i][0] < nice_start
-            if (!range_overlaps_previous && !data_left_of_range && !isNaN(nice_start)) {
-                valid_range_starts.push(nice_start)
+        let data_range_start = data_ranges[i][0]
+        let data_range_end = data_ranges[i][1]
+        let data_range_length = data_range_end - data_range_start
+        let output_range_length = output_ranges[i][1] - output_ranges[i][0]
+        let section_size = output_range_length / full_screen_space_length
+        // Right range bound
+        let nice_range_starts = nice_range_candidates[i][0]
+        let nicest_range_start = data_range_start
+        let nicest_range_start_score = 0
+        let n_candidates = nice_range_starts.length
+        for (let j = 0; j < nice_range_starts.length; j++) {
+            let nice_start = nice_range_starts[j]
+            let range_overlaps_previous = i !== 0 && pretty_ranges[i - 1][1] > nice_start
+            let data_left_of_range = data_range_start < nice_start
+            let is_valid_start = !range_overlaps_previous && !data_left_of_range && !isNaN(nice_start)
+            if (is_valid_start) {
+                let range_start_score = range_bound_cost(
+                    section_size, data_range_length, n_candidates,
+                    nice_start, data_range_start, j
+                )
+                if (range_start_score > nicest_range_start_score) {
+                    nicest_range_start_score = range_start_score
+                    nicest_range_start = nice_start
+                }
             }
         }
-        let nice_range_ends = nice_range_bounds[1]
-        let valid_range_ends = []
-        for (const nice_end of nice_range_ends) {
-            const range_overlaps_next = i !== nice_range_candidates.length - 1 && data_ranges[i + 1][0] < nice_end
-            const data_right_of_range = data_ranges[i][1] > nice_end
-            if (!range_overlaps_next && !data_right_of_range && !isNaN(nice_end)) {
-                valid_range_ends.push(nice_end)
+        // Left range bound
+        let nice_range_ends = nice_range_candidates[i][1]
+        let nicest_range_end = data_ranges[i][1]
+        let nicest_range_end_score = 0
+        n_candidates = nice_range_ends.length
+        for (let j = 0; j < nice_range_ends.length; j++) {
+            let nice_end = nice_range_ends[j]
+            let range_overlaps_next = i !== nice_range_candidates.length - 1 && data_ranges[i + 1][0] < nice_end
+            let data_right_of_range = data_ranges[i][1] > nice_end
+            let is_valid_end = !range_overlaps_next && !data_right_of_range && !isNaN(nice_end)
+            if (is_valid_end) {
+                let range_end_score = range_bound_cost(
+                    section_size, data_range_length, n_candidates,
+                    nice_end, data_range_end, j
+                )
+                if (range_end_score > nicest_range_end_score) {
+                    nicest_range_end_score = range_end_score
+                    nicest_range_end = nice_end
+                }
             }
         }
-        if (valid_range_starts.length === 0) valid_range_starts.push(data_ranges[i][0])
-        if (valid_range_ends.length === 0) valid_range_ends.push(data_ranges[i][1])
-        valid_candidates.push([valid_range_starts, valid_range_ends])
+        pretty_ranges.push([nicest_range_start, nicest_range_end])
     }
 
-    return valid_candidates;
+    return pretty_ranges;
 }
 
-function nicest_bounds(valid_candidates) {
-    let pretty_ranges = []
-    for (let i = 0; i < valid_candidates.length; i++) {
-        pretty_ranges.push([valid_candidates[i][0][0], valid_candidates[i][1][0]])
-    }
-    return pretty_ranges
-}
-
-function range_bound_cost(range_length, no_of_ranges, nice_bound, range_bound, j) {
+function range_bound_cost(section_size, range_length, no_of_ranges, nice_bound, range_bound, j) {
     let simplicity = 1 - j / no_of_ranges
-    let tightness = 1 - Math.abs(range_bound - nice_bound) / range_length
-    return tightness * 0.4 + simplicity * 0.6
-}
-
-function nice_and_tight_bounds(data_ranges, valid_candidates) {
-    let pretty_ranges = []
-    for (let i = 0; i < valid_candidates.length; i++) {
-        let range_length = data_ranges[i][1] - data_ranges[i][0]
-
-        let valid_range_starts = valid_candidates[i][0]
-        let best_range_start = data_ranges[i][0]
-        let best_range_start_score = 0
-        let n_candidates = valid_range_starts.length
-        for (let j = 0; j < n_candidates; j++) {
-            let range_start_score = range_bound_cost(range_length, n_candidates, valid_range_starts[j], data_ranges[i][0], j)
-            if (range_start_score > best_range_start_score) {
-                best_range_start_score = range_start_score
-                best_range_start = valid_range_starts[j]
-            }
-        }
-
-        let valid_range_ends = valid_candidates[i][1]
-        let best_range_end = data_ranges[i][1]
-        let best_range_end_score = 0
-        n_candidates = valid_range_ends.length
-        for (let j = 0; j < n_candidates; j++) {
-            let range_end_score = range_bound_cost(range_length, n_candidates, valid_range_ends[j], data_ranges[i][1], j)
-            if (range_end_score > best_range_end_score) {
-                best_range_end_score = range_end_score
-                best_range_end = valid_range_ends[j]
-            }
-        }
-        pretty_ranges.push([best_range_start, best_range_end])
-    }
-    return pretty_ranges
+    let tightness = (1 - Math.abs(range_bound - nice_bound) / range_length) * section_size
+    return tightness * tightness_weight + simplicity * (1 - tightness_weight)
 }
