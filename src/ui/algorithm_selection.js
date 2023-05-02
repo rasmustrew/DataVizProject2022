@@ -38,7 +38,7 @@ let algorithm_selection_map = {
         algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)
         },
-        arguments_id: "#tick_density_argument",
+        arguments_id: [],
         read_args: () => {},
     },
     greedy_guided_split: {
@@ -48,17 +48,17 @@ let algorithm_selection_map = {
     },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: ["#fragmentation_argument", "#stopping_condition", "#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#fragmentation_argument", "#stopping_condition", "#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     guided_splits: {
         algo: guided_splits,
-        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     hardcoded_periodic_table: {
@@ -68,22 +68,22 @@ let algorithm_selection_map = {
     },
     quantile: {
         algo: quantile_splits,
-        arguments_id: ["#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_number_of_clusters
     },
     kmeans: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
-        arguments_id: ["#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_number_of_clusters
     },
     kmeans_plusplus: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
-        arguments_id: ["#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_number_of_clusters
     },
     kmeans_opt: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
-        arguments_id: ["#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_number_of_clusters
     },
     osaragi: {
@@ -91,7 +91,7 @@ let algorithm_selection_map = {
             const splitter = new OsaragiSplit()
             return splitter.MIL_splits(sorted_data, args)
         },
-        arguments_id: ["#clusters", "#range_argument", "#tick_density_argument"],
+        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_number_of_clusters
     },
     log: {
@@ -106,17 +106,17 @@ let algorithm_selection_map = {
     },
     pow: {
         algo: (sorted_data, args) => new PowMapper([data_range(sorted_data)], [0, 1], args.exponent),
-        arguments_id: ["#exponent_argument", "#tick_density_argument"],
+        arguments_id: ["#exponent_argument"],
         read_args: read_exponent
     },
     box_cox: {
         algo: (sorted_data, args) => new BoxCoxMapper([data_range(sorted_data)], args.lambda),
-        arguments_id: ["#lambda_argument", "#tick_density_argument"],
+        arguments_id: ["#lambda_argument"],
         read_args: read_lambda
     },
     uniform: {
         algo: (sorted_data, args) => new InterpolationMapper(new NormalizingMapper(sorted_data), new UniformMapper(sorted_data), args.uniformity),
-        arguments_id: ["#uniformity", "#tick_density_argument"],
+        arguments_id: ["#uniformity"],
         read_args: read_skew_algo_args
     }
 }
