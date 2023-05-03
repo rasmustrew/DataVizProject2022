@@ -164,6 +164,8 @@ export default class ScatterPlot {
         // Wilkinson ticks
         let x_ticks_ew = ExtendedWilkinson(x_range, no_x_ticks).ticks
         let y_ticks_ew = ExtendedWilkinson(y_range, no_y_ticks).ticks
+        if (x_ticks_ew === undefined) x_ticks_ew = []
+        if (y_ticks_ew === undefined) y_ticks_ew = []
         x_ticks_ew = x_ticks_ew.filter(tick => tick > x_range[0] && tick < x_range[1])
         y_ticks_ew = y_ticks_ew.filter(tick => tick > y_range[0] && tick < y_range[1])
         y_ticks_ew.reverse()
