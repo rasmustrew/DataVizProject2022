@@ -4,6 +4,8 @@ import CompositeMapper from "../mappings/composite_mapping";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
+import LinearMapper from "../mappings/linear_mapping";
+import {overplotting_2d, screen_histogram_2d} from "../benchmarks/benchmarks";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -20,6 +22,7 @@ export default class ScatterPlot {
         this.y_dim = this.dimensions[1]
         this.color_dim = this.dimensions[2]
         this.init()
+        this.runBenchmarks()
     }
 
     init() {
@@ -223,6 +226,32 @@ export default class ScatterPlot {
             )
 
         return base_svg;
+    }
+
+    runBenchmarks() {
+        console.log("BENCHMARKS")
+
+        let dimensions = [this.dimensions[0], this.dimensions[1]]
+
+        let data_per_dimension = {}
+        dimensions.forEach((dim) => {
+            let data = this.data.map((data_point) => data_point[dim])
+            data_per_dimension[dim] = data
+        })
+
+        console.log("OVERPLOTTING 2D")
+        let dim_a = dimensions[0]
+        let dim_b = dimensions[1]
+        let data_a = data_per_dimension[dim_a]
+        let data_b = data_per_dimension[dim_b]
+        let linear_mapper_a = new LinearMapper(this.mappers[dim_a].get_output_space_ranges(), [0, 1])
+        let comp_mapper_a = new CompositeMapper([this.mappers[dim_a], linear_mapper_a])
+        let linear_mapper_b = new LinearMapper(this.mappers[dim_b].get_output_space_ranges(), [0, 1])
+        let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
+        let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
+        let overplotting = overplotting_2d(histogram_2d)
+        console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+
     }
 }
 
