@@ -1,3 +1,4 @@
+import LinearMapper from "../mappings/linear_mapping";
 
 export function screen_histogram_2d(raw_data_a, raw_data_b, mapper_a, mapper_b, num_bins) {
     let bin_size = 1 / (num_bins - 1)
@@ -96,6 +97,20 @@ export function overplotting_1d(histogram_1d) {
         }
     }
     return overplotting
+}
+
+export function distortion(raw_data, mapper) {
+    raw_data = [...raw_data]
+    raw_data.sort((a, b) => a - b)
+    let raw_mapper = new LinearMapper([[raw_data[0], raw_data[raw_data.length - 1]]], [0, 1])
+
+    let distort = raw_data.reduce((acc, val) => {
+        let raw_mapped = raw_mapper.map(val)
+        let mapped = mapper.map(val)
+        let distance = Math.abs(raw_mapped - mapped)
+        return distance + acc
+    }, 0)
+    return distort
 }
 
 export function convergence(histograms_2d) {

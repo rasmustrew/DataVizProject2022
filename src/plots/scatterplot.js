@@ -5,7 +5,7 @@ import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
 import LinearMapper from "../mappings/linear_mapping";
-import {overplotting_2d, screen_histogram_2d} from "../benchmarks/benchmarks";
+import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/benchmarks";
 
 export default class ScatterPlot {
     tick_spacing = 50
@@ -251,6 +251,15 @@ export default class ScatterPlot {
         let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
         let overplotting = overplotting_2d(histogram_2d)
         console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+
+        console.log("DISTORTION")
+        dimensions.forEach((dim) => {
+            let data = data_per_dimension[dim]
+            let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
+            let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
+            let distort = distortion(data, comp_mapper)
+            console.log(dim, ": ", distort)
+        })
 
     }
 }

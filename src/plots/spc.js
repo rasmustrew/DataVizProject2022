@@ -5,6 +5,7 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import { v4 as uuidv4 } from 'uuid';
 import {
+    distortion,
     line_crossings,
     overplotting_1d, overplotting_2d,
     pretty_print_benchmark,
@@ -577,6 +578,15 @@ export default class SPC {
             let { avg_crossing_angle, number_of_line_crossings } = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, 1)
             console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
         }
+
+        console.log("DISTORTION")
+        this.dimensions.forEach((dim) => {
+            let data = data_per_dimension[dim]
+            let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
+            let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
+            let distort = distortion(data, comp_mapper)
+            console.log(dim, ": ", distort)
+        })
     }
 }
 
