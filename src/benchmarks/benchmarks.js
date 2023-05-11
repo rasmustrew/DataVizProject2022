@@ -35,7 +35,7 @@ export function screen_histogram_1d(raw_data, mapper, num_bins) {
     return histogram_1d
 }
 
-// a is left, b is right
+// a is left, b is right, x_distance is in percent of y_distance
 export function line_crossings(raw_data_a, raw_data_b, mapper_a, mapper_b, x_distance) {
 
 
@@ -70,7 +70,7 @@ export function line_crossings(raw_data_a, raw_data_b, mapper_a, mapper_b, x_dis
     let avg_crossing_angle = crossing_angles_sum / number_of_line_crossings
     return {
         avg_crossing_angle,
-        line_crossings,
+        number_of_line_crossings,
     }
 }
 

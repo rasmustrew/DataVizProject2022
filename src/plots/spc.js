@@ -5,6 +5,7 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import { v4 as uuidv4 } from 'uuid';
 import {
+    line_crossings,
     overplotting_1d, overplotting_2d,
     pretty_print_benchmark,
     screen_histogram_1d,
@@ -560,7 +561,21 @@ export default class SPC {
             let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
             let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
             let overplotting = overplotting_2d(histogram_2d)
-            console.log(`(${dim_a}`, ` ${dim_b}): ${overplotting}`)
+            console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+        }
+        console.log("LINE CROSSINGS AND AVG CROSSING ANGLE")
+        for (let i = 0; i < this.dimensions.length - 1; i++) {
+            let dim_a = this.dimensions[i]
+            let dim_b = this.dimensions[i+1]
+            let data_a = data_per_dimension[dim_a]
+            let data_b = data_per_dimension[dim_b]
+            let linear_mapper_a = new LinearMapper(this.mappers[dim_a].get_output_space_ranges(), [0, 1])
+            let comp_mapper_a = new CompositeMapper([this.mappers[dim_a], linear_mapper_a])
+            let linear_mapper_b = new LinearMapper(this.mappers[dim_b].get_output_space_ranges(), [0, 1])
+            let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
+
+            let { avg_crossing_angle, number_of_line_crossings } = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, 1)
+            console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
         }
     }
 }
