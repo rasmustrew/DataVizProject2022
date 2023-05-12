@@ -15,6 +15,8 @@ import {OsaragiSplit} from "../algorithms/surprise_split";
 import UniformMapper from "../mappings/uniform_mapping";
 import InterpolationMapper from "../mappings/interpolation_mapping";
 import {data_range, normalizing_mapper} from "../algorithms/util";
+import {jenks} from "simple-statistics";
+import ProportionateRangeMapper, {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 
 const algo_selector_ref = "#algorithm-select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
@@ -83,6 +85,14 @@ let algorithm_selection_map = {
     },
     kmeans_opt: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
+        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
+        read_args: read_number_of_clusters
+    },
+    jenks: {
+        algo: (sorted_data, args) => {
+            let splits = jenks(sorted_data, args["clusters"] - 1)
+            return splits
+        },
         arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
         read_args: read_number_of_clusters
     },
