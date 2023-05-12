@@ -1,6 +1,8 @@
 import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import * as d3 from "d3";
+import {averageHeight, distortion} from "../benchmarks/benchmarks";
+import LinearMapper from "../mappings/linear_mapping";
 
 
 export default class Beeswarm {
@@ -8,6 +10,7 @@ export default class Beeswarm {
     constructor(chart_ref, data, dimension, raw_mapper) {
         let plot = document.querySelector(chart_ref)
 
+        this.dimension = dimension
         let buffer_size = 50;
         let margin = {top: 80, right: 16, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
@@ -15,6 +18,7 @@ export default class Beeswarm {
         this.height = height
         let screen_mapper = new ScreenMapper(raw_mapper.get_output_space_ranges(), [0, width], buffer_size)
         let mapper = new CompositeMapper([raw_mapper, screen_mapper])
+        this.mapper = mapper
         this.sorted_data = [...data]
         this.sorted_data.sort(function (a, b) {
             return a[dimension] - b[dimension];
@@ -34,6 +38,7 @@ export default class Beeswarm {
 
         this.create_single_beeswarm_plot(svg, data, mapper, 0, dimension)
 
+        this.runBenchmarks()
     }
     create_single_beeswarm_plot(svg, data, mapper, index, dimension) {
         const input_range = mapper.get_input_space_ranges()[index]
@@ -99,6 +104,21 @@ export default class Beeswarm {
         let distance_y = a.y - b.y
         let distance = Math.sqrt(Math.pow(distance_x, 2) + Math.pow(distance_y, 2))
         return distance <= this.radius * 2 + this.circle_padding
+    }
+
+    runBenchmarks() {
+        console.log("BENCHMARKS")
+        console.log("AVERAGE HEIGHT")
+        let height_sum = this.circle_centers.reduce((acc, val) => acc + (this.height - val.y), 0)
+        let average_height = height_sum / this.circle_centers.length
+        console.log(this.dimension, average_height)
+
+        console.log("DISTORTION")
+        let linear_mapper = new LinearMapper(this.mapper.get_output_space_ranges(), [0, 1])
+        let comp_mapper = new CompositeMapper([this.mapper, linear_mapper])
+        let data = this.sorted_data.map((val) => val[this.dimension])
+        let distort = distortion(data, comp_mapper)
+        console.log(this.dimension, ": ", distort)
     }
 }
 

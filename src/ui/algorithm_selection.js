@@ -40,7 +40,7 @@ let algorithm_selection_map = {
         algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)
         },
-        arguments_id: [],
+        arguments_id: ["#range_argument"],
         read_args: () => {},
     },
     greedy_guided_split: {

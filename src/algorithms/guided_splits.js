@@ -248,8 +248,9 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
             }
         }
         if (stopping_condition === "cost_reduction") {
-            let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][n]
-            let reduction_threshold = fragmentation_weight * 0.8 + 0.2
+            // let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][n]
+            let cost_reduction = (C[m - 1][n] - C[m][n])
+            let reduction_threshold = fragmentation_weight * m * 8 + 0.2
             if (cost_reduction < reduction_threshold) {
                 k = m - 1
                 break
