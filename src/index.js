@@ -22,7 +22,7 @@ function select_algorithm() {
     algorithm_selection_update(arguments_id)
     let args = read_args()
     mappers = {}
-    for (let dimension of dimensions) {
+    for (let dimension of selected_dimensions) {
         let algo_out = algo(sorted_data[dimension], args)
         if (Array.isArray(arguments_id) && arguments_id.includes("#range_argument")) {
             mappers[dimension] = range_algo(sorted_data[dimension], algo_out)
@@ -30,10 +30,10 @@ function select_algorithm() {
             mappers[dimension] = algo_out
         }
     }
-    let dimension = dimensions[0]
+    let dimension = selected_dimensions[0]
     update_metrics_display(sorted_data[dimension], mappers[dimension])
     if (args != null && "auto_k" in args && !args["auto_k"]) {
-        update_cluster_amount(mappers[dimensions[0]].get_output_space_ranges().length)
+        update_cluster_amount(mappers[dimension].get_output_space_ranges().length)
     }
 }
 

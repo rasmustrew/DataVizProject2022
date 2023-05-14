@@ -116,8 +116,8 @@ export function greedy_interpolated_splits(sorted_data, weights) {
             }
         }
         if (stopping_condition === "cost_reduction") {
-            let cost_reduction = (previous_cost - current_cost) / previous_cost
-            let reduction_threshold = fragmentation_weight * 0.8 + 0.2
+            let cost_reduction = previous_cost - current_cost
+            let reduction_threshold = (fragmentation_weight / 1.5) ** 4 * m * 1000 / Math.sqrt(X.length) + 0.1
             if (cost_reduction < reduction_threshold) {
                 break
             }
@@ -204,7 +204,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
         }
         if (stopping_condition === "cost_reduction") {
             let cost_reduction = (C[m - 1][n] - C[m][n])
-            let reduction_threshold = fragmentation_weight ** 2 * m * 0.8 + 0.1
+            let reduction_threshold = (fragmentation_weight / 1.5) ** 4 * m * 1000 / Math.sqrt(X.length) + 0.1
             if (cost_reduction < reduction_threshold) {
                 k = m - 1
                 break
