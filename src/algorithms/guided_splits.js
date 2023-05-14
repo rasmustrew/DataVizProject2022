@@ -36,46 +36,6 @@ function compute_total_squared_skewness_segment(segment) {
     return total_skewness;
 }
 
-function compute_total_squared_skewness(index_ranges, X) {
-    let total_skewness = 0
-    for (const range of index_ranges) {
-        let segment_skewness = compute_total_squared_skewness_segment(X.slice(range[0], range[1] + 1))
-        total_skewness += ((range[1] - range[0] + 1) / X.length) ** 2 * segment_skewness
-    }
-    return total_skewness;
-}
-
-function compute_total_squared_distortion(index_ranges, X) {
-    let total_distortion = 0
-    let n = X.length
-    let min_val = X[0]
-    let max_val = X[n - 1]
-    let data_space_size = max_val - min_val
-    let cur_segment = 0
-    let cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
-    let cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
-    let cur_seg_min_val = X[index_ranges[cur_segment][0]]
-    let cur_seg_max_val = X[index_ranges[cur_segment][1]]
-    let cur_segment_size = cur_seg_max_val - cur_seg_min_val
-    for (let i = 0; i < n; i++) {
-        let x = X[i]
-        if (x > cur_seg_max_val) {
-            cur_segment++
-            cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
-            cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
-            cur_seg_min_val = X[index_ranges[cur_segment][0]]
-            cur_seg_max_val = X[index_ranges[cur_segment][1]]
-            cur_segment_size = cur_seg_max_val - cur_seg_min_val
-        }
-        let x_position_in_segment = cur_segment_prop * (x - cur_seg_min_val) / cur_segment_size
-        let x_projected_position = x_position_in_segment + cur_segment_offset
-        let x_original_position = (x - min_val) / data_space_size
-        total_distortion += (x_projected_position - x_original_position) ** 2
-    }
-    return total_distortion;
-}
-
-
 function compute_total_squared_interpolation_cost(index_ranges, X, interpolation_weight) {
     let total_cost = 0
     let n = X.length
@@ -209,29 +169,24 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     // Fill tables
     for (let m = 2; m <= Math.min(k, 10); m++) {
         // For visualizing the cost matrix of split point location
-        let B = Array(n + 1).fill(null).map(() => Array(n + 1).fill(0))
         for (let i = m + 1; i <= n; i++) {
             let optimal_cost_so_far = Infinity
             let split_index = 0
             // Look up cells to the left in the previous row
             for (let j = m - 1; j < i; j++) {
-                //let ranges = get_segmentation_index_ranges(j, m - 1, segment_table)
-                //ranges.push([j + 1, i])
-                let j_squared = j ** 2
-                let cost_Xj = j_squared * C[m - 1][j]
+                let seg_size = i - j
+                let cost_Xj = C[m - 1][j]
                 let cost_Xji = 0
-                //let cost_Xji_slow = (i - j) ** 2 * compute_total_squared_skewness_segment(X.slice(j + 1, i + 1))
+                //let cost_Xji_slow = compute_total_squared_skewness_segment(X.slice(j + 1, i + 1))
                 if (j !== i - 1) {
-                    let seg_size = i - j
                     let seg_len = X[i] - X[j + 1]
                     let v = D[i] - D[j]
                     let term1 = (seg_size * (X[j + 1] ** 2) + D2[i] - D2[j] - 2 * X[j + 1] * v)/ (seg_len ** 2)
                     let term2 = I2[seg_size] / (seg_size ** 2)
                     let term3 = 2 * (H[i] - H[j] - j * v - X[j + 1] * I[seg_size]) / (seg_len * seg_size)
-                    cost_Xji = (seg_size ** 2) * (term1 + term2 - term3)
+                    cost_Xji = term1 + term2 - term3
                 }
-                let cost = cost_Xj + cost_Xji
-                B[i][j] = cost
+                let cost = (j ** 2) * cost_Xj + (seg_size ** 2) * cost_Xji
                 if (cost < optimal_cost_so_far) {
                     optimal_cost_so_far = cost
                     split_index = j
@@ -248,9 +203,8 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
             }
         }
         if (stopping_condition === "cost_reduction") {
-            // let cost_reduction = (C[m - 1][n] - C[m][n]) / C[m - 1][n]
             let cost_reduction = (C[m - 1][n] - C[m][n])
-            let reduction_threshold = fragmentation_weight * m * 8 + 0.2
+            let reduction_threshold = fragmentation_weight ** 2 * m * 0.8 + 0.1
             if (cost_reduction < reduction_threshold) {
                 k = m - 1
                 break

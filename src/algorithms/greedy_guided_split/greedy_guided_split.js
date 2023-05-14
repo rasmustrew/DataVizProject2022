@@ -97,3 +97,42 @@ export function mapping_difference(data, mapping1, mapping2) {
     }
     return summed_diff / data.length
 }
+
+function compute_total_squared_skewness(index_ranges, X) {
+    let total_skewness = 0
+    for (const range of index_ranges) {
+        let segment_skewness = compute_total_squared_skewness_segment(X.slice(range[0], range[1] + 1))
+        total_skewness += ((range[1] - range[0] + 1) / X.length) ** 2 * segment_skewness
+    }
+    return total_skewness;
+}
+
+function compute_total_squared_distortion(index_ranges, X) {
+    let total_distortion = 0
+    let n = X.length
+    let min_val = X[0]
+    let max_val = X[n - 1]
+    let data_space_size = max_val - min_val
+    let cur_segment = 0
+    let cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
+    let cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
+    let cur_seg_min_val = X[index_ranges[cur_segment][0]]
+    let cur_seg_max_val = X[index_ranges[cur_segment][1]]
+    let cur_segment_size = cur_seg_max_val - cur_seg_min_val
+    for (let i = 0; i < n; i++) {
+        let x = X[i]
+        if (x > cur_seg_max_val) {
+            cur_segment++
+            cur_segment_offset = (index_ranges[cur_segment][0] - 1) / n
+            cur_segment_prop = (index_ranges[cur_segment][1] - index_ranges[cur_segment][0]) / n
+            cur_seg_min_val = X[index_ranges[cur_segment][0]]
+            cur_seg_max_val = X[index_ranges[cur_segment][1]]
+            cur_segment_size = cur_seg_max_val - cur_seg_min_val
+        }
+        let x_position_in_segment = cur_segment_prop * (x - cur_seg_min_val) / cur_segment_size
+        let x_projected_position = x_position_in_segment + cur_segment_offset
+        let x_original_position = (x - min_val) / data_space_size
+        total_distortion += (x_projected_position - x_original_position) ** 2
+    }
+    return total_distortion;
+}
