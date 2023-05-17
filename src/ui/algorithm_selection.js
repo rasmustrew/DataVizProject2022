@@ -50,17 +50,17 @@ let algorithm_selection_map = {
     },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#clusters", "#tightness_argument", "#range_argument"],
+        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#tightness_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: ["#fragmentation_argument", "#stopping_condition", "#clusters", "#tightness_argument", "#range_argument"],
+        arguments_id: ["#fragmentation_argument", "#stopping_condition", "#tightness_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     guided_splits: {
         algo: guided_splits,
-        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#clusters", "#tightness_argument", "#range_argument"],
+        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#tightness_argument", "#range_argument"],
         read_args: read_skew_algo_args
     },
     hardcoded_periodic_table: {

@@ -75,7 +75,7 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     let interpolation_weight = weights["uniformity"]
     let fragmentation_weight = 1 - weights["fragmentation"]
     if (stopping_condition === "k") {
-        k = weights["clusters"]
+        k = Math.floor(weights["fragmentation"] * 10)
     }
     // Remove duplicate values
     let X = [...new Set(sorted_data)]
@@ -111,13 +111,14 @@ export function greedy_interpolated_splits(sorted_data, weights) {
         }
         current_cost = best_cost_so_far
         if (stopping_condition === "threshold") {
-            if (current_cost < split_indices.length * fragmentation_weight) {
+            let threshold = (fragmentation_weight/2) ** 4 + 0.001 * m
+            if (current_cost < threshold) {
                 break
             }
         }
         if (stopping_condition === "cost_reduction") {
-            let cost_reduction = previous_cost - current_cost
-            let reduction_threshold = (fragmentation_weight / 1.5) ** 4 * m * 1000 / Math.sqrt(X.length) + 0.1
+            let cost_reduction = (previous_cost - current_cost) / X.length
+            let reduction_threshold = fragmentation_weight ** 2 + 0.001 * m
             if (cost_reduction < reduction_threshold) {
                 break
             }
@@ -142,7 +143,7 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
     if (stopping_condition !== "k") {
         k = 2
     } else if ("clusters" in weights) {
-        k = weights["clusters"]
+        k = k = Math.floor(weights["fragmentation"] * 6)
     }
     let X = [...new Set(sorted_data)]
     const n = X.length
@@ -197,14 +198,15 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
         }
         // Stopping conditions
         if (stopping_condition === "threshold") {
-            if (C[m][n] < fragmentation_weight * m) {
+            let threshold = (fragmentation_weight/2) ** 4 + 0.001 * m
+            if (C[m][n] / X.length < threshold) {
                 k = m - 1
                 break;
             }
         }
         if (stopping_condition === "cost_reduction") {
-            let cost_reduction = (C[m - 1][n] - C[m][n])
-            let reduction_threshold = (fragmentation_weight / 1.5) ** 4 * m * 1000 / Math.sqrt(X.length) + 0.1
+            let cost_reduction = (C[m - 1][n] - C[m][n]) / X.length
+            let reduction_threshold = fragmentation_weight ** 2 + 0.001 * m
             if (cost_reduction < reduction_threshold) {
                 k = m - 1
                 break
