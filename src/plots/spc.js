@@ -13,6 +13,8 @@ import {
     screen_histogram_2d
 } from "../benchmarks/benchmarks";
 import LinearMapper from "../mappings/linear_mapping";
+import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
+import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 
 let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
@@ -48,8 +50,13 @@ export default class SPC {
         Object.entries(raw_mappers).forEach((entry) => {
             let dim = entry[0]
             let mapper = entry[1]
-            let screen_mapper = new ScreenMapper(mapper.get_output_space_ranges(), [height, 0], buffer_size)
-            this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
+            if (mapper instanceof ProportionateRangeMapper) {
+                this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], buffer_size)
+            } else {
+                let output_ranges = mapper.get_output_space_ranges()
+                let screen_mapper = new ScreenMapper(output_ranges, [height, 0], buffer_size)
+                this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
+            }
         })
 
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
