@@ -35,8 +35,10 @@ function read_skew_algo_args() {
     return weights
 }
 
+
 //algo: (sorted_data, args, stopping_callback) - Not all will use the callback
 export const step2_selection_map = {
+
     none: {
         algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)

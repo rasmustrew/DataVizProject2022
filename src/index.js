@@ -1,16 +1,12 @@
-import {data_selection_map, get_selected_data, prepare_data_set} from "./ui/data_selection";
+import {get_selected_data, prepare_data_set} from "./ui/data_selection";
 import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimension_selection";
 import {
-    step2_selection_map,
-    algorithm_selection_update,
     get_selected_step2_algorithm,
-    update_cluster_amount
 } from "./pipeline/step2";
-import {get_chart_selection, get_selected_chart} from "./ui/chart_selection";
-import {update_metrics_display} from "./ui/metric_display";
-import {get_range_function, get_selected_step3_algorithm} from "./pipeline/step3";
+import { get_selected_chart} from "./ui/chart_selection";
+import {get_selected_step3_algorithm} from "./pipeline/step3";
+
 import Beeswarm from "./plots/beeswarm";
-import {load_periodic_table_data} from "./data/load_periodic_table_data";
 import LinearMapper from "./mappings/linear_mapping";
 import CompositeMapper from "./mappings/composite_mapping";
 import {overplotting_2d, screen_histogram_2d} from "./benchmarks/benchmarks";
