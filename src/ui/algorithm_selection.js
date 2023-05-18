@@ -35,7 +35,7 @@ function read_skew_algo_args() {
     return weights
 }
 
-let algorithm_selection_map = {
+export const algorithm_selection_map = {
     none: {
         algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)

@@ -18,7 +18,7 @@ const data_selection_map = {
     monotonicity_example: () => {return {data: [{"v": 0}, {"v": 2}, {"v": 3}, {"v": 7}, {"v": 8}, {"v": 10}], dimensions: "v"}}
 }
 
-async function prepare_data_set(data_selection) {
+export async function prepare_data_set(data_selection) {
 
     let data_function = data_selection_map[data_selection]
     let {data, dimensions} = await data_function();

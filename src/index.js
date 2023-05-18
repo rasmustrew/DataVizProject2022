@@ -1,14 +1,96 @@
-import {data_selection_map, get_selected_data} from "./ui/data_selection";
+import {data_selection_map, get_selected_data, prepare_data_set} from "./ui/data_selection";
 import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimension_selection";
-import {algorithm_selection_update, get_selected_algorithm, update_cluster_amount} from "./ui/algorithm_selection";
+import {
+    algorithm_selection_map,
+    algorithm_selection_update,
+    get_selected_algorithm,
+    update_cluster_amount
+} from "./ui/algorithm_selection";
 import {get_chart_selection, get_selected_chart} from "./ui/chart_selection";
 import {update_metrics_display} from "./ui/metric_display";
 import {get_range_function} from "./ui/range_selection";
+import Beeswarm from "./plots/beeswarm";
+import {load_periodic_table_data} from "./data/load_periodic_table_data";
+import LinearMapper from "./mappings/linear_mapping";
+import CompositeMapper from "./mappings/composite_mapping";
+import {overplotting_2d, screen_histogram_2d} from "./benchmarks/benchmarks";
 
 console.log("starting")
 
 const chart_container_ref = "#plot_container_id";
 let data, dimensions, sorted_data, selected_dimensions, mappers, selected_chart_generator
+
+async function run_benchmarks() {
+    let beeswarm_res = await run_beeswarm_benchmarks(
+        ["periodic_table"],
+        [
+            {algorithm_id: 'none', args: null},
+            {algorithm_id: 'optimal_guided_split', arg: null}
+        ],
+        [1, 8, 20])
+    console.log(beeswarm_res)
+}
+
+
+// datasets: id list
+// algorithms: {algorithm_id, args} list
+// settings: bubble size list
+async function run_beeswarm_benchmarks(datasets, algorithms, settings) {
+    let benchmark_result = {}
+    for (let dataset_id of datasets) {
+        benchmark_result[dataset_id] = {}
+        let dataset = await prepare_data_set(dataset_id)
+        for (let dimension of dataset.dimensions) {
+            benchmark_result[dataset_id][dimension] = {}
+            for (let {algorithm_id, args} of algorithms) {
+                benchmark_result[dataset_id][dimension][algorithm_id] = {}
+                let { algo } = algorithm_selection_map[algorithm_id]
+                let mapper = algo(dataset.sorted_data[dimension], args)
+                for (let setting of settings) {
+                    let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting)
+                    benchmark_result[dataset_id][dimension][algorithm_id][setting] = beeswarm.runBenchmarks()
+                    beeswarm.delete()
+                }
+            }
+        }
+    }
+    return benchmark_result
+}
+
+async function run_scatterplot_benchmarks(datasets, algorithms, settings) {
+    let benchmark_result = {}
+    for (let dataset_id of datasets) {
+        benchmark_result[dataset_id] = {}
+        let dataset = await prepare_data_set(dataset_id)
+        for (let i = 0; i < dataset.dimensions.length - 1; i++) {
+            let dimension_a = dimensions[i]
+            let dimension_b = dimensions[i+1]
+            let dimensions_label = dimension_a + ' + ' + dimension_b
+            benchmark_result[dataset_id][dimensions_label] = {}
+            for (let {algorithm_id, args} of algorithms) {
+                benchmark_result[dataset_id][dimensions_label][algorithm_id] = {}
+                let { algo } = algorithm_selection_map[algorithm_id]
+                let raw_mapper_a = algo(dataset.sorted_data[dimension_a], args)
+                let raw_mapper_b = algo(dataset.sorted_data[dimension_b], args)
+                let data_a = dataset.sorted_data[dimension_a]
+                let data_b = dataset.sorted_data[dimension_b]
+                let linear_mapper_a = new LinearMapper(this.mappers[dim_a].get_output_space_ranges(), [0, 1])
+                let comp_mapper_a = new CompositeMapper([this.mappers[dim_a], linear_mapper_a])
+                let linear_mapper_b = new LinearMapper(this.mappers[dim_b].get_output_space_ranges(), [0, 1])
+                let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
+                let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
+                let overplotting = overplotting_2d(histogram_2d)
+                for (let setting of settings) {
+                    benchmark_result[dataset_id][dimensions_label][algorithm_id][setting] = beeswarm.runBenchmarks()
+                    beeswarm.delete()
+                }
+            }
+
+
+        }
+    }
+    return benchmark_result
+}
 
 function select_chart() {
     document.querySelector(chart_container_ref).innerHTML = ""
@@ -85,6 +167,7 @@ async function init() {
     select_chart();
 }
 
+// run_benchmarks().then(() => console.log("done"))
 init()
 // let my_data = [
 //     8e-9,
