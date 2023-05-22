@@ -1,7 +1,7 @@
 import {get_selected_data, prepare_data_set} from "./ui/data_selection";
 import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimension_selection";
 import {
-    get_selected_step2_algorithm,
+    get_selected_step2_algorithm, step2_selection_map,
 } from "./pipeline/step2";
 import { get_selected_chart} from "./ui/chart_selection";
 import {get_selected_step3_algorithm} from "./pipeline/step3";
@@ -21,9 +21,19 @@ let data, dimensions, sorted_data, selected_dimensions, mappers, selected_chart_
 async function run_benchmarks() {
     let beeswarm_res = await run_beeswarm_benchmarks(
         ["periodic_table"],
-        [
-            {algorithm_id: 'none', args: null},
-            {algorithm_id: 'optimal_guided_split', arg: null}
+        [ {
+            step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
+            step2: {algorithm_id: 'none', args: null},
+            step3: {algorithm_id: 'tight', args: null},
+            name: "none"
+        }, {
+            step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
+            step2: {algorithm_id: 'optimal_guided_split', arg: null},
+            step3: {algorithm_id: 'tight', args: null},
+            "name": "opt"
+        }
+
+
         ],
         [1, 8, 20])
     console.log(beeswarm_res)
@@ -33,20 +43,23 @@ async function run_benchmarks() {
 // datasets: id list
 // algorithms: {algorithm_id, args} list
 // settings: bubble size list
-async function run_beeswarm_benchmarks(datasets, algorithms, settings) {
+async function run_beeswarm_benchmarks(datasets, pipelines, settings) {
     let benchmark_result = {}
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
+        sorted_data = dataset.sorted_data
         for (let dimension of dataset.dimensions) {
             benchmark_result[dataset_id][dimension] = {}
-            for (let {algorithm_id, args} of algorithms) {
-                benchmark_result[dataset_id][dimension][algorithm_id] = {}
-                let { algo } = step2_selection_map[algorithm_id]
-                let mapper = algo(dataset.sorted_data[dimension], args)
+            for (let pipeline of pipelines) {
+                benchmark_result[dataset_id][dimension][pipeline.name] = {}
+                let step1_algo = get_selected_step1_algorithm(pipeline.step1.algorithm_id)
+                let step2_algo = get_selected_step2_algorithm(pipeline.step2.algorithm_id)
+                let step3_algo = get_selected_step3_algorithm(pipeline.step3.algorithm_id)
+                let mapper = run_step(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
                 for (let setting of settings) {
                     let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting)
-                    benchmark_result[dataset_id][dimension][algorithm_id][setting] = beeswarm.runBenchmarks()
+                    benchmark_result[dataset_id][dimension][pipeline.name][setting] = beeswarm.runBenchmarks()
                     beeswarm.delete()
                 }
             }
@@ -83,8 +96,6 @@ async function run_scatterplot_benchmarks(datasets, algorithms, settings) {
                     beeswarm.delete()
                 }
             }
-
-
         }
     }
     return benchmark_result
@@ -96,23 +107,6 @@ function select_chart() {
     selected_chart_generator(chart_container_ref, data, selected_dimensions, mappers)
 }
 
-function select_algorithm() {
-    let {algo, arguments_id, read_args} = get_selected_step2_algorithm()
-    let range_algo = get_range_function()
-    // algorithm_selection_update(arguments_id)
-    let args = read_args()
-    mappers = {}
-    for (let dimension of selected_dimensions) {
-        let algo_out = algo(sorted_data[dimension], args)
-        mappers[dimension] = algo_out
-
-    }
-    let dimension = selected_dimensions[0]
-    // update_metrics_display(sorted_data[dimension], mappers[dimension])
-    // if (args != null && "auto_k" in args && !args["auto_k"]) {
-    //     update_cluster_amount(mappers[dimension].get_output_space_ranges().length)
-    // }
-}
 
 function select_steps() {
     let step1 = get_selected_step1_algorithm()
@@ -127,12 +121,13 @@ function select_steps() {
 
     mappers = {}
     for (let dimension of selected_dimensions) {
-        let splits = step2.algo(sorted_data[dimension], step2_args, (callback_info) => step1.algo(callback_info, step1_args))
-        console.log(splits)
-        mappers[dimension] = step3.algo(sorted_data[dimension], splits, step3_args)
-        console.log(mappers)
+        mappers[dimension] = run_step(dimension, step1, step1_args, step2, step2_args, step3, step3_args)
     }
+}
 
+function run_step(dimension, step1, step1_args, step2, step2_args, step3, step3_args) {
+    let splits = step2.algo(sorted_data[dimension], step2_args, (callback_info) => step1.algo(callback_info, step1_args))
+    return step3.algo(sorted_data[dimension], splits, step3_args)
 }
 
 export function step_selection_update(arguments_id) {
@@ -169,19 +164,16 @@ window.select_step = () => {
 
 window.select_dimensions = () => {
     select_dimensions();
-    // select_algorithm();
     select_chart();
 }
 
 window.select_data = async () => {
     await select_data();
     select_dimensions();
-    // select_algorithm();
     select_chart();
 }
 
 window.on_recompute_button = () => {
-    // select_algorithm();
     select_steps();
     select_chart();
 }
@@ -195,119 +187,5 @@ async function init() {
     select_chart();
 }
 
-// run_benchmarks().then(() => console.log("done"))
-init()
-// let my_data = [
-//     8e-9,
-//     1e-8,
-//     1e-8,
-//     2e-8,
-//     2e-8,
-//     3e-8,
-//     4e-8,
-//     4e-8,
-//     5e-8,
-//     5e-8,
-//     5e-8,
-//     5e-8,
-//     5e-8,
-//     6e-8,
-//     6e-8,
-//     6e-8,
-//     7e-8,
-//     7e-8,
-//     8e-8,
-//     1e-7,
-//     1e-7,
-//     1e-7,
-//     1e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     2e-7,
-//     3e-7,
-//     4e-7,
-//     4e-7,
-//     5e-7,
-//     5e-7,
-//     5e-7,
-//     6e-7,
-//     7e-7,
-//     7e-7,
-//     8e-7,
-//     9e-7,
-//     0.000001,
-//     0.000001,
-//     0.000001,
-//     0.000001,
-//     0.000001,
-//     0.000001,
-//     0.000001,
-//     0.000003,
-//     0.000003,
-//     0.000004,
-//     0.000004,
-//     0.000005,
-//     0.000006,
-//     0.00002,
-//     0.00003,
-//     0.00004,
-//     0.0001,
-//     0.0001,
-//     0.0003,
-//     0.0003,
-//     0.0003,
-//     0.0007,
-//     0.0008,
-//     0.0015,
-//     0.002,
-//     0.005,
-//     0.006,
-//     0.007,
-//     0.02,
-//     0.05,
-//     0.06,
-//     0.07,
-//     0.1,
-//     0.11,
-//     0.13,
-//     0.5,
-//     1,
-//     23,
-//     75
-// ]
-// let mapper = hardcoded_periodic_table_get_mapper(my_data, {}, "abundance/universe")
-// let mapperToSameRange = new LinearMapper(mapper.get_output_space_ranges(), [8e-9, 75])
-// let combined_mapper = new CompositeMapper([mapper, mapperToSameRange])
-// let transformed_data = my_data.map((data_point) => combined_mapper.map(data_point))
-//
-// let split_points = [8e-9, 0.0009273414413707938, 0.13437282585692462, 1.2912620979636045, 75]
-// let transformed_split_points = split_points.map((data_point) => combined_mapper.map(data_point))
-// console.log(transformed_data)
-// console.log(transformed_split_points)
-//
-//
-//
-//
-// let ggs_mapper = greedy_guided_split(my_data, {distortion: 1, fragmentation: 0.04, skewness: 2}, 'abundance/universe')
-// console.log(ggs_mapper.get_input_space_ranges())
-// let ggs_split_points = [
-//     8e-9,
-//     4e-7,
-//     0.0015,
-//     75
-// ]
-//
-// let ggs_mapper_to_same_range = new LinearMapper(ggs_mapper.get_output_space_ranges(), [8e-9, 75])
-// let ggs_combined_mapper = new CompositeMapper([ggs_mapper, ggs_mapper_to_same_range])
-//
-// let transformed_ggs_split_points = ggs_split_points.map((data_point) => ggs_combined_mapper.map(data_point))
-// let transformed_ggs_data = my_data.map((data_point) => ggs_combined_mapper.map(data_point))
-// console.log(transformed_ggs_split_points)
-// console.log(transformed_ggs_data)
+run_benchmarks().then(() => console.log("done"))
+// init()

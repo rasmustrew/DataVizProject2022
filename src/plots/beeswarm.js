@@ -37,7 +37,7 @@ export default class Beeswarm {
         });
         let input_ranges = mapper.get_input_space_ranges()
         this.data_range_length = input_ranges[input_ranges.length - 1][1] - input_ranges[0][0]
-        this.tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
+        this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
 
 
         // append the svg object to the body of the page
