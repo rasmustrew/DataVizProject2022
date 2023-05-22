@@ -3,26 +3,23 @@ import ProportionateRangeMapper from "./proportionate_split_mapping";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import * as d3 from "d3";
 
-let tightness_weight = 0.9
 
-export function match_tick_fractions_mapper(sorted_data, splits, divisors = [1, 2, 5, 4], tick_spacing = 0.05) {
-    tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 / 2
-    tightness_weight = parseInt(d3.select("#tightness_argument input").property("value")) / 100
+export function match_tick_fractions_mapper(sorted_data, splits, divisors = [1, 2, 5, 4], args) {
     let data_ranges = get_data_ranges(sorted_data, splits)
     let proportional_range_mapper = new ProportionateRangeMapper(sorted_data, data_ranges)
     let output_ranges = proportional_range_mapper.get_output_space_ranges()
-    let tick_candidates = tick_fraction_candidates(data_ranges, output_ranges, tick_spacing, divisors)
-    let pretty_ranges = nice_and_tight_ranges(data_ranges, output_ranges, tick_candidates)
+    let tick_candidates = tick_fraction_candidates(data_ranges, output_ranges, args.tick_spacing, divisors)
+    let pretty_ranges = nice_and_tight_ranges(data_ranges, output_ranges, tick_candidates, args.tightness_weight)
     return new ProportionateRangeMapper(sorted_data, pretty_ranges)
 }
 
-export function nice_number_mapper(sorted_data, splits, divisors = [1, 2, 5]) {
-    tightness_weight = parseInt(d3.select("#tightness_argument input").property("value")) / 100
+export function nice_number_mapper(sorted_data, splits, tightness_weight) {
+    let divisors = [1, 2, 5]
     let data_ranges = get_data_ranges(sorted_data, splits)
     let proportional_range_mapper = new ProportionateRangeMapper(sorted_data, data_ranges)
     let output_ranges = proportional_range_mapper.get_output_space_ranges()
     let nice_candidates = nice_range_candidates(data_ranges, divisors);
-    let pretty_ranges = nice_and_tight_ranges(data_ranges, output_ranges, nice_candidates)
+    let pretty_ranges = nice_and_tight_ranges(data_ranges, output_ranges, nice_candidates, tightness_weight)
     return new ProportionateRangeMapper(sorted_data, pretty_ranges)
 }
 
@@ -87,7 +84,7 @@ function nice_range_candidates(data_ranges, divisors) {
     return nice_range_candidates;
 }
 
-function nice_and_tight_ranges(data_ranges, output_ranges, nice_range_candidates) {
+function nice_and_tight_ranges(data_ranges, output_ranges, nice_range_candidates, tightness_weight) {
     let pretty_ranges = []
     let full_data_length = data_ranges[data_ranges.length - 1][1] - data_ranges[0][0]
     let full_screen_space_length = output_ranges[output_ranges.length - 1][1] - output_ranges[0][0]
@@ -110,7 +107,7 @@ function nice_and_tight_ranges(data_ranges, output_ranges, nice_range_candidates
             if (is_valid_start) {
                 let range_start_score = range_bound_cost(
                     section_size, data_range_length, n_candidates,
-                    nice_start, data_range_start, j
+                    nice_start, data_range_start, j, tightness_weight
                 )
                 if (range_start_score > nicest_range_start_score) {
                     nicest_range_start_score = range_start_score
@@ -131,7 +128,7 @@ function nice_and_tight_ranges(data_ranges, output_ranges, nice_range_candidates
             if (is_valid_end) {
                 let range_end_score = range_bound_cost(
                     section_size, data_range_length, n_candidates,
-                    nice_end, data_range_end, j
+                    nice_end, data_range_end, j, tightness_weight
                 )
                 if (range_end_score > nicest_range_end_score) {
                     nicest_range_end_score = range_end_score
@@ -145,7 +142,7 @@ function nice_and_tight_ranges(data_ranges, output_ranges, nice_range_candidates
     return pretty_ranges;
 }
 
-function range_bound_cost(section_size, range_length, no_of_ranges, nice_bound, range_bound, j) {
+function range_bound_cost(section_size, range_length, no_of_ranges, nice_bound, range_bound, j, tightness_weight) {
     let simplicity = 1 - j / no_of_ranges
     let tightness = (1 - Math.abs(range_bound - nice_bound) / range_length) * section_size
     return tightness * tightness_weight + simplicity * (1 - tightness_weight)

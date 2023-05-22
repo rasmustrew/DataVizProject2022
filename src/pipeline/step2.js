@@ -18,7 +18,7 @@ import {data_range, normalizing_mapper} from "../algorithms/util";
 import {jenks} from "simple-statistics";
 import ProportionateRangeMapper, {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 
-const algo_selector_ref = "#algorithm-select";
+const step2_selector_ref = "#step2_algorithm_select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})
 let read_exponent = () => ({exponent: parseInt(d3.select("#exponent input").property("value"))})
 let read_lambda = () => ({lambda: parseInt(d3.select("#lambda input").property("value"))})
@@ -28,64 +28,65 @@ function read_skew_algo_args() {
     let weights = {}
     //weights["skewness"] = parseFloat(d3.select("#skewness_argument input").property("value"))
     weights["uniformity"] = parseInt(d3.select("#uniformity input").property("value")) / 100
-    weights["distortion"] = parseInt(d3.select("#distortion_argument input").property("value")) / 100
-    weights["fragmentation"] = parseInt(d3.select("#fragmentation_argument input").property("value")) / 100
+    // weights["distortion"] = parseInt(d3.select("#distortion_argument input").property("value")) / 100
+    weights["fragmentation"] = parseInt(d3.select("#fragmentation input").property("value")) / 100
     weights["clusters"] = parseInt(d3.select("#clusters input").property("value"))
-    weights["stopping_condition"] = d3.select("#stopping_condition select").property("value")
+    // weights["stopping_condition"] = d3.select("#stopping_condition select").property("value")
     return weights
 }
 
-export const algorithm_selection_map = {
+//algo: (sorted_data, args, stopping_callback) - Not all will use the callback
+export const step2_selection_map = {
     none: {
         algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)
         },
-        arguments_id: ["#range_argument"],
+        arguments_id: [],
         read_args: () => {},
     },
-    greedy_guided_split: {
-        algo: greedy_guided_split,
-        arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
-        read_args: read_skew_algo_args
-    },
+    // greedy_guided_split: {
+    //     algo: greedy_guided_split,
+    //     arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
+    //     read_args: read_skew_algo_args
+    // },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
-        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#tightness_argument", "#range_argument"],
+        arguments_id: ["#uniformity", "#fragmentation_argument"],
         read_args: read_skew_algo_args
     },
     optimal_guided_split: {
         algo: optimal_guided_splits,
-        arguments_id: ["#fragmentation_argument", "#stopping_condition", "#tightness_argument", "#range_argument"],
+        arguments_id: ["#fragmentation_argument"],
         read_args: read_skew_algo_args
     },
-    guided_splits: {
-        algo: guided_splits,
-        arguments_id: ["#uniformity", "#fragmentation_argument", "#stopping_condition", "#tightness_argument", "#range_argument"],
-        read_args: read_skew_algo_args
-    },
-    hardcoded_periodic_table: {
-        algo: hardcoded_periodic_table_get_mapper,
-        arguments_id: null,
-        read_args: () => {},
-    },
+    // guided_splits: {
+    //     algo: guided_splits,
+    //     arguments_id: ["#uniformity", "#fragmentation_argument"],
+    //     read_args: read_skew_algo_args
+    // },
+    // hardcoded_periodic_table: {
+    //     algo: hardcoded_periodic_table_get_mapper,
+    //     arguments_id: [],
+    //     read_args: () => {},
+    // },
     quantile: {
         algo: quantile_splits,
-        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
+        arguments_id: [],
         read_args: read_number_of_clusters
     },
-    kmeans: {
-        algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
-        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
-        read_args: read_number_of_clusters
-    },
-    kmeans_plusplus: {
-        algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
-        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
-        read_args: read_number_of_clusters
-    },
+    // kmeans: {
+    //     algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
+    //     arguments_id: [],
+    //     read_args: read_number_of_clusters
+    // },
+    // kmeans_plusplus: {
+    //     algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
+    //     arguments_id: [],
+    //     read_args: read_number_of_clusters
+    // },
     kmeans_opt: {
         algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
-        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
+        arguments_id: [],
         read_args: read_number_of_clusters
     },
     jenks: {
@@ -93,17 +94,17 @@ export const algorithm_selection_map = {
             let splits = jenks(sorted_data, args["clusters"] - 1)
             return splits
         },
-        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
+        arguments_id: [],
         read_args: read_number_of_clusters
     },
-    osaragi: {
-        algo: (sorted_data, args) => {
-            const splitter = new OsaragiSplit()
-            return splitter.MIL_splits(sorted_data, args)
-        },
-        arguments_id: ["#clusters", "#tightness_argument", "#range_argument"],
-        read_args: read_number_of_clusters
-    },
+    // osaragi: {
+    //     algo: (sorted_data, args) => {
+    //         const splitter = new OsaragiSplit()
+    //         return splitter.MIL_splits(sorted_data, args)
+    //     },
+    //     arguments_id: [],
+    //     read_args: read_number_of_clusters
+    // },
     log: {
         algo: (sorted_data, args) => new LogMapper([data_range(sorted_data)], [0, 1]),
         arguments_id: null,
@@ -131,22 +132,10 @@ export const algorithm_selection_map = {
     }
 }
 
-export function algorithm_selection_update(arguments_id) {
-    let args = d3.selectAll(".argument_input");
-    args.style("display", "none")
-    if (arguments_id !== null) {
-        if (typeof arguments_id === "string") {
-            d3.select(arguments_id).style("display", null)
-        } else {
-            for (const argument_id of arguments_id) {
-                d3.select(argument_id).style("display", null)
-            }
-        }
-    }
-}
 
-export function get_selected_algorithm() {
-    return algorithm_selection_map[d3.select(algo_selector_ref).property("value")]
+
+export function get_selected_step2_algorithm() {
+    return step2_selection_map[d3.select(step2_selector_ref).property("value")]
 }
 
 export function update_cluster_amount(k) {

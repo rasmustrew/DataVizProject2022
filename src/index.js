@@ -1,19 +1,21 @@
 import {data_selection_map, get_selected_data, prepare_data_set} from "./ui/data_selection";
 import {get_selected_dimensions, set_up_dimensions_selector} from "./ui/dimension_selection";
 import {
-    algorithm_selection_map,
+    step2_selection_map,
     algorithm_selection_update,
-    get_selected_algorithm,
+    get_selected_step2_algorithm,
     update_cluster_amount
-} from "./ui/algorithm_selection";
+} from "./pipeline/step2";
 import {get_chart_selection, get_selected_chart} from "./ui/chart_selection";
 import {update_metrics_display} from "./ui/metric_display";
-import {get_range_function} from "./ui/range_selection";
+import {get_range_function, get_selected_step3_algorithm} from "./pipeline/step3";
 import Beeswarm from "./plots/beeswarm";
 import {load_periodic_table_data} from "./data/load_periodic_table_data";
 import LinearMapper from "./mappings/linear_mapping";
 import CompositeMapper from "./mappings/composite_mapping";
 import {overplotting_2d, screen_histogram_2d} from "./benchmarks/benchmarks";
+import * as d3 from "d3";
+import {get_selected_step1_algorithm} from "./pipeline/step1";
 
 console.log("starting")
 
@@ -44,7 +46,7 @@ async function run_beeswarm_benchmarks(datasets, algorithms, settings) {
             benchmark_result[dataset_id][dimension] = {}
             for (let {algorithm_id, args} of algorithms) {
                 benchmark_result[dataset_id][dimension][algorithm_id] = {}
-                let { algo } = algorithm_selection_map[algorithm_id]
+                let { algo } = step2_selection_map[algorithm_id]
                 let mapper = algo(dataset.sorted_data[dimension], args)
                 for (let setting of settings) {
                     let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting)
@@ -69,7 +71,7 @@ async function run_scatterplot_benchmarks(datasets, algorithms, settings) {
             benchmark_result[dataset_id][dimensions_label] = {}
             for (let {algorithm_id, args} of algorithms) {
                 benchmark_result[dataset_id][dimensions_label][algorithm_id] = {}
-                let { algo } = algorithm_selection_map[algorithm_id]
+                let { algo } = step2_selection_map[algorithm_id]
                 let raw_mapper_a = algo(dataset.sorted_data[dimension_a], args)
                 let raw_mapper_b = algo(dataset.sorted_data[dimension_b], args)
                 let data_a = dataset.sorted_data[dimension_a]
@@ -99,23 +101,51 @@ function select_chart() {
 }
 
 function select_algorithm() {
-    let {algo, arguments_id, read_args} = get_selected_algorithm()
+    let {algo, arguments_id, read_args} = get_selected_step2_algorithm()
     let range_algo = get_range_function()
-    algorithm_selection_update(arguments_id)
+    // algorithm_selection_update(arguments_id)
     let args = read_args()
     mappers = {}
     for (let dimension of selected_dimensions) {
         let algo_out = algo(sorted_data[dimension], args)
-        if (Array.isArray(arguments_id) && arguments_id.includes("#range_argument")) {
-            mappers[dimension] = range_algo(sorted_data[dimension], algo_out)
-        } else {
-            mappers[dimension] = algo_out
-        }
+        mappers[dimension] = algo_out
+
     }
     let dimension = selected_dimensions[0]
-    update_metrics_display(sorted_data[dimension], mappers[dimension])
-    if (args != null && "auto_k" in args && !args["auto_k"]) {
-        update_cluster_amount(mappers[dimension].get_output_space_ranges().length)
+    // update_metrics_display(sorted_data[dimension], mappers[dimension])
+    // if (args != null && "auto_k" in args && !args["auto_k"]) {
+    //     update_cluster_amount(mappers[dimension].get_output_space_ranges().length)
+    // }
+}
+
+function select_steps() {
+    let step1 = get_selected_step1_algorithm()
+    let step2 = get_selected_step2_algorithm()
+    let step3 = get_selected_step3_algorithm()
+    let arguments_id = [...step1.arguments_id, ...step2.arguments_id, ...step3.arguments_id]
+    step_selection_update(arguments_id)
+
+    let step1_args = step1.read_args();
+    let step2_args = step2.read_args();
+    let step3_args = step3.read_args();
+
+    mappers = {}
+    for (let dimension of selected_dimensions) {
+        let splits = step2.algo(sorted_data[dimension], step2_args, (callback_info) => step1.algo(callback_info, step1_args))
+        console.log(splits)
+        mappers[dimension] = step3.algo(sorted_data[dimension], splits, step3_args)
+        console.log(mappers)
+    }
+
+}
+
+export function step_selection_update(arguments_id) {
+    let args = d3.selectAll(".argument_input");
+    args.style("display", "none")
+    if (arguments_id !== null) {
+        for (const argument_id of arguments_id) {
+            d3.select(argument_id).style("display", null)
+        }
     }
 }
 
@@ -136,26 +166,27 @@ window.select_chart = () => {
     select_chart()
 }
 
-window.select_algorithm = () => {
-    select_algorithm();
+window.select_step = () => {
+    select_steps();
     select_chart();
 }
 
 window.select_dimensions = () => {
     select_dimensions();
-    select_algorithm();
+    // select_algorithm();
     select_chart();
 }
 
 window.select_data = async () => {
     await select_data();
     select_dimensions();
-    select_algorithm();
+    // select_algorithm();
     select_chart();
 }
 
 window.on_recompute_button = () => {
-    select_algorithm();
+    // select_algorithm();
+    select_steps();
     select_chart();
 }
 
@@ -163,7 +194,8 @@ window.on_recompute_button = () => {
 async function init() {
     await select_data();
     select_dimensions();
-    select_algorithm();
+    select_steps();
+    // select_algorithm()
     select_chart();
 }
 

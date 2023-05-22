@@ -67,7 +67,7 @@ export default class ScatterPlot {
 
         let color_mapper = this.mappers[this.color_dim]
 
-        this.tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
+        this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
         this.x_data_range_length = x_ranges[x_ranges.length - 1][1] - x_ranges[0][0]
         this.y_data_range_length = y_ranges[y_ranges.length - 1][1] - y_ranges[0][0]
         for (let i = 0; i < x_ranges.length; i++) {

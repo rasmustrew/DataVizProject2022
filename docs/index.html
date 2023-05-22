@@ -39,128 +39,134 @@
                 <option value='spc'>Parallel coordinates</option>
             </select>
 
-            <select name='algorithm' id='algorithm-select' onChange='window.select_algorithm()' required>
-                <optgroup label='Split'>
-                    <option value='hardcoded_periodic_table'>Hardcoded (periodic table data)</option>
-                    <option value='quantile'>Quantile</option>
-<!--                <option value='kmeans'>KMeans</option>-->
-<!--                <option value='kmeans_plusplus'>KMeans++</option>-->
-                    <option value='kmeans_opt'>KMeansOPT</option>
-                    <option value='jenks'>Jenks Natural Breaks</option>
-<!--                <option value='osaragi'>Osaragi</option>-->
-                    <option value='greedy_guided_split'>Greedy Guided Split</option>
-<!--                <option value='greedy_guided_split_2'>Greedy Guided Split 2</option>-->
-                    <option value='optimal_guided_split'>Optimal Guided Split</option>
-                    <option value='guided_splits'>Guided Splits v2</option>
-                </optgroup>
-                <optgroup label='Standard'>
-                    <option value='none' selected>None</option>
-                    <option value='log'>Log</option>
-                    <option value='sqrt'>Square root</option>
-                    <option value='pow'>Power</option>
-                    <option value='box_cox'>Box Cox</option>
-                    <option value='uniform'>Uniform</option>
-                </optgroup>
-            </select>
-
             <button class='button' id='submitDiv' onclick='window.on_recompute_button();'>
                 Recompute
             </button>
         </div>
 
-        <div id='arguments_div'>
-            <div id='metrics_div' style="text-align:right;" hidden>
-                <div id='sqrt_kmeans_cost' class='metric_label'>
-                    kmeans_cost:
-                </div>
-                <div id='entropy' class='metric_label'>
-                    entropy:
-                </div>
-                <div id='skewness' class='metric_label'>
-                    skewness:
-                </div>
-                <div id='distortion' class='metric_label'>
-                    distortion:
-                </div>
-                <div id='kl_divergence' class='metric_label'>
-                    kl_divergence:
+        <div id='pipeline_div'>
+            <!-- Step 1 -->
+            <div id='step_1_container' class="step_container">
+                <h2> Step 1</h2>
+                <div id="step_1" class="step">
+                    <div id="stopping_condition">
+                        Stopping condition:
+                        <select name='stopping condition' id="step1_select" onChange='window.on_recompute_button();' required>
+                            <option value='custom_choice_k'>Number of splits</option>
+                            <option value='cost_reduction_threshold'>Cost reduction threshold</option>
+                            <option value='cost_threshold' selected>Cost threshold</option>
+                        </select>
+                    </div>
+                    <div id='clusters' class="argument_input">
+                        Clusters:
+                        <input type='number' min='1' step='1' value='3' />
+                    </div>
+
+<!--                    <div id='distortion_argument' class="argument_input">-->
+<!--                        Distortion:-->
+<!--                        <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>-->
+<!--                    </div>-->
+
+                    <div id='fragmentation' class="argument_input">
+                        Fragmentation:
+                        <input type='range' min='0' max='100' value='90' class='slider' oninput='window.on_recompute_button();'>
+                    </div>
                 </div>
             </div>
 
-            <!-- Step 1 parameters -->
 
-            <div id='stopping_condition' class="argument_input">
-                Stopping condition:
-                <select name='stopping condition' onChange='window.on_recompute_button();' required>
-                    <option value='k'>Number of splits</option>
-                    <option value='threshold'>Cost threshold</option>
-                    <option value='cost_reduction' selected>Cost reduction threshold</option>
-                </select>
-            </div>
-
-            <div id='clusters' class="argument_input">
-                Clusters:
-                <input type='number' min='1' step='1' value='3' />
-            </div>
-
-            <div id='distortion_argument' class="argument_input">
-                Distortion:
-                <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
-            </div>
-
-            <div id='fragmentation_argument' class="argument_input">
-                Fragmentation:
-                <input type='range' min='0' max='100' value='90' class='slider' oninput='window.on_recompute_button();'>
-            </div>
-
-            <!-- Step 2 parameters -->
+            <!-- Step 2 -->
             <div class="vl"></div>
 
-            <div id='uniformity' class="argument_input">
-                Distributivity:
-                <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
-            </div>
+            <div id='step_2_container' class="step_container">
+                <h2> Step 2</h2>
+                <div id="step_2" class="step">
+                    <div id="step2_algorithm">
+                        <select name='step 2 algorithm' id='step2_algorithm_select' onChange='window.on_recompute_button();' required>
+                            <optgroup label='Split'>
+<!--                                <option value='hardcoded_periodic_table'>Hardcoded (periodic table data)</option>-->
+                                <option value='quantile'>Quantile</option>
+                                <!--                <option value='kmeans'>KMeans</option>-->
+                                <!--                <option value='kmeans_plusplus'>KMeans++</option>-->
+                                <option value='kmeans_opt'>KMeansOPT</option>
+                                <option value='jenks'>Jenks Natural Breaks</option>
+                                <!--                <option value='osaragi'>Osaragi</option>-->
+<!--                                <option value='greedy_guided_split'>Greedy Guided Split</option>-->
+                                                <option value='greedy_guided_split_2'>Greedy Guided Split 2</option>
+                                <option value='optimal_guided_split'>Optimal Guided Split</option>
+<!--                                <option value='guided_splits'>Guided Splits v2</option>-->
+                            </optgroup>
+                            <optgroup label='Standard'>
+                                <option value='none' selected>None</option>
+                                <option value='log'>Log</option>
+                                <option value='sqrt'>Square root</option>
+                                <option value='pow'>Power</option>
+                                <option value='box_cox'>Box Cox</option>
+                                <option value='uniform'>Uniform</option>
+                            </optgroup>
+                        </select>
+                    </div>
 
-            <div id='exponent_argument' class='argument_input'>
-                <div id='exponent'>
-                    Exponent:
-                    <input type='number' min='1' step='1' value='2' />
+
+                    <div id='uniformity' class="argument_input">
+                        Distributivity:
+                        <input type='range' min='0' max='100' value='100' class='slider' oninput='window.on_recompute_button();'>
+                    </div>
+
+                    <div id='exponent_argument' class='argument_input'>
+                        <div id='exponent'>
+                            Exponent:
+                            <input type='number' min='1' step='1' value='2' />
+                        </div>
+                    </div>
+
+                    <div id='lambda_argument' class='argument_input'>
+                        <div id='lambda'>
+                            Lambda:
+                            <input type='number' min='-5' max='5' step='1' value='2' />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id='lambda_argument' class='argument_input'>
-                <div id='lambda'>
-                    Lambda:
-                    <input type='number' min='-5' max='5' step='1' value='2' />
-                </div>
-            </div>
 
-            <!-- Step 3 parameters -->
+            <!-- Step 3  -->
             <div class="vl"></div>
 
-            <div id='range_argument' class='argument_input'>
-                Scale ranges:
-                <select name='range argument' onChange='window.on_recompute_button();' required>
-                    <option value='mean'>Mean</option>
-                    <option value='tight'>Tight</option>
-                    <option value='match_ticks'>Match ticks</option>
-                    <option value='match_tick_fractions'>Match tick fractions</option>
-                    <option value='nice' selected>Nice numbers</option>
-                </select>
+            <div id='step_3_container' class="step_container">
+                <h2> Step 3</h2>
+                <div id="step_3" class="step">
+                    <div id='step3_algorithm'>
+                        <select name='range argument' onChange='window.on_recompute_button();' required>
+                            <option value='mean'>Mean</option>
+                            <option value='tight'>Tight</option>
+                            <option value='match_ticks'>Match ticks</option>
+                            <option value='match_tick_fractions'>Match tick fractions</option>
+                            <option value='nice' selected>Nice numbers</option>
+                        </select>
+                    </div>
+                    <div id='tightness' class='argument_input'>
+                        Range tightness:
+                        <input type='range' min='0' max='100' value='90' class='slider' oninput='window.on_recompute_button();'>
+                    </div>
+
+
+                </div>
             </div>
 
-            <div id='tightness_argument' class='argument_input'>
-                Range tightness:
-                <input type='range' min='0' max='100' value='90' class='slider' oninput='window.on_recompute_button();'>
-            </div>
-
-            <div id='tick_density_argument'>
-                Tick density:
-                <input type='range' min='0' max='100' value='66' class='slider' oninput='window.on_recompute_button();'>
+            <!-- Step 4  -->
+            <div class="vl"></div>
+            <div id='step_4_container' class="step_container">
+                <h2> Step 4</h2>
+                <div id="step_4" class="step">
+                    <div id='tick_density'>
+                        Tick density:
+                        <input type='range' min='0' max='100' value='20' class='slider' oninput='window.on_recompute_button();'>
+                    </div>
+                </div>
             </div>
         </div>
         <div id='plot_container_id'></div>
-
     </div>
 <!--    <div id='hoverBox' />-->
 
