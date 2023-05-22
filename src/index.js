@@ -187,5 +187,5 @@ async function init() {
     select_chart();
 }
 
-run_benchmarks().then(() => console.log("done"))
-// init()
+// run_benchmarks().then(() => console.log("done"))
+init()
