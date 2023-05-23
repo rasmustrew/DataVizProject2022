@@ -27,7 +27,7 @@ body, html {
     padding: 5px;
 }
 
-#arguments_div {
+#pipeline_div {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -38,13 +38,19 @@ body, html {
     padding: 5px;
 }
 
-.argument_input {
+.step_container {
+    width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.step {
     margin-right: 10px;
 }
 
 .vl {
     border-left: 1px solid dimgray;
-    height: 50px;
+    height: 100%;
     margin-right: 10px;
     margin-left: 10px;
 }

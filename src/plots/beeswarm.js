@@ -12,10 +12,11 @@ export default class Beeswarm {
     tick_spacing = 50
     use_density_cues = true
 
-    constructor(chart_ref, data, dimension, raw_mapper) {
+    constructor(chart_ref, data, dimension, raw_mapper, circle_radius) {
         let plot = document.querySelector(chart_ref)
 
         this.dimension = dimension
+        this.radius = circle_radius
         let buffer_size = 50;
         let margin = {top: 80, right: 16, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
@@ -36,7 +37,7 @@ export default class Beeswarm {
         });
         let input_ranges = mapper.get_input_space_ranges()
         this.data_range_length = input_ranges[input_ranges.length - 1][1] - input_ranges[0][0]
-        this.tick_spacing = (1 - parseInt(d3.select("#tick_density_argument input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
+        this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
 
 
         // append the svg object to the body of the page
@@ -53,7 +54,6 @@ export default class Beeswarm {
 
         this.create_single_beeswarm_plot(svg, data, mapper, 0, dimension)
 
-        this.runBenchmarks()
     }
 
     create_single_beeswarm_plot(svg, data, mapper, index, dimension) {
@@ -85,7 +85,7 @@ export default class Beeswarm {
             .attr("transform", "translate(-10,0)rotate(-45)")
             .style("text-anchor", "end");
 
-        this.radius = 8
+        // this.radius = 8
         this.circle_padding = 4
         this.circle_centers = []
 
@@ -101,6 +101,9 @@ export default class Beeswarm {
             .attr("stroke", "black")
     }
 
+    delete() {
+        d3.select("svg").remove()
+    }
 
     y_position(data_point, x_pos) {
         let y_pos = this.height - (this.radius + this.circle_padding)
@@ -136,18 +139,23 @@ export default class Beeswarm {
     }
 
     runBenchmarks() {
-        console.log("BENCHMARKS")
-        console.log("AVERAGE HEIGHT")
+        // console.log("BENCHMARKS")
+        // console.log("AVERAGE HEIGHT")
         let height_sum = this.circle_centers.reduce((acc, val) => acc + (this.height - val.y), 0)
         let average_height = height_sum / this.circle_centers.length
-        console.log(this.dimension, average_height)
+        // console.log(this.dimension, average_height)
 
-        console.log("DISTORTION")
+        // console.log("DISTORTION")
         let linear_mapper = new LinearMapper(this.mapper.get_output_space_ranges(), [0, 1])
         let comp_mapper = new CompositeMapper([this.mapper, linear_mapper])
         let data = this.sorted_data.map((val) => val[this.dimension])
         let distort = distortion(data, comp_mapper)
-        console.log(this.dimension, ": ", distort)
+        // console.log(this.dimension, ": ", distort)
+
+        return {
+            average_height,
+            distortion: distort,
+        }
     }
 }
 

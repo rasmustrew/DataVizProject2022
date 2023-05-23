@@ -69,14 +69,9 @@ function compute_total_squared_interpolation_cost(index_ranges, X, interpolation
 }
 
 
-export function greedy_interpolated_splits(sorted_data, weights) {
+export function greedy_interpolated_splits(sorted_data, weights, stopping_callback) {
     let k = 10
-    let stopping_condition = weights["stopping_condition"]
     let interpolation_weight = weights["uniformity"]
-    let fragmentation_weight = 1 - weights["fragmentation"]
-    if (stopping_condition === "k") {
-        k = Math.floor(weights["fragmentation"] * 6)
-    }
     // Remove duplicate values
     let X = [...new Set(sorted_data)]
     const n = X.length
@@ -110,21 +105,22 @@ export function greedy_interpolated_splits(sorted_data, weights) {
             }
         }
         current_cost = best_cost_so_far
-        if (stopping_condition === "threshold") {
-            let threshold = (fragmentation_weight/2) ** 4 + 0.001 * m
-            if (current_cost < threshold) {
-                break
-            }
+
+        let callback_info = {
+            num_splits: m,
+            data_length: X.length,
+            cost_now:current_cost,
+            cost_previous: previous_cost,
         }
-        if (stopping_condition === "cost_reduction") {
-            let cost_reduction = (previous_cost - current_cost) / X.length
-            let reduction_threshold = fragmentation_weight ** 2 + 0.001 * m
-            if (cost_reduction < reduction_threshold) {
-                break
-            }
+
+        if (stopping_callback(callback_info)) {
+            split_indices.push(best_index)
+            split_indices.sort()
+        } else {
+            break
         }
-        split_indices.push(best_index)
-        split_indices.sort()
+
+
     }
     let splits = split_indices.map(index => (X[index] - X[index - 1]) / 2 + X[index - 1])
     splits.sort((i, j) => i - j)
@@ -137,19 +133,14 @@ export function greedy_interpolated_splits(sorted_data, weights) {
  * Assumes X is sorted
  * Stopping condition can be one of: k, dist_frac, cost_reduction, threshold
 */
-export function optimal_guided_splits(sorted_data, weights, k = 3) {
-    let stopping_condition = weights["stopping_condition"]
-    let fragmentation_weight = 1 - weights["fragmentation"]
-    if (stopping_condition !== "k") {
-        k = 2
-    } else if ("clusters" in weights) {
-        k = k = Math.floor(weights["fragmentation"] * 6)
-    }
+export function optimal_guided_splits(sorted_data, weights, stopping_callback) {
+    let max_splits = 10
+    let num_splits = 0
     let X = [...new Set(sorted_data)]
     const n = X.length
     X = [-Infinity].concat(X)
-    let C = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
-    let T = [[-1]].concat(Array(k).fill(null).map(() => Array(n + 1).fill(0)));
+    let C = [[-1]].concat(Array(max_splits).fill(null).map(() => Array(n + 1).fill(0)));
+    let T = [[-1]].concat(Array(max_splits).fill(null).map(() => Array(n + 1).fill(0)));
     // Set up cumulative arrays for prefix sums
     let D = [0], D2 = [0], H = [0], I = [0], I2 = [0]
     for (let i = 1; i <= n; i++) {
@@ -164,11 +155,11 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
         C[1][i - 1] = compute_total_squared_skewness_segment(X.slice(1, i))
     }
     // Init diagonal of T to fit segmentations with one point per segment
-    for (let m = 2; m <= k; m++) {
+    for (let m = 2; m <= max_splits; m++) {
         T[m][m] = m - 1
     }
     // Fill tables
-    for (let m = 2; m <= Math.min(k, 10); m++) {
+    for (let m = 2; m <= Math.min(max_splits, 10); m++) {
         // For visualizing the cost matrix of split point location
         for (let i = m + 1; i <= n; i++) {
             let optimal_cost_so_far = Infinity
@@ -197,30 +188,43 @@ export function optimal_guided_splits(sorted_data, weights, k = 3) {
             T[m][i] = split_index
         }
         // Stopping conditions
-        if (stopping_condition === "threshold") {
-            let threshold = (fragmentation_weight/2) ** 4 + 0.001 * m
-            if (C[m][n] / X.length < threshold) {
-                k = m - 1
-                break;
-            }
+
+        let callback_info = {
+            num_splits: m,
+            data_length: X.length,
+            cost_now: C[m][n],
+            cost_previous: C[m - 1][n],
         }
-        if (stopping_condition === "cost_reduction") {
-            let cost_reduction = (C[m - 1][n] - C[m][n]) / X.length
-            let reduction_threshold = fragmentation_weight ** 2 + 0.001 * m
-            if (cost_reduction < reduction_threshold) {
-                k = m - 1
-                break
-            }
+
+        if (!stopping_callback(callback_info)) {
+            num_splits = m - 1
+            break
         }
-        if (stopping_condition !== "k") {
-            k = Math.min(k + 1, 10)
-            C.push(new Array(n + 1).fill(0))
-            T.push(new Array(n + 1).fill(0))
-            T[k][k] = k - 1
-        }
+
+        // if (stopping_condition === "threshold") {
+        //     let threshold = (fragmentation_weight/2) ** 4 + 0.001 * m
+        //     if (C[m][n] / X.length < threshold) {
+        //         max_splits = m - 1
+        //         break;
+        //     }
+        // }
+        // if (stopping_condition === "cost_reduction") {
+        //     let cost_reduction = (C[m - 1][n] - C[m][n]) / X.length
+        //     let reduction_threshold = fragmentation_weight ** 2 + 0.001 * m
+        //     if (cost_reduction < reduction_threshold) {
+        //         max_splits = m - 1
+        //         break
+        //     }
+        // }
+        // if (stopping_condition !== "k") {
+        //     max_splits = Math.min(max_splits + 1, 10)
+        //     C.push(new Array(n + 1).fill(0))
+        //     T.push(new Array(n + 1).fill(0))
+        //     T[max_splits][max_splits] = max_splits - 1
+        // }
     }
 
-    let index_ranges = get_segmentation_index_ranges(n, k, T, X)
+    let index_ranges = get_segmentation_index_ranges(n, num_splits, T, X)
     let ranges = index_ranges.map(range => range.map(i => X[i]))
     let splits = ranges_to_splits(ranges)
     splits.sort((i, j) => i - j)
