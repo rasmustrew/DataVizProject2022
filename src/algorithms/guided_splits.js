@@ -75,7 +75,7 @@ export function greedy_interpolated_splits(sorted_data, weights) {
     let interpolation_weight = weights["uniformity"]
     let fragmentation_weight = 1 - weights["fragmentation"]
     if (stopping_condition === "k") {
-        k = Math.floor(weights["fragmentation"] * 10)
+        k = Math.floor(weights["fragmentation"] * 6)
     }
     // Remove duplicate values
     let X = [...new Set(sorted_data)]
