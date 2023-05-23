@@ -190,7 +190,7 @@ export function optimal_guided_splits(sorted_data, weights, stopping_callback) {
         // Stopping conditions
 
         let callback_info = {
-            num_splits: m,
+            num_splits: m - 1,
             data_length: X.length,
             cost_now: C[m][n],
             cost_previous: C[m - 1][n],
