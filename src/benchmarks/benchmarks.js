@@ -1,11 +1,12 @@
 import LinearMapper from "../mappings/linear_mapping";
 
-export function screen_histogram_2d(raw_data_a, raw_data_b, mapper_a, mapper_b, num_bins) {
-    let bin_size = 1 / (num_bins - 1)
+export function screen_histogram_2d(raw_data_a, raw_data_b, mapper_a, mapper_b, num_bins_a, num_bins_b) {
+    let bin_size_a = 1 / (num_bins_a - 1)
+    let bin_size_b = 1 / (num_bins_b - 1)
 
-    let histogram_2d = new Array(num_bins)
-    for (let i = 0; i < num_bins; i++) {
-        histogram_2d[i] = new Array(num_bins).fill(0)
+    let histogram_2d = new Array(num_bins_a)
+    for (let i = 0; i < num_bins_a; i++) {
+        histogram_2d[i] = new Array(num_bins_b).fill(0)
     }
 
 
@@ -13,8 +14,8 @@ export function screen_histogram_2d(raw_data_a, raw_data_b, mapper_a, mapper_b, 
 
         let mapped_point_a = mapper_a.map(raw_data_a[i])
         let mapped_point_b = mapper_b.map(raw_data_b[i])
-        let bin_a = Math.floor(mapped_point_a / bin_size)
-        let bin_b = Math.floor(mapped_point_b / bin_size)
+        let bin_a = Math.floor(mapped_point_a / bin_size_a)
+        let bin_b = Math.floor(mapped_point_b / bin_size_b)
         histogram_2d[bin_a][bin_b] += 1
 
     }
@@ -53,8 +54,8 @@ export function line_crossings(raw_data_a, raw_data_b, mapper_a, mapper_b, x_dis
             let mapped_point_b_j = mapper_b.map(raw_data_b[j])
             let j_a = (mapped_point_a_j - mapped_point_b_j) / x_distance
 
-            let is_crossing_one_way = ((mapped_point_a_i > mapped_point_a_j) && mapped_point_b_i < mapped_point_b_j)
-            let is_crossing_other_way = ((mapped_point_a_i < mapped_point_a_j) && mapped_point_b_i > mapped_point_b_j)
+            let is_crossing_one_way = ((mapped_point_a_i > mapped_point_a_j) && (mapped_point_b_i < mapped_point_b_j))
+            let is_crossing_other_way = ((mapped_point_a_i < mapped_point_a_j) && (mapped_point_b_i > mapped_point_b_j))
             let is_crossing_within_vis = is_crossing_one_way || is_crossing_other_way
 
             if (!is_crossing_within_vis) {
@@ -159,3 +160,4 @@ export function pretty_print_benchmark(benchmark) {
     }
     console.log(string)
 }
+

@@ -31,7 +31,12 @@ export async function prepare_data_set(data_selection) {
         });
         sorted_data[dimension] = data_values
     }
-    return {data, dimensions, sorted_data}
+
+    let data_per_dimension = {}
+    dimensions.forEach((dim) => {
+        data_per_dimension[dim] = data.map((data_point) => data_point[dim])
+    })
+    return {data, dimensions, sorted_data, data_per_dimension}
 }
 
 

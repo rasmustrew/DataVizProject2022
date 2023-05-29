@@ -12,22 +12,21 @@ export default class Beeswarm {
     tick_spacing = 50
     use_density_cues = true
 
-    constructor(chart_ref, data, dimension, raw_mapper, circle_radius) {
+    constructor(chart_ref, data, dimension, raw_mapper, circle_radius, gap_size = 50) {
         let plot = document.querySelector(chart_ref)
 
         this.dimension = dimension
         this.radius = circle_radius
-        let buffer_size = 50;
         let margin = {top: 80, right: 16, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
         this.height = height
         let mapper
         if (raw_mapper instanceof ProportionateRangeMapper) {
-            mapper = new SegmentScreenMapper(raw_mapper, [0, width], buffer_size)
+            mapper = new SegmentScreenMapper(raw_mapper, [0, width], gap_size)
         } else {
             let output_ranges = raw_mapper.get_output_space_ranges()
-            let screen_mapper = new ScreenMapper(output_ranges, [0, width], buffer_size)
+            let screen_mapper = new ScreenMapper(output_ranges, [0, width], gap_size)
             mapper = new CompositeMapper([raw_mapper, screen_mapper])
         }
         this.mapper = mapper
@@ -47,7 +46,7 @@ export default class Beeswarm {
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
         for (let index = 0; index < mapper.get_input_space_ranges().length; index++) {
-            console.log(index)
+            // console.log(index)
             let base_svg = svg.append('g').attr("class", "beeswarmSvg")
             this.create_single_beeswarm_plot(base_svg, data, mapper, index, dimension)
         }
@@ -152,10 +151,7 @@ export default class Beeswarm {
         let distort = distortion(data, comp_mapper)
         // console.log(this.dimension, ": ", distort)
 
-        return {
-            average_height,
-            distortion: distort,
-        }
+        return average_height
     }
 }
 

@@ -20,7 +20,7 @@ let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class SPC {
-    constructor(container_ref, data, dimensions, raw_mappers) {
+    constructor(container_ref, data, dimensions, raw_mappers, gap_size) {
         this.container_ref
         this.data = data
         this.dimensions = dimensions
@@ -40,7 +40,7 @@ export default class SPC {
         this.id = "#" + plot.id
         container.appendChild(plot)
 
-        let buffer_size = 20;
+        // let buffer_size = 20;
         let margin = {top: 24, right: 80, bottom: 16, left: 80};
         this.margin = margin
         let width = plot.clientWidth - margin.left - margin.right;
@@ -51,10 +51,10 @@ export default class SPC {
             let dim = entry[0]
             let mapper = entry[1]
             if (mapper instanceof ProportionateRangeMapper) {
-                this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], buffer_size)
+                this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], gap_size)
             } else {
                 let output_ranges = mapper.get_output_space_ranges()
-                let screen_mapper = new ScreenMapper(output_ranges, [height, 0], buffer_size)
+                let screen_mapper = new ScreenMapper(output_ranges, [height, 0], gap_size)
                 this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
             }
         })
@@ -62,7 +62,7 @@ export default class SPC {
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
         this.foreground;
         this.background;
-        this.runBenchmarks();
+        // this.runBenchmarks();
 
     }
 
@@ -586,7 +586,7 @@ export default class SPC {
             console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
         }
 
-        console.log("DISTORTION")
+        // console.log("DISTORTION")
         this.dimensions.forEach((dim) => {
             let data = data_per_dimension[dim]
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])

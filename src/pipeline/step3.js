@@ -7,7 +7,7 @@ import {read_tick_density} from "./step4";
 
 const read_tightness = () => parseInt(d3.select("#tightness input").property("value")) / 100
 
-let step3_selection_map = {
+export const step3_selection_map = {
     mean: {
         algo: proportionate_split_mapper,
         arguments_id: [],

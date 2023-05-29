@@ -3,14 +3,13 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 
 export default class Lollipop {
-    constructor(chart_ref, data, dimension, raw_mapper) {
+    constructor(chart_ref, data, dimension, raw_mapper, gap_size) {
         let plot = document.querySelector(chart_ref)
 
-        let buffer_size = 40;
         let margin = {top: 80, right: 16, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
-        let screen_mapper = new ScreenMapper(raw_mapper.get_output_space_ranges(), [height, 0], buffer_size)
+        let screen_mapper = new ScreenMapper(raw_mapper.get_output_space_ranges(), [height, 0], gap_size)
         let mapper = new CompositeMapper([raw_mapper, screen_mapper])
 
         // append the svg object to the body of the page
@@ -22,7 +21,7 @@ export default class Lollipop {
         for (let index = 0; index < mapper.get_input_space_ranges().length; index++) {
             console.log(index)
             let base_svg = svg.append('g').attr("class", "lollipopSvg")
-            this.create_single_axis_lollipop(data, base_svg, mapper, index, dimension, width, buffer_size)
+            this.create_single_axis_lollipop(data, base_svg, mapper, index, dimension, width, gap_size)
         }
 
     }

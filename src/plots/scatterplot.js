@@ -9,9 +9,8 @@ import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/be
 
 export default class ScatterPlot {
     tick_spacing = 50
-    chart_spacing = 25
 
-    constructor(chart_ref, data, selected_dimensions, raw_mappers) {
+    constructor(chart_ref, data, selected_dimensions, raw_mappers, gap_size) {
         this.chart_ref = chart_ref
         this.data = data
         this.mappers = raw_mappers
@@ -21,8 +20,12 @@ export default class ScatterPlot {
         this.x_dim = this.dimensions[0]
         this.y_dim = this.dimensions[1]
         this.color_dim = this.dimensions[2]
+        this.x_mapper = null;
+        this.y_mapper = null;
+        this.chart_spacing = gap_size
         this.init()
-        this.runBenchmarks()
+        // this.runBenchmarks()
+
     }
 
     init() {
@@ -47,22 +50,20 @@ export default class ScatterPlot {
         let x_ranges = this.mappers[this.x_dim].get_input_space_ranges()
         let y_ranges = this.mappers[this.y_dim].get_input_space_ranges()
 
-        let x_mapper = null
         if (this.mappers[this.x_dim] instanceof ProportionateRangeMapper) {
-            x_mapper = new SegmentScreenMapper(this.mappers[this.x_dim], [0, width], this.chart_spacing)
+            this.x_mapper = new SegmentScreenMapper(this.mappers[this.x_dim], [0, width], this.chart_spacing)
         } else {
             let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
             let x_screen_mapper = new ScreenMapper(x_ranges_norm, [0, width], this.chart_spacing)
-            x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
+            this.x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
         }
 
-        let y_mapper = null
         if (this.mappers[this.y_dim] instanceof ProportionateRangeMapper) {
-            y_mapper = new SegmentScreenMapper(this.mappers[this.y_dim], [height, 0], this.chart_spacing)
+            this.y_mapper = new SegmentScreenMapper(this.mappers[this.y_dim], [height, 0], this.chart_spacing)
         } else {
             let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()
             let y_screen_mapper = new ScreenMapper(y_ranges_norm, [height, 0], this.chart_spacing)
-            y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
+            this.y_mapper = new CompositeMapper([this.mappers[this.y_dim], y_screen_mapper])
         }
 
         let color_mapper = this.mappers[this.color_dim]
@@ -74,8 +75,8 @@ export default class ScatterPlot {
             const x_range = x_ranges[i]
             for (let j = 0; j < y_ranges.length; j++) {
                 const y_range = y_ranges[j]
-                this.make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper)
-                console.log(x_range.toString() + "; " + y_range.toString())
+                this.make_tick_marks(base_svg, i, j, x_range, y_range, this.x_mapper, this.y_mapper)
+                // console.log(x_range.toString() + "; " + y_range.toString())
             }
         }
 
@@ -89,8 +90,8 @@ export default class ScatterPlot {
         }
 
         let mousemove = (event, d) => {
-            const x = tooltip_format.format(x_mapper.map_inverse(d.x_val))
-            const y = tooltip_format.format(y_mapper.map_inverse(d.y_val))
+            const x = tooltip_format.format(this.x_mapper.map_inverse(d.x_val))
+            const y = tooltip_format.format(this.y_mapper.map_inverse(d.y_val))
             let color = ""
             if (this.dimensions.length > 2) {
                 color = tooltip_format.format(color_mapper.map_inverse(d.color_val))
@@ -116,8 +117,8 @@ export default class ScatterPlot {
         base_svg.append('g')
             .selectAll("dot")
             .data(this.data.map(d => {
-                d.x_val = x_mapper.map(d[this.x_dim])
-                d.y_val = y_mapper.map(d[this.y_dim])
+                d.x_val = this.x_mapper.map(d[this.x_dim])
+                d.y_val = this.y_mapper.map(d[this.y_dim])
                 if (this.dimensions.length > 2)
                     d.color_val = color_mapper.map(d[this.color_dim])
                 return d
@@ -261,6 +262,10 @@ export default class ScatterPlot {
             console.log(dim, ": ", distort)
         })
 
+    }
+
+    delete() {
+        d3.select("svg").remove()
     }
 }
 
