@@ -23,6 +23,7 @@ export default class ScatterPlot {
         this.x_mapper = null;
         this.y_mapper = null;
         this.chart_spacing = gap_size
+        this.point_size = 5
         this.init()
         // this.runBenchmarks()
 
@@ -127,7 +128,7 @@ export default class ScatterPlot {
             .append("circle")
             .attr("cx", d => d.x_val)
             .attr("cy", d => d.y_val)
-            .attr("r", 5)
+            .attr("r", this.point_size)
             .style("fill", d => {
                 if (this.dimensions.length < 3)
                     return 0

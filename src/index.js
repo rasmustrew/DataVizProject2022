@@ -9,12 +9,19 @@ import {get_selected_step3_algorithm, step3_selection_map} from "./pipeline/step
 import Beeswarm from "./plots/beeswarm";
 import LinearMapper from "./mappings/linear_mapping";
 import CompositeMapper from "./mappings/composite_mapping";
-import {distortion, line_crossings, overplotting_2d, screen_histogram_2d} from "./benchmarks/benchmarks";
+import {
+    distortion,
+    line_crossings, overplotting_1d,
+    overplotting_2d,
+    screen_histogram_1d,
+    screen_histogram_2d
+} from "./benchmarks/benchmarks";
 import * as d3 from "d3";
 import {get_selected_step1_algorithm, step1_selection_map} from "./pipeline/step1";
 import ScatterPlot from "./plots/scatterplot";
 import SPC from "./plots/spc";
 import {read_gap_size} from "./pipeline/step4";
+import ScreenMapper from "./mappings/screen_mapping";
 
 console.log("starting")
 
@@ -29,11 +36,13 @@ async function run_benchmarks() {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'none', args: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 name: "none"
             }, {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'optimal_guided_split', arg: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 "name": "opt"
             }
         ])
@@ -44,11 +53,13 @@ async function run_benchmarks() {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'none', args: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 name: "none"
             }, {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'optimal_guided_split', arg: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 "name": "opt"
             }
         ],
@@ -65,18 +76,15 @@ async function run_benchmarks() {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'none', args: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 name: "none"
             }, {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'optimal_guided_split', arg: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 "name": "opt"
             }
-        ],
-[
-            {num_bins_a: 500, num_bins_b: 500, name: "1:1"},
-            {num_bins_a: 500, num_bins_b: 250, name: "2:1"},
-            {num_bins_a: 250, num_bins_b: 500, name: "1:2"}
         ])
     let parcoords_res = await run_parcoords_benchmarks(
 ["periodic_table"],
@@ -85,11 +93,13 @@ async function run_benchmarks() {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'none', args: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 name: "none"
             }, {
                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
                 step2: {algorithm_id: 'optimal_guided_split', arg: null},
                 step3: {algorithm_id: 'tight', args: null},
+                step4: {gap_size: 30},
                 "name": "opt"
             }
         ],
@@ -109,7 +119,7 @@ async function run_benchmarks() {
 // algorithms: {algorithm_id, args} list
 // settings: bubble size list
 async function run_beeswarm_benchmarks(datasets, pipelines, settings) {
-    let benchmark_result = {}
+    let benchmark_result = {statistics: {}}
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
@@ -121,9 +131,11 @@ async function run_beeswarm_benchmarks(datasets, pipelines, settings) {
                 let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                 let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
                 let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+                let step_4_gap_size = pipeline.step4.gap_size
                 let mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
                 for (let setting of settings) {
-                    let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting.bubble_size)
+                    let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting.bubble_size, step_4_gap_size)
+                    benchmark_result["statistics"]["output_ranges"] = beeswarm.mapper.get_output_space_ranges()
                     benchmark_result[dataset_id][dimension][pipeline.name][setting.name] = beeswarm.runBenchmarks()
                     beeswarm.delete()
                 }
@@ -146,17 +158,25 @@ async function run_distortion_benchmarks(datasets, pipelines) {
                 let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                 let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
                 let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
-                let mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
-                benchmark_result[dataset_id][dimension][pipeline.name] = distortion(dataset.data_per_dimension[dimension], mapper)
-
+                let step_4_gap_size = pipeline.step4.gap_size
+                let raw_mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
+                //use beeswarm to get a mapper with gaps, bubble size does not matter for distortion
+                let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, raw_mapper, 8, step_4_gap_size)
+                let linear_mapper = new LinearMapper(beeswarm.mapper.get_output_space_ranges(), [0, 1])
+                let comp_mapper = new CompositeMapper([beeswarm.mapper, linear_mapper])
+                benchmark_result[dataset_id][dimension][pipeline.name] = distortion(dataset.data_per_dimension[dimension], comp_mapper )
+                beeswarm.delete()
             }
         }
     }
     return benchmark_result
 }
 
-async function run_scatterplot_benchmarks(datasets, pipelines, settings) {
-    let benchmark_result = {}
+async function run_scatterplot_benchmarks(datasets, pipelines) {
+    let benchmark_result = {
+        statistics: {}
+    }
+
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
@@ -170,17 +190,18 @@ async function run_scatterplot_benchmarks(datasets, pipelines, settings) {
                 // let dimensions_label = dimension_a + ' + ' + dimension_b
 
                 for (let pipeline of pipelines) {
-                    benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = {}
                     let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                     let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
                     let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+                    let step_4_gap_size = pipeline.step4.gap_size
                     let raw_mappers = {}
                     raw_mappers[dimension_a] = run_pipeline(dimension_a, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
                     raw_mappers[dimension_b] = run_pipeline(dimension_b, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
                     let data_a = dataset.data_per_dimension[dimension_a]
                     let data_b = dataset.data_per_dimension[dimension_b]
 
-                    let scatterplot = new ScatterPlot(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers)
+                    let scatterplot = new ScatterPlot(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers, step_4_gap_size)
+
                     let screen_mapper_a = scatterplot.x_mapper
                     let linear_mapper_a = new LinearMapper(screen_mapper_a.get_output_space_ranges(), [0, 1])
                     let comp_mapper_a = new CompositeMapper([screen_mapper_a, linear_mapper_a])
@@ -189,13 +210,24 @@ async function run_scatterplot_benchmarks(datasets, pipelines, settings) {
                     let linear_mapper_b = new LinearMapper(screen_mapper_b.get_output_space_ranges(), [0, 1])
                     let comp_mapper_b = new CompositeMapper([screen_mapper_b, linear_mapper_b])
 
-                    for (let setting of settings) {
-                        let {num_bins_a, num_bins_b} = setting
-                        let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, num_bins_a, num_bins_b)
-                        let overplotting = overplotting_2d(histogram_2d)
-                        benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name][setting.name] = overplotting
-                        scatterplot.delete()
-                    }
+                    let output_ranges_x = scatterplot.x_mapper.get_output_space_ranges()
+                    let output_ranges_y = scatterplot.y_mapper.get_output_space_ranges()
+                    let width = output_ranges_x[output_ranges_x.length - 1][1]
+                    let height = output_ranges_y[0][0]
+                    let point_size = scatterplot.point_size
+                    let num_bins_a = Math.floor(width / point_size)
+                    let num_bins_b = Math.floor(height / point_size)
+                    benchmark_result["statistics"]["width"] = width
+                    benchmark_result["statistics"]["height"] = height
+                    benchmark_result["statistics"]["point_size"] = point_size
+                    benchmark_result["statistics"]["num_bins_x"] = num_bins_a
+                    benchmark_result["statistics"]["num_bins_y"] = num_bins_b
+
+                    let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, num_bins_a, num_bins_b)
+                    let overplotting = overplotting_2d(histogram_2d)
+                    benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = overplotting
+                    scatterplot.delete()
+
                 }
             }
         }
@@ -204,12 +236,16 @@ async function run_scatterplot_benchmarks(datasets, pipelines, settings) {
 }
 
 async function run_parcoords_benchmarks(datasets, pipelines, settings) {
-    let benchmark_result = {}
+    let benchmark_result = {
+        statistics: {
+        }
+    }
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
         for (let dimension_a of dataset.dimensions) {
             benchmark_result[dataset_id][dimension_a] = {}
+            benchmark_result[dataset_id][dimension_a]["overplotting"] = {}
             for (let dimension_b of dataset.dimensions) {
                 if (dimension_a === dimension_b) {
                     continue
@@ -222,6 +258,7 @@ async function run_parcoords_benchmarks(datasets, pipelines, settings) {
                     let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                     let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
                     let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+                    let step_4_gap_size = pipeline.step4.gap_size
                     let raw_mappers = {}
                     raw_mappers[dimension_a] = run_pipeline(dimension_a, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
                     raw_mappers[dimension_b] = run_pipeline(dimension_b, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
@@ -229,14 +266,29 @@ async function run_parcoords_benchmarks(datasets, pipelines, settings) {
                     let data_b = dataset.data_per_dimension[dimension_b]
 
                     // let scatterplot = new ScatterPlot(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers)
-                    let parcoords = new SPC(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers)
+                    let parcoords = new SPC(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers, step_4_gap_size)
+
                     let screen_mapper_a = parcoords.mappers[dimension_a]
+
                     let linear_mapper_a = new LinearMapper(screen_mapper_a.get_output_space_ranges(), [0, 1])
                     let comp_mapper_a = new CompositeMapper([screen_mapper_a, linear_mapper_a])
 
                     let screen_mapper_b = parcoords.mappers[dimension_b]
                     let linear_mapper_b = new LinearMapper(screen_mapper_b.get_output_space_ranges(), [0, 1])
                     let comp_mapper_b = new CompositeMapper([screen_mapper_b, linear_mapper_b])
+
+
+                    let output_ranges = screen_mapper_a.get_output_space_ranges()
+                    let height = output_ranges[0][0]
+                    let line_size = 2
+                    let num_bins = Math.floor(height / line_size)
+                    benchmark_result.statistics['height'] = height
+                    benchmark_result.statistics['line_size'] = line_size
+                    benchmark_result.statistics['num_bins'] = num_bins
+                    let histogram_1d = screen_histogram_1d(data_a, comp_mapper_a, num_bins)
+                    let overplotting = overplotting_1d(histogram_1d)
+
+                    benchmark_result[dataset_id][dimension_a]["overplotting"][pipeline.name] = overplotting
 
                     for (let setting of settings) {
                         let {x_to_y_ratio} = setting
@@ -338,5 +390,5 @@ async function init() {
     select_chart();
 }
 
-// run_benchmarks().then(() => console.log("done"))
-init()
+run_benchmarks().then(() => console.log("done"))
+// init()
