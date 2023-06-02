@@ -60,6 +60,7 @@ export default class SPC {
         })
 
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
+        this.width_per_pair = width / (dimensions.length - 1)
         this.foreground;
         this.background;
         // this.runBenchmarks();

@@ -102,11 +102,6 @@ async function run_benchmarks() {
                 step4: {gap_size: 30},
                 "name": "opt"
             }
-        ],
-        [
-            {x_to_y_ratio: 1, name: "1:1"},
-            {x_to_y_ratio: 2, name: "2:1"},
-            {x_to_y_ratio: 0.5, name: "1:2"}
         ])
     console.log(distortion_res)
     console.log(beeswarm_res)
@@ -235,7 +230,7 @@ async function run_scatterplot_benchmarks(datasets, pipelines) {
     return benchmark_result
 }
 
-async function run_parcoords_benchmarks(datasets, pipelines, settings) {
+async function run_parcoords_benchmarks(datasets, pipelines) {
     let benchmark_result = {
         statistics: {
         }
@@ -254,7 +249,7 @@ async function run_parcoords_benchmarks(datasets, pipelines, settings) {
                 // let dimensions_label = dimension_a + ' + ' + dimension_b
 
                 for (let pipeline of pipelines) {
-                    benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = {}
+                    // benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = {}
                     let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                     let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
                     let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
@@ -280,9 +275,11 @@ async function run_parcoords_benchmarks(datasets, pipelines, settings) {
 
                     let output_ranges = screen_mapper_a.get_output_space_ranges()
                     let height = output_ranges[0][0]
+                    let width = parcoords.width_per_pair
                     let line_size = 2
                     let num_bins = Math.floor(height / line_size)
                     benchmark_result.statistics['height'] = height
+                    benchmark_result.statistics['width'] = width
                     benchmark_result.statistics['line_size'] = line_size
                     benchmark_result.statistics['num_bins'] = num_bins
                     let histogram_1d = screen_histogram_1d(data_a, comp_mapper_a, num_bins)
@@ -290,12 +287,12 @@ async function run_parcoords_benchmarks(datasets, pipelines, settings) {
 
                     benchmark_result[dataset_id][dimension_a]["overplotting"][pipeline.name] = overplotting
 
-                    for (let setting of settings) {
-                        let {x_to_y_ratio} = setting
-                        let res = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, x_to_y_ratio)
-                        benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name][setting.name] = res.avg_crossing_angle
-                        parcoords.delete()
-                    }
+
+                    let x_to_y_ratio = width / height
+                    let res = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, x_to_y_ratio)
+                    benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = res.avg_crossing_angle
+                    parcoords.delete()
+
                 }
             }
         }
@@ -390,5 +387,5 @@ async function init() {
     select_chart();
 }
 
-run_benchmarks().then(() => console.log("done"))
-// init()
+// run_benchmarks().then(() => console.log("done"))
+init()
