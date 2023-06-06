@@ -210,6 +210,8 @@ async function run_scatterplot_benchmarks(datasets, pipelines) {
                     let width = output_ranges_x[output_ranges_x.length - 1][1]
                     let height = output_ranges_y[0][0]
                     let point_size = scatterplot.point_size
+                    // let num_bins_a = Math.floor(width / point_size)
+                    // let num_bins_b = Math.floor(height / point_size)
                     let num_bins_a = Math.floor(width / point_size)
                     let num_bins_b = Math.floor(height / point_size)
                     benchmark_result["statistics"]["width"] = width
@@ -238,61 +240,65 @@ async function run_parcoords_benchmarks(datasets, pipelines) {
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
-        for (let dimension_a of dataset.dimensions) {
-            benchmark_result[dataset_id][dimension_a] = {}
-            benchmark_result[dataset_id][dimension_a]["overplotting"] = {}
-            for (let dimension_b of dataset.dimensions) {
-                if (dimension_a === dimension_b) {
-                    continue
-                }
-                benchmark_result[dataset_id][dimension_a][dimension_b] = {}
-                // let dimensions_label = dimension_a + ' + ' + dimension_b
+        for (let pipeline of pipelines) {
+            // benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = {}
+            let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
+            let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
+            let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+            let step_4_gap_size = pipeline.step4.gap_size
+            let raw_mappers = {}
+            dataset.dimensions.forEach((dim) => raw_mappers[dim] = run_pipeline(dim, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args))
 
-                for (let pipeline of pipelines) {
-                    // benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = {}
-                    let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
-                    let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
-                    let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
-                    let step_4_gap_size = pipeline.step4.gap_size
-                    let raw_mappers = {}
-                    raw_mappers[dimension_a] = run_pipeline(dimension_a, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
-                    raw_mappers[dimension_b] = run_pipeline(dimension_b, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
-                    let data_a = dataset.data_per_dimension[dimension_a]
+            let parcoords = new SPC(chart_container_ref, dataset.data, dataset.dimensions, raw_mappers, step_4_gap_size)
+            let width = parcoords.width / (dataset.dimensions.length - 1)
+            let line_size = 2
+
+            for (let dimension_a of dataset.dimensions) {
+                let data_a = dataset.data_per_dimension[dimension_a]
+                let screen_mapper_a = parcoords.mappers[dimension_a]
+                let linear_mapper_a = new LinearMapper(screen_mapper_a.get_output_space_ranges(), [0, 1])
+                let comp_mapper_a = new CompositeMapper([screen_mapper_a, linear_mapper_a])
+
+                let output_ranges = screen_mapper_a.get_output_space_ranges()
+                let height = output_ranges[0][0]
+                let num_bins = Math.floor(height / line_size)
+                benchmark_result.statistics['height'] = height
+                benchmark_result.statistics['width'] = width
+                benchmark_result.statistics['line_size'] = line_size
+                benchmark_result.statistics['num_bins'] = num_bins
+
+                benchmark_result[dataset_id][dimension_a] = benchmark_result[dataset_id][dimension_a] || {}
+                benchmark_result[dataset_id][dimension_a]["overplotting"] = benchmark_result[dataset_id][dimension_a]["overplotting"] || {}
+
+                // 1d overplotting
+                let histogram_1d = screen_histogram_1d(data_a, comp_mapper_a, num_bins)
+                let overplotting = overplotting_1d(histogram_1d)
+                benchmark_result[dataset_id][dimension_a]["overplotting"][pipeline.name] = overplotting
+
+                for (let dimension_b of dataset.dimensions) {
+                    if (dimension_a === dimension_b) {
+                        continue
+                    }
+                    benchmark_result[dataset_id][dimension_a][dimension_b] = benchmark_result[dataset_id][dimension_a][dimension_b] || {
+                        avg_crossing_angle: {},
+                        overplotting: {},
+                    }
+
                     let data_b = dataset.data_per_dimension[dimension_b]
-
-                    // let scatterplot = new ScatterPlot(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers)
-                    let parcoords = new SPC(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers, step_4_gap_size)
-
-                    let screen_mapper_a = parcoords.mappers[dimension_a]
-
-                    let linear_mapper_a = new LinearMapper(screen_mapper_a.get_output_space_ranges(), [0, 1])
-                    let comp_mapper_a = new CompositeMapper([screen_mapper_a, linear_mapper_a])
-
                     let screen_mapper_b = parcoords.mappers[dimension_b]
                     let linear_mapper_b = new LinearMapper(screen_mapper_b.get_output_space_ranges(), [0, 1])
                     let comp_mapper_b = new CompositeMapper([screen_mapper_b, linear_mapper_b])
 
+                    // 2d overplotting
+                    let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, num_bins, num_bins)
+                    let overplotting2d = overplotting_2d(histogram_2d)
+                    benchmark_result[dataset_id][dimension_a][dimension_b]["overplotting"][pipeline.name] = overplotting2d
 
-                    let output_ranges = screen_mapper_a.get_output_space_ranges()
-                    let height = output_ranges[0][0]
-                    let width = parcoords.width_per_pair
-                    let line_size = 2
-                    let num_bins = Math.floor(height / line_size)
-                    benchmark_result.statistics['height'] = height
-                    benchmark_result.statistics['width'] = width
-                    benchmark_result.statistics['line_size'] = line_size
-                    benchmark_result.statistics['num_bins'] = num_bins
-                    let histogram_1d = screen_histogram_1d(data_a, comp_mapper_a, num_bins)
-                    let overplotting = overplotting_1d(histogram_1d)
-
-                    benchmark_result[dataset_id][dimension_a]["overplotting"][pipeline.name] = overplotting
-
-
+                    // crossing angles
                     let x_to_y_ratio = width / height
                     let res = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, x_to_y_ratio)
-                    benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = res.avg_crossing_angle
+                    benchmark_result[dataset_id][dimension_a][dimension_b]["avg_crossing_angle"][pipeline.name] = res.avg_crossing_angle.toFixed(2)
                     parcoords.delete()
-
                 }
             }
         }
@@ -326,8 +332,11 @@ function select_steps() {
 }
 
 function run_pipeline(dimension, step1, step1_args, step2, step2_args, step3, step3_args) {
-    let splits = step2.algo(sorted_data[dimension], step2_args, (callback_info) => step1.algo(callback_info, step1_args))
-    return step3.algo(sorted_data[dimension], splits, step3_args)
+    let result = step2.algo(sorted_data[dimension], step2_args, (callback_info) => step1.algo(callback_info, step1_args))
+    if (result instanceof Array) {
+        return step3.algo(sorted_data[dimension], result, step3_args)
+    }
+    else return result
 }
 
 export function step_selection_update(arguments_id) {
@@ -364,6 +373,7 @@ window.select_step = () => {
 
 window.select_dimensions = () => {
     select_dimensions();
+    select_steps();
     select_chart();
 }
 

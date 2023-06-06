@@ -34,6 +34,7 @@ export default class SPC {
 
 
         let container = document.querySelector(container_ref)
+        this.container = container
         let plot = document.createElement("div")
         plot.classList.add("par_coords")
         plot.id = "plot_id_" + uuidv4()
@@ -44,6 +45,7 @@ export default class SPC {
         let margin = {top: 24, right: 80, bottom: 16, left: 80};
         this.margin = margin
         let width = plot.clientWidth - margin.left - margin.right;
+        this.width = width
         let height = plot.clientHeight - margin.top - margin.bottom;
 
         this.mappers = {}
@@ -60,7 +62,6 @@ export default class SPC {
         })
 
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
-        this.width_per_pair = width / (dimensions.length - 1)
         this.foreground;
         this.background;
         // this.runBenchmarks();
@@ -68,7 +69,8 @@ export default class SPC {
     }
 
     delete() {
-        d3.select("svg").remove()
+        // d3.select("svg").remove()
+        this.container.innerHTML = ""
     }
 
     draw() {

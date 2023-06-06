@@ -109,12 +109,12 @@ export const step2_selection_map = {
     // },
     log: {
         algo: (sorted_data, args) => new LogMapper([data_range(sorted_data)], [0, 1]),
-        arguments_id: null,
+        arguments_id: [],
         read_args: () => {}
     },
     sqrt: {
         algo: (sorted_data, args) => new SqrtMapper([data_range(sorted_data)], [0, 1]),
-        arguments_id: null,
+        arguments_id: [],
         read_args: () => {}
     },
     pow: {

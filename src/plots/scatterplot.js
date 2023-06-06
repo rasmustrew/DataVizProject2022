@@ -32,9 +32,11 @@ export default class ScatterPlot {
     init() {
         let plot = document.querySelector(this.chart_ref)
         // set the dimensions and margins of the graph
-        const margin = {top: 10, right: 30, bottom: 40, left: 80},
-            width = plot.clientWidth - margin.left - margin.right,
-            height = plot.clientHeight - margin.top - margin.bottom;
+        const margin = {top: 10, right: 30, bottom: 40, left: 80}
+        const height = plot.clientHeight - margin.top - margin.bottom;
+        // const width = plot.clientWidth - margin.left - margin.right
+        const width = height
+
 
         // append the svg object to the body of the page
         const svg = d3.select(this.chart_ref)
@@ -266,7 +268,9 @@ export default class ScatterPlot {
     }
 
     delete() {
-        d3.select("svg").remove()
+        // d3.select("svg").remove()
+        let plot = document.querySelector(this.chart_ref)
+        plot.innerHTML = ""
     }
 }
 

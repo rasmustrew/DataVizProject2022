@@ -82,7 +82,7 @@ export function overplotting_2d(histogram_2d) {
     for (let i = 0; i < histogram_2d.length; i++) {
         for (let j = 0; j < histogram_2d.length; j++) {
             if (histogram_2d[i][j] > 1) {
-                overplotting += histogram_2d[i][j]
+                overplotting += histogram_2d[i][j] - 1
             }
         }
 
@@ -94,7 +94,7 @@ export function overplotting_1d(histogram_1d) {
     let overplotting = 0
     for (let bin of histogram_1d) {
         if (bin > 1) {
-            overplotting += bin
+            overplotting += bin - 1
         }
     }
     return overplotting
