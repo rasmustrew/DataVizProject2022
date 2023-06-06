@@ -11,12 +11,10 @@ import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
 import PowMapper from "../mappings/pow_mapping";
 import BoxCoxMapper from "../mappings/box_cox_mapping";
-import {OsaragiSplit} from "../algorithms/surprise_split";
 import UniformMapper from "../mappings/uniform_mapping";
 import InterpolationMapper from "../mappings/interpolation_mapping";
-import {data_range, normalizing_mapper} from "../algorithms/util";
+import {data_range} from "../algorithms/util";
 import {jenks} from "simple-statistics";
-import ProportionateRangeMapper, {proportionate_split_mapper} from "../mappings/proportionate_split_mapping";
 
 const step2_selector_ref = "#step2_algorithm_select";
 let read_number_of_clusters = () => ({clusters: parseInt(d3.select("#clusters input").property("value"))})

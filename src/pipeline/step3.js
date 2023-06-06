@@ -4,7 +4,6 @@ import {proportionate_split_mapper} from "../mappings/proportionate_split_mappin
 import {tight_range_mapper} from "../mappings/tight_range_mapping";
 import {read_tick_density} from "./step4";
 
-
 const read_tightness = () => parseInt(d3.select("#tightness input").property("value")) / 100
 
 export const step3_selection_map = {

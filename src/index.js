@@ -380,6 +380,7 @@ window.select_dimensions = () => {
 window.select_data = async () => {
     await select_data();
     select_dimensions();
+    select_steps();
     select_chart();
 }
 

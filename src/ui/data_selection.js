@@ -4,10 +4,12 @@ import {load_heatmap_data} from "../data/load_heatmap_csv";
 import * as d3 from "d3";
 import {load_numbeo_data} from "../data/load_numbeo_data";
 import {load_mouse_data} from "../data/load_mouse_data";
+import {load_AA_comparison_data} from "../data/load_AA_comparison_data";
 
 const data_selector_ref = "#data-select";
 
 const data_selection_map = {
+    AA_comparison: load_AA_comparison_data,
     periodic_table: load_periodic_table_data,
     un_country_data: load_un_data,
     numbeo_country_data: load_numbeo_data,

@@ -21,7 +21,6 @@ let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class SPC {
     constructor(container_ref, data, dimensions, raw_mappers, gap_size) {
-        this.container_ref
         this.data = data
         this.dimensions = dimensions
         this.brushes = {}
@@ -151,14 +150,15 @@ export default class SPC {
                 // let screen_span = screen_range[0] - screen_range[1]
                 // let num_ticks = Math.floor(screen_span / 100.0)
                 let input_ranges = _this.mappers[dim].get_input_space_ranges()
-                let tick_values = []
-                if (index === 0) {
-                    tick_values = input_ranges[index];
-                } else if (index === input_ranges.length - 1) {
-                    tick_values = [input_ranges[index][1]];
-                } else {
-                    tick_values = [input_ranges[index][1]];
-                }
+                let tick_values = input_ranges[index]
+                // let tick_values = []
+                // if (index === 0) {
+                //     tick_values = input_ranges[index];
+                // } else if (index === input_ranges.length - 1) {
+                //     tick_values = [input_ranges[index][1]];
+                // } else {
+                //     tick_values = [input_ranges[index][1]];
+                // }
                 let input_scale = _this.mappers[dim].get_input_space_ranges()[index]
                 let output_scale = _this.mappers[dim].get_output_space_ranges()[index]
                 let d3_scale = d3.scaleLinear().domain(input_scale).range(output_scale)
