@@ -9,6 +9,7 @@ import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/be
 
 export default class ScatterPlot {
     tick_spacing = 50
+    use_density_cues = true
 
     constructor(chart_ref, data, selected_dimensions, raw_mappers, gap_size) {
         this.chart_ref = chart_ref
@@ -155,8 +156,6 @@ export default class ScatterPlot {
             .attr("x", -margin.top)
             .text(this.dimensions[1])
     }
-
-    use_density_cues = true
 
     make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
         const x_range_screen = x_mapper.get_output_space_ranges()[i]
