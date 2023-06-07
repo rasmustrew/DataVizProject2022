@@ -1,5 +1,3 @@
-import ProportionateSplitMapper from "../mappings/proportionate_split_mapping";
-
 export const hardcoded_numbeo_range = {
     'crime_index': [[0, 100]],
     'traffic_index': [[0, 320]],//unbounded max
@@ -49,8 +47,3 @@ const hardcoded_periodic_table_splits = {
 }
 //[-7.06262354e-03  1.48872008e-02  8.66795019e-01  1.14295692e+01
 //   7.50000000e+01]
-
-export function hardcoded_periodic_table_get_mapper(data, args, dimension) {
-    let mapper = new ProportionateSplitMapper(data, hardcoded_periodic_table_splits[dimension])
-    return mapper
-}

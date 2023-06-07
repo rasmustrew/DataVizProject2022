@@ -3,7 +3,7 @@ import CompositeMapper from "../mappings/composite_mapping";
 import * as d3 from "d3";
 import {averageHeight, distortion} from "../benchmarks/benchmarks";
 import LinearMapper from "../mappings/linear_mapping";
-import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
+import PiecewiseLinearMapper from "../mappings/proportionate_split_mapping";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 
@@ -22,7 +22,7 @@ export default class Beeswarm {
         let height = plot.clientHeight - margin.top - margin.bottom;
         this.height = height
         let mapper
-        if (raw_mapper instanceof ProportionateRangeMapper) {
+        if (raw_mapper instanceof PiecewiseLinearMapper) {
             mapper = new SegmentScreenMapper(raw_mapper, [0, width], gap_size)
         } else {
             let output_ranges = raw_mapper.get_output_space_ranges()
