@@ -130,15 +130,29 @@
                 </div>
             </div>
 
-
             <!-- Step 3  -->
             <div class="vl"></div>
-
             <div id='step_3_container' class="step_container">
                 <h2> Step 3</h2>
                 <div id="step_3" class="step">
                     <div id='step3_algorithm'>
-                        <select name='range argument' onChange='window.on_recompute_button();' required>
+                        <select name='scaling' onChange='window.on_recompute_button();' required>
+                            <option value='unique'>Unique data items</option>
+                            <option value='total'>Total data items</option>
+                            <option value='equal'>Equal size</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4  -->
+            <div class="vl"></div>
+
+            <div id='step_4_container' class="step_container">
+                <h2> Step 4</h2>
+                <div id="step_4" class="step">
+                    <div id='step4_algorithm'>
+                        <select name='range' onChange='window.on_recompute_button();' required>
                             <option value='mean'>Mean</option>
                             <option value='tight'>Tight</option>
                             <option value='match_ticks'>Match ticks</option>
@@ -155,11 +169,11 @@
                 </div>
             </div>
 
-            <!-- Step 4  -->
+            <!-- Step 5  -->
             <div class="vl"></div>
-            <div id='step_4_container' class="step_container">
-                <h2> Step 4</h2>
-                <div id="step_4" class="step">
+            <div id='step_5_container' class="step_container">
+                <h2> Step 5</h2>
+                <div id="step_5" class="step">
                     <div id='tick_density'>
                         Tick density:
                         <input type='range' min='0' max='100' value='20' class='slider' oninput='window.on_recompute_button();'>

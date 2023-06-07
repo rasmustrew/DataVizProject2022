@@ -1,42 +1,18 @@
 import LinearMapper from "./linear_mapping";
 import {is_value_in_range} from "./util";
 
-export function proportionate_split_mapper(sorted_data, split_points) {
-    let min_val = sorted_data[0];
-    let max_val = sorted_data[sorted_data.length - 1]
-    let points = [min_val, ...split_points, max_val]
-    let input_ranges = []
-    for (let i = 0; i < points.length - 1; i++) {
-        input_ranges.push([points[i], points[i + 1]])
-    }
-    return new ProportionateRangeMapper(sorted_data, input_ranges)
-}
 
-export default class ProportionateRangeMapper {
+export default class PiecewiseLinearMapper {
 
-    constructor(sorted_data, input_ranges) {
+    constructor(input_ranges, output_ranges) {
         this.input_ranges = input_ranges
-        //Calculate how many percent of points is in each range
-        let proportions = input_ranges.map((range) => {
-            let points_in_range = sorted_data.filter((data_point) => {
-                return is_value_in_range(data_point, range, this.min, this.max)
-            })
-            let share_of_points = points_in_range.length / sorted_data.length
-            return share_of_points
-        })
-
-        //Create proportional mapping from 0 to 1
-        this.output_ranges = []
+        this.output_ranges = output_ranges
         this.inner_mappers = []
-        let proportions_processed = 0;
-        for (let i = 0; i < proportions.length; i++) {
-            let proportion = proportions[i]
+        for (let i = 0; i < input_ranges.length; i++) {
             let input_range = this.input_ranges[i]
-            let output_range = [proportions_processed, proportions_processed + proportion]
+            let output_range = this.output_ranges[i]
             let piecewise_linear_map = new LinearMapper([input_range], output_range)
-            this.output_ranges.push(output_range)
             this.inner_mappers.push(piecewise_linear_map)
-            proportions_processed += proportion
         }
     }
 

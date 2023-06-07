@@ -13,7 +13,7 @@ import {
     screen_histogram_2d
 } from "../benchmarks/benchmarks";
 import LinearMapper from "../mappings/linear_mapping";
-import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
+import PiecewiseLinearMapper from "../mappings/proportionate_split_mapping";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 
 let highlight_colour = "rgba(255, 0, 0, 0.4)"
@@ -51,7 +51,7 @@ export default class SPC {
         Object.entries(raw_mappers).forEach((entry) => {
             let dim = entry[0]
             let mapper = entry[1]
-            if (mapper instanceof ProportionateRangeMapper) {
+            if (mapper instanceof PiecewiseLinearMapper) {
                 this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], gap_size)
             } else {
                 let output_ranges = mapper.get_output_space_ranges()

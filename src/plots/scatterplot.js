@@ -3,7 +3,7 @@ import ScreenMapper from "../mappings/screen_mapping";
 import CompositeMapper from "../mappings/composite_mapping";
 import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 import SegmentScreenMapper from "../mappings/segment_screen_mapping";
-import ProportionateRangeMapper from "../mappings/proportionate_split_mapping";
+import PiecewiseLinearMapper from "../mappings/proportionate_split_mapping";
 import LinearMapper from "../mappings/linear_mapping";
 import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/benchmarks";
 
@@ -54,7 +54,7 @@ export default class ScatterPlot {
         let x_ranges = this.mappers[this.x_dim].get_input_space_ranges()
         let y_ranges = this.mappers[this.y_dim].get_input_space_ranges()
 
-        if (this.mappers[this.x_dim] instanceof ProportionateRangeMapper) {
+        if (this.mappers[this.x_dim] instanceof PiecewiseLinearMapper) {
             this.x_mapper = new SegmentScreenMapper(this.mappers[this.x_dim], [0, width], this.chart_spacing)
         } else {
             let x_ranges_norm = this.mappers[this.x_dim].get_output_space_ranges()
@@ -62,7 +62,7 @@ export default class ScatterPlot {
             this.x_mapper = new CompositeMapper([this.mappers[this.x_dim], x_screen_mapper])
         }
 
-        if (this.mappers[this.y_dim] instanceof ProportionateRangeMapper) {
+        if (this.mappers[this.y_dim] instanceof PiecewiseLinearMapper) {
             this.y_mapper = new SegmentScreenMapper(this.mappers[this.y_dim], [height, 0], this.chart_spacing)
         } else {
             let y_ranges_norm = this.mappers[this.y_dim].get_output_space_ranges()

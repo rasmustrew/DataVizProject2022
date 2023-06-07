@@ -1,11 +1,9 @@
 import {
     greedy_interpolated_splits, guided_splits, optimal_guided_splits,
 } from "../algorithms/guided_splits";
-import {greedy_guided_split} from "../algorithms/greedy_guided_split/greedy_guided_split"
-import {hardcoded_periodic_table_get_mapper} from "../algorithms/hardcoded_splits";
 import {quantile_splits} from "../algorithms/quantile_splits";
 import {kmeans_splits} from "../algorithms/kmeans_split";
-import LinearMapper, {NormalizingMapper} from "../mappings/linear_mapping";
+import {NormalizingMapper} from "../mappings/linear_mapping";
 import * as d3 from "d3";
 import LogMapper from "../mappings/log_mapping";
 import SqrtMapper from "../mappings/sqrt_mapping";
