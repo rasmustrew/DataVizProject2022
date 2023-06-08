@@ -21,32 +21,32 @@ function make_chart_div(container_ref, chart_class="chart") {
 
 
 let chart_selection_map = {
-    spc: (chart_container_ref, data, dimensions, mappers, gap_size) => {
-        let spc = new SPC(chart_container_ref, data, dimensions, mappers, gap_size)
+    spc: (chart_container_ref, data, dimensions, mappers, args) => {
+        let spc = new SPC(chart_container_ref, data, dimensions, mappers, args)
         spc.draw()
     },
-    heatmap: (chart_container_ref, data, dimensions, mappers) => {
+    heatmap: (chart_container_ref, data, dimensions, mappers, args) => {
         let chart_ref = make_chart_div(chart_container_ref)
         new HeatMap(chart_ref, data, mappers, dimensions[0])
     },
-    choropleth: (chart_container_ref, data, dimensions, mappers) => {
+    choropleth: (chart_container_ref, data, dimensions, mappers, args) => {
         let chart_ref = make_chart_div(chart_container_ref)
         new Choropleth(chart_ref, data, dimensions[0], mappers)
     },
-    lollipop: (chart_container_ref, data, dimensions, mappers, gap_size) => {
+    lollipop: (chart_container_ref, data, dimensions, mappers, args) => {
         let chart_ref = make_chart_div(chart_container_ref, "lollipop")
         let chosen_dimension = dimensions[0]
-        new Lollipop(chart_ref, data, chosen_dimension, mappers[chosen_dimension], gap_size)
+        new Lollipop(chart_ref, data, chosen_dimension, mappers[chosen_dimension], args)
     },
-    scatter_plot:  (chart_container_ref, data, dimensions, mappers, gap_size) => {
+    scatter_plot:  (chart_container_ref, data, dimensions, mappers, args) => {
         let chart_ref = make_chart_div(chart_container_ref)
         let chosen_dimensions = dimensions.slice(0, 3)
-        new ScatterPlot(chart_ref, data, chosen_dimensions, mappers, gap_size)
+        new ScatterPlot(chart_ref, data, chosen_dimensions, mappers, args)
     },
-    beeswarm:  (chart_container_ref, data, dimensions, mappers, gap_size) => {
+    beeswarm:  (chart_container_ref, data, dimensions, mappers, args) => {
     let chart_ref = make_chart_div(chart_container_ref, "beeswarm")
     let chosen_dimension = dimensions[0]
-    new Beeswarm(chart_ref, data, chosen_dimension, mappers[chosen_dimension], 8, gap_size)
+    new Beeswarm(chart_ref, data, chosen_dimension, mappers[chosen_dimension], 8, args)
 },
 }
 

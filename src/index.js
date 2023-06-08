@@ -20,7 +20,7 @@ import * as d3 from "d3";
 import {get_selected_step1_algorithm, step1_selection_map} from "./pipeline/step1";
 import ScatterPlot from "./plots/scatterplot";
 import SPC from "./plots/spc";
-import {read_gap_size} from "./pipeline/step5";
+import {read_gap_size, read_step_5} from "./pipeline/step5";
 import ScreenMapper from "./mappings/screen_mapping";
 import {get_selected_step3_algorithm} from "./pipeline/step3";
 import PiecewiseLinearMapper from "./mappings/proportionate_split_mapping";
@@ -311,8 +311,8 @@ async function run_parcoords_benchmarks(datasets, pipelines) {
 function select_chart() {
     document.querySelector(chart_container_ref).innerHTML = ""
     selected_chart_generator = get_selected_chart()
-    let gap_size = read_gap_size()
-    selected_chart_generator(chart_container_ref, data, selected_dimensions, mappers, gap_size)
+    let step5_settings = read_step_5()
+    selected_chart_generator(chart_container_ref, data, selected_dimensions, mappers, step5_settings)
 }
 
 

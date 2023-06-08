@@ -8,10 +8,11 @@ import LinearMapper from "../mappings/linear_mapping";
 import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/benchmarks";
 
 export default class ScatterPlot {
-    tick_spacing = 50
-    use_density_cues = true
 
-    constructor(chart_ref, data, selected_dimensions, raw_mappers, gap_size) {
+    constructor(chart_ref, data, selected_dimensions, raw_mappers, args) {
+        this.chart_spacing = args.gap_size
+        this.tick_spacing_raw = args.tick_spacing
+        this.use_density_cues = args.use_density_cues
         this.chart_ref = chart_ref
         this.data = data
         this.mappers = raw_mappers
@@ -23,7 +24,6 @@ export default class ScatterPlot {
         this.color_dim = this.dimensions[2]
         this.x_mapper = null;
         this.y_mapper = null;
-        this.chart_spacing = gap_size
         this.point_size = 5
         this.init()
         // this.runBenchmarks()
@@ -72,7 +72,8 @@ export default class ScatterPlot {
 
         let color_mapper = this.mappers[this.color_dim]
 
-        this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
+        this.tick_spacing = this.tick_spacing_raw * Math.min(height, width)
+        // this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
         this.x_data_range_length = x_ranges[x_ranges.length - 1][1] - x_ranges[0][0]
         this.y_data_range_length = y_ranges[y_ranges.length - 1][1] - y_ranges[0][0]
         for (let i = 0; i < x_ranges.length; i++) {

@@ -9,10 +9,9 @@ import {ExtendedWilkinson} from "../algorithms/extended_wilkinsons";
 
 
 export default class Beeswarm {
-    tick_spacing = 50
-    use_density_cues = true
 
-    constructor(chart_ref, data, dimension, raw_mapper, circle_radius, gap_size = 50) {
+    constructor(chart_ref, data, dimension, raw_mapper, circle_radius, args) {
+
         let plot = document.querySelector(chart_ref)
 
         this.dimension = dimension
@@ -21,12 +20,17 @@ export default class Beeswarm {
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
         this.height = height
+
+        this.gap_size = args.gap_size
+        this.tick_spacing = args.tick_spacing * width
+        this.use_density_cues = args.use_density_cues
+
         let mapper
         if (raw_mapper instanceof PiecewiseLinearMapper) {
-            mapper = new SegmentScreenMapper(raw_mapper, [0, width], gap_size)
+            mapper = new SegmentScreenMapper(raw_mapper, [0, width], this.gap_size)
         } else {
             let output_ranges = raw_mapper.get_output_space_ranges()
-            let screen_mapper = new ScreenMapper(output_ranges, [0, width], gap_size)
+            let screen_mapper = new ScreenMapper(output_ranges, [0, width], this.gap_size)
             mapper = new CompositeMapper([raw_mapper, screen_mapper])
         }
         this.mapper = mapper
@@ -36,7 +40,7 @@ export default class Beeswarm {
         });
         let input_ranges = mapper.get_input_space_ranges()
         this.data_range_length = input_ranges[input_ranges.length - 1][1] - input_ranges[0][0]
-        this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
+
 
 
         // append the svg object to the body of the page

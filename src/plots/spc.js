@@ -20,7 +20,8 @@ let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
 export default class SPC {
-    constructor(container_ref, data, dimensions, raw_mappers, gap_size) {
+    constructor(container_ref, data, dimensions, raw_mappers, args) {
+        let gap_size = args.gap_size
         this.data = data
         this.dimensions = dimensions
         this.brushes = {}
