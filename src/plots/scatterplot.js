@@ -10,8 +10,9 @@ import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/be
 export default class ScatterPlot {
 
     constructor(chart_ref, data, selected_dimensions, raw_mappers, args) {
+        console.log(args)
         this.chart_spacing = args.gap_size
-        this.tick_spacing_raw = args.tick_spacing
+        this.tick_spacing_raw = args.tick_density
         this.use_density_cues = args.use_density_cues
         this.chart_ref = chart_ref
         this.data = data
@@ -73,6 +74,8 @@ export default class ScatterPlot {
         let color_mapper = this.mappers[this.color_dim]
 
         this.tick_spacing = this.tick_spacing_raw * Math.min(height, width)
+        console.log(this.tick_spacing_raw)
+        console.log(this.tick_spacing)
         // this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
         this.x_data_range_length = x_ranges[x_ranges.length - 1][1] - x_ranges[0][0]
         this.y_data_range_length = y_ranges[y_ranges.length - 1][1] - y_ranges[0][0]
@@ -167,7 +170,7 @@ export default class ScatterPlot {
         let density_cue_y = 0.5 + (y_range[1] - y_range[0]) / this.y_data_range_length;
         const no_x_ticks = Math.floor(tile_width * (this.use_density_cues ? density_cue_x : 1) / this.tick_spacing)
         const no_y_ticks = Math.floor(tile_height * (this.use_density_cues ? density_cue_y : 1) / this.tick_spacing)
-
+        console.log("make tick marks")
         // Wilkinson ticks
         let x_ticks_ew = ExtendedWilkinson(x_range, no_x_ticks).ticks
         let y_ticks_ew = ExtendedWilkinson(y_range, no_y_ticks).ticks

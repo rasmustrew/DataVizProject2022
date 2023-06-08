@@ -22,7 +22,7 @@ export default class Beeswarm {
         this.height = height
 
         this.gap_size = args.gap_size
-        this.tick_spacing = args.tick_spacing * width
+        this.tick_spacing = args.tick_density * width
         this.use_density_cues = args.use_density_cues
 
         let mapper
