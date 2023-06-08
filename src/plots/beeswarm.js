@@ -75,6 +75,8 @@ export default class Beeswarm {
 
         if (ticks === undefined) ticks = []
         ticks = ticks.filter(tick => tick > input_range[0] && tick < input_range[1])
+        ticks.push(input_range[0])
+        ticks.push(input_range[1])
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
         let axis_x = svg.append('g')
