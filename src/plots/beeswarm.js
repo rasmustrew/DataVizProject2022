@@ -16,7 +16,7 @@ export default class Beeswarm {
 
         this.dimension = dimension
         this.radius = circle_radius
-        let margin = {top: 80, right: 16, bottom: 80, left: 64};
+        let margin = {top: 80, right: 64, bottom: 80, left: 64};
         let width = plot.clientWidth - margin.left - margin.right;
         let height = plot.clientHeight - margin.top - margin.bottom;
         this.height = height
@@ -90,10 +90,35 @@ export default class Beeswarm {
             .attr("transform", "translate(-10,0)rotate(-45)")
             .style("text-anchor", "end");
 
-        // this.radius = 8
         this.circle_padding = 4
         this.circle_centers = []
 
+        // Create walls
+        let wall_spacing = Math.floor(this.radius * 1.5)
+
+        svg.append("line")
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .attr("x1", output_range[0] - wall_spacing)
+            .attr("x2", output_range[1] + wall_spacing)
+            .attr("y1", this.height)
+            .attr("y2", this.height)
+
+        svg.append("line")
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .attr("x1", output_range[0] - wall_spacing)
+            .attr("x2", output_range[0] - wall_spacing)
+            .attr("y1", 0)
+            .attr("y2", this.height)
+
+        svg.append("line")
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .attr("x1", output_range[1] + wall_spacing)
+            .attr("x2", output_range[1] + wall_spacing)
+            .attr("y1", 0)
+            .attr("y2", this.height)
 
         //Create dots
         svg.selectAll("circle")
