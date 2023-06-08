@@ -19,10 +19,36 @@ export const step3_selection_map = {
         arguments_id: ["#tightness"],
         read_args: () => read_tightness()
     },
+    none: {
+        algo: (sorted_data, splits) => none_scaled(sorted_data, splits_to_ranges(sorted_data, splits)),
+        arguments_id: [],
+        read_args: () => {}
+    },
 }
 
 export function get_selected_step3_algorithm() {
     return step3_selection_map[d3.select("#step3_algorithm select").property("value")]
+}
+
+function none_scaled(sorted_data, input_ranges) {
+    let range_total_size = input_ranges.reduce((acc, range) => {
+        let range_size = range[1] - range[0]
+        return acc + range_size
+    }, 0)
+    let range_proportions = input_ranges.map((range) => {
+        let range_size = range[1] - range[0]
+        return range_size / range_total_size
+    })
+
+    let current_proportion = 0
+    let output_ranges = []
+    for (let proportion of range_proportions) {
+        let next_proportion = current_proportion + proportion
+        output_ranges.push([current_proportion, next_proportion])
+        current_proportion = next_proportion
+    }
+
+    return output_ranges
 }
 
 function total_scaled(sorted_data, input_ranges){
