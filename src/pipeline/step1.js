@@ -39,9 +39,9 @@ function cost_threshold(callback_data, fragmentation_weight) {
 }
 
 function cost_reduction_threshold(callback_data, fragmentation_weight) {
-    // console.log("COST REDUCTION")
-    // console.log(callback_data)
-    // console.log(fragmentation_weight)
+    console.log("COST REDUCTION")
+    console.log(callback_data)
+    console.log(fragmentation_weight)
     let cost_reduction = (callback_data.cost_previous - callback_data.cost_now) / callback_data.data_length
     let reduction_threshold = fragmentation_weight ** 2 * callback_data.num_splits + 0.001
     return cost_reduction >= reduction_threshold

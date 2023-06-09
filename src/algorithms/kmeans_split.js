@@ -16,8 +16,8 @@ export function kmeans_splits(sorted_data, args, version="optimal", stopping_cal
         let callback_info = {
             num_splits: k,
             data_length: sorted_data.length,
-            cost_now: cost,
-            cost_previous: prev_cost,
+            cost_now: Math.sqrt(cost),
+            cost_previous: Math.sqrt(prev_cost),
         }
         prev_cost = cost
         best_so_far = centers
