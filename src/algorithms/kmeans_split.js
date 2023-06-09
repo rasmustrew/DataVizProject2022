@@ -14,7 +14,7 @@ export function kmeans_splits(sorted_data, args, version="optimal", stopping_cal
     for (let k = 1; k < 10; k++) {
         let {centers, cost} = algorithm_map[version](sorted_data, k)
         let callback_info = {
-            num_splits: k - 1,
+            num_splits: k,
             data_length: sorted_data.length,
             cost_now: cost,
             cost_previous: prev_cost,
