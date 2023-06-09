@@ -74,8 +74,8 @@ export default class ScatterPlot {
         let color_mapper = this.mappers[this.color_dim]
 
         this.tick_spacing = this.tick_spacing_raw * Math.min(height, width)
-        console.log(this.tick_spacing_raw)
-        console.log(this.tick_spacing)
+        // console.log(this.tick_spacing_raw)
+        // console.log(this.tick_spacing)
         // this.tick_spacing = (1 - parseInt(d3.select("#tick_density input").property("value")) / 100) ** 2 * Math.min(height, width) / 2
         this.x_data_range_length = x_ranges[x_ranges.length - 1][1] - x_ranges[0][0]
         this.y_data_range_length = y_ranges[y_ranges.length - 1][1] - y_ranges[0][0]
@@ -170,7 +170,7 @@ export default class ScatterPlot {
         let density_cue_y = 0.5 + (y_range[1] - y_range[0]) / this.y_data_range_length;
         const no_x_ticks = Math.floor(tile_width * (this.use_density_cues ? density_cue_x : 1) / this.tick_spacing)
         const no_y_ticks = Math.floor(tile_height * (this.use_density_cues ? density_cue_y : 1) / this.tick_spacing)
-        console.log("make tick marks")
+        // console.log("make tick marks")
         // Wilkinson ticks
         let x_ticks_ew = ExtendedWilkinson(x_range, no_x_ticks).ticks
         let y_ticks_ew = ExtendedWilkinson(y_range, no_y_ticks).ticks
@@ -236,7 +236,7 @@ export default class ScatterPlot {
     }
 
     runBenchmarks() {
-        console.log("BENCHMARKS")
+        // console.log("BENCHMARKS")
 
         let dimensions = [this.dimensions[0], this.dimensions[1]]
 
@@ -246,7 +246,7 @@ export default class ScatterPlot {
             data_per_dimension[dim] = data
         })
 
-        console.log("OVERPLOTTING 2D")
+        // console.log("OVERPLOTTING 2D")
         let dim_a = dimensions[0]
         let dim_b = dimensions[1]
         let data_a = data_per_dimension[dim_a]
@@ -257,15 +257,15 @@ export default class ScatterPlot {
         let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
         let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
         let overplotting = overplotting_2d(histogram_2d)
-        console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+        // console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
 
-        console.log("DISTORTION")
+        // console.log("DISTORTION")
         dimensions.forEach((dim) => {
             let data = data_per_dimension[dim]
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
             let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
             let distort = distortion(data, comp_mapper)
-            console.log(dim, ": ", distort)
+            // console.log(dim, ": ", distort)
         })
 
     }

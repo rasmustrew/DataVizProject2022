@@ -34,7 +34,6 @@ function read_skew_algo_args() {
 
 //algo: (sorted_data, args, stopping_callback) - Not all will use the callback
 export const step2_selection_map = {
-
     none: {
         algo: (sorted_data, args) => {
             return new NormalizingMapper(sorted_data)
@@ -42,11 +41,6 @@ export const step2_selection_map = {
         arguments_id: [],
         read_args: () => {},
     },
-    // greedy_guided_split: {
-    //     algo: greedy_guided_split,
-    //     arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
-    //     read_args: read_skew_algo_args
-    // },
     greedy_guided_split_2: {
         algo: greedy_interpolated_splits,
         arguments_id: ["#uniformity", "#fragmentation_argument"],
@@ -57,35 +51,18 @@ export const step2_selection_map = {
         arguments_id: ["#fragmentation_argument"],
         read_args: read_skew_algo_args
     },
-    // guided_splits: {
-    //     algo: guided_splits,
-    //     arguments_id: ["#uniformity", "#fragmentation_argument"],
-    //     read_args: read_skew_algo_args
-    // },
-    // hardcoded_periodic_table: {
-    //     algo: hardcoded_periodic_table_get_mapper,
-    //     arguments_id: [],
-    //     read_args: () => {},
-    // },
+
     quantile: {
         algo: quantile_splits,
         arguments_id: [],
         read_args: read_number_of_clusters
     },
-    // kmeans: {
-    //     algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
-    //     arguments_id: [],
-    //     read_args: read_number_of_clusters
-    // },
-    // kmeans_plusplus: {
-    //     algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
-    //     arguments_id: [],
-    //     read_args: read_number_of_clusters
-    // },
+
     kmeans_opt: {
-        algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "optimal"),
+        algo: (sorted_data, args, stopping_callback) => kmeans_splits(sorted_data, args, "optimal", stopping_callback),
         arguments_id: [],
-        read_args: read_number_of_clusters
+        // read_args: read_number_of_clusters
+        read_args: () => {}
     },
     jenks: {
         algo: (sorted_data, args) => {
@@ -95,14 +72,7 @@ export const step2_selection_map = {
         arguments_id: [],
         read_args: read_number_of_clusters
     },
-    // osaragi: {
-    //     algo: (sorted_data, args) => {
-    //         const splitter = new OsaragiSplit()
-    //         return splitter.MIL_splits(sorted_data, args)
-    //     },
-    //     arguments_id: [],
-    //     read_args: read_number_of_clusters
-    // },
+
     log: {
         algo: (sorted_data, args) => new LogMapper([data_range(sorted_data)], [0, 1]),
         arguments_id: [],
@@ -128,6 +98,39 @@ export const step2_selection_map = {
         arguments_id: ["#uniformity"],
         read_args: read_skew_algo_args
     }
+    // greedy_guided_split: {
+    //     algo: greedy_guided_split,
+    //     arguments_id: ["#uniformity", "#distortion_argument", "#fragmentation_argument"],
+    //     read_args: read_skew_algo_args
+    // },
+    // osaragi: {
+    //     algo: (sorted_data, args) => {
+    //         const splitter = new OsaragiSplit()
+    //         return splitter.MIL_splits(sorted_data, args)
+    //     },
+    //     arguments_id: [],
+    //     read_args: read_number_of_clusters
+    // },
+    // kmeans: {
+    //     algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "random"),
+    //     arguments_id: [],
+    //     read_args: read_number_of_clusters
+    // },
+    // kmeans_plusplus: {
+    //     algo: (sorted_data, args) => kmeans_splits(sorted_data, args, "++"),
+    //     arguments_id: [],
+    //     read_args: read_number_of_clusters
+    // },
+    // guided_splits: {
+    //     algo: guided_splits,
+    //     arguments_id: ["#uniformity", "#fragmentation_argument"],
+    //     read_args: read_skew_algo_args
+    // },
+    // hardcoded_periodic_table: {
+    //     algo: hardcoded_periodic_table_get_mapper,
+    //     arguments_id: [],
+    //     read_args: () => {},
+    // },
 }
 
 

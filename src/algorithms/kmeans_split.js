@@ -7,10 +7,26 @@ let algorithm_map = {
 }
 
 // In general for kmeans, k = number of clusters
-export function kmeans_splits(sorted_data, args, version="optimal") {
-    let k = args["clusters"]
-    let centers = algorithm_map[version](sorted_data, k)
-    return compute_split_points(sorted_data, centers)
+export function kmeans_splits(sorted_data, args, version="optimal", stopping_callback) {
+    // let k = args["clusters"]
+    let prev_cost = Infinity
+    let best_so_far = []
+    for (let k = 1; k < 10; k++) {
+        let {centers, cost} = algorithm_map[version](sorted_data, k)
+        let callback_info = {
+            num_splits: k - 1,
+            data_length: sorted_data.length,
+            cost_now: cost,
+            cost_previous: prev_cost,
+        }
+        prev_cost = cost
+        best_so_far = centers
+        if (!stopping_callback(callback_info)) {
+            break
+        }
+    }
+
+    return compute_split_points(sorted_data, best_so_far)
 }
 
 function compute_split_points(sorted_data, centers) {
@@ -201,5 +217,8 @@ function optimal_kmeans_1d(sorted_data, k) {
         centers.push(center)
         next_segment_start = segment_start
     }
-    return centers
+    return {
+        centers,
+        cost: cost_table[k][n]/n
+    }
 }
