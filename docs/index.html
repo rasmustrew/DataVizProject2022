@@ -48,7 +48,7 @@
         <div id='pipeline_div'>
             <!-- Step 1 -->
             <div id='step_1_container' class="step_container">
-                <h2> Step 1</h2>
+                <h2> Break Amount </h2>
                 <div id="step_1" class="step">
                     <div id="stopping_condition">
                         Stopping condition:
@@ -80,7 +80,7 @@
             <div class="vl"></div>
 
             <div id='step_2_container' class="step_container">
-                <h2> Step 2</h2>
+                <h2> Clustering </h2>
                 <div id="step_2" class="step">
                     <div id="step2_algorithm">
                         <select name='step 2 algorithm' id='step2_algorithm_select' onChange='window.on_recompute_button();' required>
@@ -133,7 +133,7 @@
             <!-- Step 3  -->
             <div class="vl"></div>
             <div id='step_3_container' class="step_container">
-                <h2> Step 3</h2>
+                <h2> Scaling </h2>
                 <div id="step_3" class="step">
                     <div id='step3_algorithm'>
                         <select name='scaling' onChange='window.on_recompute_button();' required>
@@ -150,7 +150,7 @@
             <div class="vl"></div>
 
             <div id='step_4_container' class="step_container">
-                <h2> Step 4</h2>
+                <h2> Range Selection </h2>
                 <div id="step_4" class="step">
                     <div id='step4_algorithm'>
                         <select name='range' onChange='window.on_recompute_button();' required>
@@ -173,15 +173,15 @@
             <!-- Step 5  -->
             <div class="vl"></div>
             <div id='step_5_container' class="step_container">
-                <h2> Step 5</h2>
+                <h2> Formatting </h2>
                 <div id="step_5" class="step">
+                    <div id='density_cues'>
+                        Use Density Cues:
+                        <input type='checkbox' oninput='window.on_recompute_button();'>
+                    </div>
                     <div id='tick_density'>
                         Tick density:
                         <input type='range' min='0' max='100' value='20' class='slider' oninput='window.on_recompute_button();'>
-                    </div>
-                    <div id='density_cues'>
-                        Density Cues:
-                        <input type='checkbox' oninput='window.on_recompute_button();'>
                     </div>
                     <div id='gap_size'>
                         Gap Size:
