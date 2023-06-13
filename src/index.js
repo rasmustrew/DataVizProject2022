@@ -22,7 +22,7 @@ import ScatterPlot from "./plots/scatterplot";
 import SPC from "./plots/spc";
 import {read_gap_size, read_step_5} from "./pipeline/step5";
 import ScreenMapper from "./mappings/screen_mapping";
-import {get_selected_step3_algorithm} from "./pipeline/step3";
+import {get_selected_step3_algorithm, step3_selection_map} from "./pipeline/step3";
 import PiecewiseLinearMapper from "./mappings/proportionate_split_mapping";
 
 console.log("starting")
@@ -31,84 +31,171 @@ const chart_container_ref = "#plot_container_id";
 let data, dimensions, sorted_data, selected_dimensions, mappers, selected_chart_generator
 
 async function run_benchmarks() {
-    let distortion_res = await run_distortion_benchmarks(
-["periodic_table"],
-[
-            {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'none', args: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                name: "none"
-            }, {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'optimal_guided_split', arg: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                "name": "opt"
-            }
-        ])
-    let beeswarm_res = await run_beeswarm_benchmarks(
-["periodic_table"],
-[
-            {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'none', args: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                name: "none"
-            }, {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'optimal_guided_split', arg: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                "name": "opt"
-            }
-        ],
-[
-            { bubble_size: 1, name: 1},
-            { bubble_size: 8, name: 8},
-            { bubble_size: 20, name: 20}
-        ])
+//     let ours_vs_linear_pipeline = [
+//             {
+//                 step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
+//                 step2: {algorithm_id: 'none', args: null},
+//                 step3: {algorithm_id: 'equal', args: null},
+//                 step4: {algorithm_id: 'tight', args: null},
+//                 step5: {gap_size: 30},
+//                 name: "none"
+//             }, {
+//         // {
+//             step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
+//             step2: {algorithm_id: 'optimal_guided_split', arg: null},
+//             step3: {algorithm_id: 'unique', args: null},
+//             step4: {algorithm_id: 'tight', args: null},
+//             step5: {gap_size: 30},
+//             "name": "opt"
+//         }
+//     ]
+//     let distortion_res = await run_distortion_benchmarks(["periodic_table"], ours_vs_linear_pipeline)
+//     let beeswarm_res = await run_beeswarm_benchmarks(["periodic_table"], ours_vs_linear_pipeline,
+// [
+//             { bubble_size: 1, name: 1},
+//             { bubble_size: 8, name: 8},
+//             { bubble_size: 20, name: 20}
+//         ])
+//
+//     let scatterplot_res = await run_scatterplot_benchmarks(["periodic_table"],ours_vs_linear_pipeline)
+//     let parcoords_res = await run_parcoords_benchmarks(["periodic_table"], ours_vs_linear_pipeline)
+//
+//     console.log("OURS VS LINEAR")
+//     console.log(distortion_res)
+//     console.log(beeswarm_res)
+//     console.log(scatterplot_res)
+//     console.log(parcoords_res)
 
-    let scatterplot_res = await run_scatterplot_benchmarks(
-["periodic_table"],
-[
-            {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'none', args: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                name: "none"
-            }, {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'optimal_guided_split', arg: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                "name": "opt"
-            }
-        ])
-    let parcoords_res = await run_parcoords_benchmarks(
-["periodic_table"],
-[
-            {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'none', args: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                name: "none"
-            }, {
-                step1: {algorithm_id: 'cost_reduction_threshold', args: 0.1},
-                step2: {algorithm_id: 'optimal_guided_split', arg: null},
-                step3: {algorithm_id: 'tight', args: null},
-                step5: {gap_size: 30},
-                "name": "opt"
-            }
-        ])
-    console.log(distortion_res)
-    console.log(beeswarm_res)
-    console.log(scatterplot_res)
-    console.log(parcoords_res)
+    console.log("OURS VS QUANTILE AND JENKS")
+
+    let pipelines_vs = [{
+        step1: {algorithm_id: 'custom_choice_k', args: 1},
+        step2: {algorithm_id: 'quantile', args: {clusters: 1}},
+        step3: {algorithm_id: 'unique', args: null},
+        step4: {algorithm_id: 'tight', args: null},
+        step5: {gap_size: 30},
+        name: "quantile-0"
+    }, {
+        step1: {algorithm_id: 'custom_choice_k', args: 0},
+        step2: {algorithm_id: 'jenks', args: {clusters: 0}},
+        step3: {algorithm_id: 'unique', args: null},
+        step4: {algorithm_id: 'tight', args: null},
+        step5: {gap_size: 30},
+        name: "jenks-0"
+    }, {
+        step1: {algorithm_id: 'custom_choice_k', args: 1},
+        step2: {algorithm_id: 'optimal_guided_split', args: null},
+        step3: {algorithm_id: 'unique', args: null},
+        step4: {algorithm_id: 'tight', args: null},
+        step5: {gap_size: 30},
+        "name": "opt-0"
+    },
+        {
+            step1: {algorithm_id: 'custom_choice_k', args: 2},
+            step2: {algorithm_id: 'quantile', args: {clusters: 2}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "quantile-1"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 1},
+            step2: {algorithm_id: 'jenks', args: {clusters: 1}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "jenks-1"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 2},
+            step2: {algorithm_id: 'optimal_guided_split', args: null},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            "name": "opt-1"
+        },
+        {
+            step1: {algorithm_id: 'custom_choice_k', args: 3},
+            step2: {algorithm_id: 'quantile', args: {clusters: 3}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "quantile-2"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 2},
+            step2: {algorithm_id: 'jenks', args: {clusters: 2}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "jenks-2"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 3},
+            step2: {algorithm_id: 'optimal_guided_split', args: null},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            "name": "opt-2"
+        },
+        {
+            step1: {algorithm_id: 'custom_choice_k', args: 4},
+            step2: {algorithm_id: 'quantile', args: {clusters: 4}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "quantile-3"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 3},
+            step2: {algorithm_id: 'jenks', args: {clusters: 3}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "jenks-3"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 4},
+            step2: {algorithm_id: 'optimal_guided_split', args: null},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            "name": "opt-3"
+        },
+        {
+            step1: {algorithm_id: 'custom_choice_k', args: 5},
+            step2: {algorithm_id: 'quantile', args: {clusters: 5}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "quantile-4"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 4},
+            step2: {algorithm_id: 'jenks', args: {clusters: 4}},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            name: "jenks-4"
+        }, {
+            step1: {algorithm_id: 'custom_choice_k', args: 5},
+            step2: {algorithm_id: 'optimal_guided_split', args: null},
+            step3: {algorithm_id: 'unique', args: null},
+            step4: {algorithm_id: 'tight', args: null},
+            step5: {gap_size: 30},
+            "name": "opt-4"
+        }
+    ]
+
+    // let beeswarm_competition_res = await run_beeswarm_benchmarks(["periodic_table"], pipelines_vs,
+    //     [
+    //         { bubble_size: 1, name: 1},
+    //         { bubble_size: 8, name: 8},
+    //         { bubble_size: 20, name: 20}
+    //     ])
+    //
+    // console.log(beeswarm_competition_res)
+    // let distortion_res = await run_distortion_benchmarks(["periodic_table"], pipelines_vs)
+    // console.log(distortion_res)
+
+    // let par_coords_competitive_res = await run_parcoords_benchmarks(["periodic_table"], pipelines_vs)
+    // let scatterplot_competitive_res = await run_scatterplot_benchmarks(["un_country_data"], pipelines_vs)
+
+    // console.log(par_coords_competitive_res)
+    // console.log(scatterplot_competitive_res)
 }
 
 
@@ -120,6 +207,7 @@ async function run_beeswarm_benchmarks(datasets, pipelines, settings) {
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
+        // console.log(dataset_id, dataset)
         sorted_data = dataset.sorted_data
         for (let dimension of dataset.dimensions) {
             benchmark_result[dataset_id][dimension] = {}
@@ -127,11 +215,11 @@ async function run_beeswarm_benchmarks(datasets, pipelines, settings) {
                 benchmark_result[dataset_id][dimension][pipeline.name] = {}
                 let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                 let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
-                let step3_algo = step4_selection_map[pipeline.step3.algorithm_id]
-                let step_5_gap_size = pipeline.step5.gap_size
-                let mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
+                let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+                let step4_algo = step4_selection_map[pipeline.step4.algorithm_id]
+                let mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args, step4_algo, pipeline.step4.args)
                 for (let setting of settings) {
-                    let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting.bubble_size, step_5_gap_size)
+                    let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, mapper, setting.bubble_size, pipeline.step5)
                     benchmark_result["statistics"]["output_ranges"] = beeswarm.mapper.get_output_space_ranges()
                     benchmark_result[dataset_id][dimension][pipeline.name][setting.name] = beeswarm.runBenchmarks()
                     beeswarm.delete()
@@ -154,11 +242,11 @@ async function run_distortion_benchmarks(datasets, pipelines) {
                 benchmark_result[dataset_id][dimension][pipeline.name] = {}
                 let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                 let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
-                let step3_algo = step4_selection_map[pipeline.step3.algorithm_id]
-                let step_5_gap_size = pipeline.step5.gap_size
-                let raw_mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
+                let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+                let step4_algo = step4_selection_map[pipeline.step4.algorithm_id]
+                let raw_mapper = run_pipeline(dimension, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args, step4_algo, pipeline.step4.args)
                 //use beeswarm to get a mapper with gaps, bubble size does not matter for distortion
-                let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, raw_mapper, 8, step_5_gap_size)
+                let beeswarm = new Beeswarm(chart_container_ref, dataset.data, dimension, raw_mapper, 8, pipeline.step5)
                 let linear_mapper = new LinearMapper(beeswarm.mapper.get_output_space_ranges(), [0, 1])
                 let comp_mapper = new CompositeMapper([beeswarm.mapper, linear_mapper])
                 benchmark_result[dataset_id][dimension][pipeline.name] = distortion(dataset.data_per_dimension[dimension], comp_mapper )
@@ -177,6 +265,7 @@ async function run_scatterplot_benchmarks(datasets, pipelines) {
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
+        sorted_data = dataset.sorted_data
         for (let dimension_a of dataset.dimensions) {
             benchmark_result[dataset_id][dimension_a] = {}
             for (let dimension_b of dataset.dimensions) {
@@ -189,15 +278,15 @@ async function run_scatterplot_benchmarks(datasets, pipelines) {
                 for (let pipeline of pipelines) {
                     let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
                     let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
-                    let step3_algo = step4_selection_map[pipeline.step3.algorithm_id]
-                    let step_5_gap_size = pipeline.step5.gap_size
+                    let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+                    let step4_algo = step4_selection_map[pipeline.step4.algorithm_id]
                     let raw_mappers = {}
-                    raw_mappers[dimension_a] = run_pipeline(dimension_a, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
-                    raw_mappers[dimension_b] = run_pipeline(dimension_b, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args)
+                    raw_mappers[dimension_a] = run_pipeline(dimension_a, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args, step4_algo, pipeline.step4.args)
+                    raw_mappers[dimension_b] = run_pipeline(dimension_b, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args, step4_algo, pipeline.step4.args)
                     let data_a = dataset.data_per_dimension[dimension_a]
                     let data_b = dataset.data_per_dimension[dimension_b]
 
-                    let scatterplot = new ScatterPlot(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers, step_5_gap_size)
+                    let scatterplot = new ScatterPlot(chart_container_ref, dataset.data, [dimension_a, dimension_b], raw_mappers, pipeline.step5)
 
                     let screen_mapper_a = scatterplot.x_mapper
                     let linear_mapper_a = new LinearMapper(screen_mapper_a.get_output_space_ranges(), [0, 1])
@@ -242,16 +331,18 @@ async function run_parcoords_benchmarks(datasets, pipelines) {
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
+        sorted_data = dataset.sorted_data
         for (let pipeline of pipelines) {
             // benchmark_result[dataset_id][dimension_a][dimension_b][pipeline.name] = {}
             let step1_algo = step1_selection_map[pipeline.step1.algorithm_id]
             let step2_algo = step2_selection_map[pipeline.step2.algorithm_id]
-            let step3_algo = step4_selection_map[pipeline.step3.algorithm_id]
-            let step_5_gap_size = pipeline.step5.gap_size
+            let step3_algo = step3_selection_map[pipeline.step3.algorithm_id]
+            let step4_algo = step4_selection_map[pipeline.step4.algorithm_id]
             let raw_mappers = {}
-            dataset.dimensions.forEach((dim) => raw_mappers[dim] = run_pipeline(dim, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args))
+            dataset.dimensions.forEach((dim) => raw_mappers[dim] = run_pipeline(dim, step1_algo, pipeline.step1.args, step2_algo, pipeline.step2.args, step3_algo, pipeline.step3.args, step4_algo, pipeline.step4.args))
 
-            let parcoords = new SPC(chart_container_ref, dataset.data, dataset.dimensions, raw_mappers, step_5_gap_size)
+            // console.log(raw_mappers)
+            let parcoords = new SPC(chart_container_ref, dataset.data, dataset.dimensions, raw_mappers, pipeline.step5)
             let width = parcoords.width / (dataset.dimensions.length - 1)
             let line_size = 2
 
@@ -292,6 +383,9 @@ async function run_parcoords_benchmarks(datasets, pipelines) {
                     let comp_mapper_b = new CompositeMapper([screen_mapper_b, linear_mapper_b])
 
                     // 2d overplotting
+
+                    // console.log(screen_mapper_a.get_output_space_ranges())
+                    // console.log(comp_mapper_a, comp_mapper_b)
                     let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, num_bins, num_bins)
                     let overplotting2d = overplotting_2d(histogram_2d)
                     benchmark_result[dataset_id][dimension_a][dimension_b]["overplotting"][pipeline.name] = overplotting2d
@@ -336,6 +430,9 @@ function select_steps() {
 }
 
 function run_pipeline(dimension, step1, step1_args, step2, step2_args, step3, step3_args, step4, step4_args) {
+    // console.log(step1, step2, step3, step4)
+    // console.log(dimension)
+    // console.log(sorted_data)
     let splits_or_mapper = step2.algo(sorted_data[dimension], step2_args, (callback_info) => step1.algo(callback_info, step1_args))
     if (splits_or_mapper instanceof Array) {
         let output_ranges = step3.algo(sorted_data[dimension], splits_or_mapper, step3_args)

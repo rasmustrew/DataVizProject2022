@@ -10,7 +10,7 @@ import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/be
 export default class ScatterPlot {
 
     constructor(chart_ref, data, selected_dimensions, raw_mappers, args) {
-        console.log(args)
+        // console.log(args)
         this.chart_spacing = args.gap_size
         this.tick_spacing_raw = args.tick_density
         this.use_density_cues = args.use_density_cues

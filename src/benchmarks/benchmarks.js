@@ -9,6 +9,10 @@ export function screen_histogram_2d(raw_data_a, raw_data_b, mapper_a, mapper_b, 
         histogram_2d[i] = new Array(num_bins_b).fill(0)
     }
 
+    // console.log(num_bins_a, num_bins_b)
+    // console.log(mapper_a)
+    // console.log(mapper_a.get_input_space_ranges())
+    // console.log(mapper_a.get_output_space_ranges())
 
     for (let i = 0; i < raw_data_a.length; i++) {
 
@@ -16,6 +20,10 @@ export function screen_histogram_2d(raw_data_a, raw_data_b, mapper_a, mapper_b, 
         let mapped_point_b = mapper_b.map(raw_data_b[i])
         let bin_a = Math.floor(mapped_point_a / bin_size_a)
         let bin_b = Math.floor(mapped_point_b / bin_size_b)
+        // console.log(raw_data_a[i])
+        // console.log(mapped_point_a, bin_a)
+        // console.log(mapped_point_b, bin_b)
+        // console.log(bin_a, bin_b)
         histogram_2d[bin_a][bin_b] += 1
 
     }

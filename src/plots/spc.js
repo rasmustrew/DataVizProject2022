@@ -56,6 +56,7 @@ export default class SPC {
                 this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], gap_size)
             } else {
                 let output_ranges = mapper.get_output_space_ranges()
+                console.log(gap_size)
                 let screen_mapper = new ScreenMapper(output_ranges, [height, 0], gap_size)
                 this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
             }

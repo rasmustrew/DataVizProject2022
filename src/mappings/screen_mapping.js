@@ -4,6 +4,7 @@ import LinearMapper from "./linear_mapping";
 export default class ScreenMapper {
 
     constructor(input_space_ranges, output_range, buffer_size) {
+        // console.log(output_range)
         let input_range_size = input_space_ranges.reduce((acc, range) => acc + (range[1] - range[0]), 0)
         this.input_start = input_space_ranges[0][0]
         this.input_end = input_space_ranges[input_space_ranges.length - 1][1]
@@ -12,6 +13,7 @@ export default class ScreenMapper {
         let output_start = output_range[0]
         let output_end = output_range[1]
         let output_size = Math.abs(output_end - output_start) - num_gaps * buffer_size;
+        // console.log(output_end, output_start, num_gaps, buffer_size, output_size)
         this.reverse = output_start > output_end
         this.output_start = output_start;
         this.output_end = output_end
@@ -22,6 +24,7 @@ export default class ScreenMapper {
             let range_size = Math.abs(range[1] - range[0]);
             let range_percent = range_size / input_range_size
             let new_output_range_size = output_size * range_percent
+            // console.log(range_size, range_percent, output_size)
             let new_output_range_end;
             if (this.reverse) {
                 new_output_range_end = current_output - new_output_range_size
@@ -29,6 +32,7 @@ export default class ScreenMapper {
             else {
                  new_output_range_end = current_output + new_output_range_size
             }
+            // console.log(current_output, new_output_range_size, new_output_range_end)
             let mapper = new LinearMapper([range], [current_output, new_output_range_end])
             this.inner_mappers.push(mapper)
             current_output = new_output_range_end

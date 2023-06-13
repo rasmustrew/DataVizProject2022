@@ -7,8 +7,12 @@ export default class CompositeMapper {
     }
     map(input) {
         let output = input;
+        // console.log(input)
         for (let mapper of this.mappers) {
+
             output = mapper.map(output)
+            // console.log(mapper)
+            // console.log(output)
         }
         return output
     }

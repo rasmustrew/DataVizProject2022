@@ -7,7 +7,14 @@ export async function load_numbeo_data() {
         'restaurant_price_index', 'pollution_index', 'health_care_index', 'quality_of_life_index']
     let id_dimension = "name"
 
-    let row_filtered_data = data//data.filter(row => row["quality_of_life_index"] !== "-1")
+    let error_values = ["", "-1"]
+
+
+    let row_filtered_data = data.filter(row => {
+        return float_dimensions.every(dimension => {
+            return !error_values.includes(row[dimension])
+        })
+    })
 
     let column_filtered_data = row_filtered_data.map(row => {
         let filtered_row = {}

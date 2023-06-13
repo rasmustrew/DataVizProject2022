@@ -10,6 +10,7 @@ export default class SegmentScreenMapper {
 
     map(input) {
         let screen_mapper_input = this.p_range_mapper.map(input)
+        // console.log(screen_mapper_input)
         let range_index = this.p_range_mapper.get_input_space_ranges().findIndex((range) =>
             is_value_in_range(input, range))
         if (range_index === -1) return -1
