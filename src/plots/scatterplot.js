@@ -6,6 +6,7 @@ import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 import PiecewiseLinearMapper from "../mappings/proportionate_split_mapping";
 import LinearMapper from "../mappings/linear_mapping";
 import {distortion, overplotting_2d, screen_histogram_2d} from "../benchmarks/benchmarks";
+import LogMapper from "../mappings/log_mapping";
 
 export default class ScatterPlot {
 
@@ -182,12 +183,26 @@ export default class ScatterPlot {
 
         let tick_format = Intl.NumberFormat("en-GB", { maximumSignificantDigits: 4 })
 
-        let x = d3.scaleLinear()
-            .domain(x_range)
-            .range(x_range_screen)
+        let x = {}
+
+        console.log(x_mapper)
+        if (x_mapper instanceof SegmentScreenMapper) {
+            x = d3.scaleLinear()
+                .domain(x_range)
+                .range(x_range_screen)
+        } else if (x_mapper.mappers[0] instanceof LogMapper) {
+            x = d3.scaleLog(x_range, x_range_screen)
+        } else {
+            x = d3.scaleLinear()
+                .domain(x_range)
+                .range(x_range_screen)
+        }
+
+
 
         // Inner tick lines
         // Only place ticks if tile is large enough
+
         base_svg.append("g")
             .attr("transform", "translate(" + 0 + "," + y_range_screen[0] + ")")
             .attr("class", "tickline")

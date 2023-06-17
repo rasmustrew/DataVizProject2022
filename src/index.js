@@ -180,21 +180,21 @@ async function run_benchmarks() {
         }
     ]
 
-    // let beeswarm_competition_res = await run_beeswarm_benchmarks(["periodic_table"], pipelines_vs,
-    //     [
-    //         { bubble_size: 1, name: 1},
-    //         { bubble_size: 8, name: 8},
-    //         { bubble_size: 20, name: 20}
-    //     ])
-    //
-    // console.log(beeswarm_competition_res)
+    let beeswarm_competition_res = await run_beeswarm_benchmarks(["periodic_table"], pipelines_vs,
+        [
+            { bubble_size: 1, name: 1},
+            { bubble_size: 8, name: 8},
+            { bubble_size: 20, name: 20}
+        ])
+
+    console.log(beeswarm_competition_res)
     // let distortion_res = await run_distortion_benchmarks(["periodic_table"], pipelines_vs)
     // console.log(distortion_res)
 
-    // let par_coords_competitive_res = await run_parcoords_benchmarks(["periodic_table"], pipelines_vs)
+    let par_coords_competitive_res = await run_parcoords_benchmarks(["periodic_table"], pipelines_vs)
     // let scatterplot_competitive_res = await run_scatterplot_benchmarks(["un_country_data"], pipelines_vs)
 
-    // console.log(par_coords_competitive_res)
+    console.log(par_coords_competitive_res)
     // console.log(scatterplot_competitive_res)
 }
 
@@ -207,6 +207,7 @@ async function run_beeswarm_benchmarks(datasets, pipelines, settings) {
     for (let dataset_id of datasets) {
         benchmark_result[dataset_id] = {}
         let dataset = await prepare_data_set(dataset_id)
+        benchmark_result.statistics["data_length"] = dataset.data.length
         // console.log(dataset_id, dataset)
         sorted_data = dataset.sorted_data
         for (let dimension of dataset.dimensions) {
@@ -368,6 +369,11 @@ async function run_parcoords_benchmarks(datasets, pipelines) {
                 let overplotting = overplotting_1d(histogram_1d)
                 benchmark_result[dataset_id][dimension_a]["overplotting"][pipeline.name] = overplotting
 
+                // Distortion
+                let distort = distortion(data_a, comp_mapper_a)
+                benchmark_result[dataset_id][dimension_a]["distortion"] = benchmark_result[dataset_id][dimension_a]["distortion"] || {}
+                benchmark_result[dataset_id][dimension_a]["distortion"][pipeline.name] = distort
+
                 for (let dimension_b of dataset.dimensions) {
                     if (dimension_a === dimension_b) {
                         continue
@@ -394,6 +400,8 @@ async function run_parcoords_benchmarks(datasets, pipelines) {
                     let x_to_y_ratio = width / height
                     let res = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, x_to_y_ratio)
                     benchmark_result[dataset_id][dimension_a][dimension_b]["avg_crossing_angle"][pipeline.name] = res.avg_crossing_angle.toFixed(2)
+
+                    //delete
                     parcoords.delete()
                 }
             }

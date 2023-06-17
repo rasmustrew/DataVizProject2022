@@ -182,7 +182,10 @@ export default class Beeswarm {
         let distort = distortion(data, comp_mapper)
         // console.log(this.dimension, ": ", distort)
 
-        return average_height
+        return {
+            average_height,
+            distortion: distort,
+        }
     }
 }
 
