@@ -19,6 +19,17 @@ import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
+function countDecimalDigits(number) {
+    const numb = number.toString().toLocaleString('fullwide', {useGrouping:false});
+    let split = numb.toString().split('.');
+    if(split.length<2){
+        return 0
+    }
+    else {
+        return split[1].length
+    }
+}
+
 export default class SPC {
     constructor(container_ref, data, dimensions, raw_mappers, args) {
         let gap_size = args.gap_size
@@ -42,7 +53,7 @@ export default class SPC {
         container.appendChild(plot)
 
         // let buffer_size = 20;
-        let margin = {top: 24, right: 80, bottom: 16, left: 80};
+        let margin = {top: 44, right: 80, bottom: 16, left: 80};
         this.margin = margin
         let width = plot.clientWidth - margin.left - margin.right;
         this.width = width
@@ -135,10 +146,10 @@ export default class SPC {
             .style("text-anchor", "middle")
             .style("font-weight", 400)
             .style("overflow", "visible")
-            .attr("y", -8)
+            .attr("y", -13)
             .text(function (dimension_name) {
                 return dimension_name;
-            });
+            })
 
         let axes = axis_groups.selectAll(".axis")
             .data(function (d) {
@@ -164,8 +175,17 @@ export default class SPC {
                 let input_scale = _this.mappers[dim].get_input_space_ranges()[index]
                 let output_scale = _this.mappers[dim].get_output_space_ranges()[index]
                 let d3_scale = d3.scaleLinear().domain(input_scale).range(output_scale)
+                // let maxPrecision = tick_values.reduce((acc, val) => {
+                //     let prec = countDecimalDigits(val);
+                //     if (prec > acc) {
+                //         acc = prec;
+                //     }
+                //     return acc;
+                // }, countDecimalDigits(tick_values[0]));
 
-                d3.select(this).call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15));
+                d3.select(this).call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15).tickFormat(x => `${x.toFixed(countDecimalDigits(x))}`));
+                d3.select(this).call(g => g.selectAll(".tick text")
+                    .style("font-weight", "bold"));
             })
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         let brush_group = axes.append("g")
