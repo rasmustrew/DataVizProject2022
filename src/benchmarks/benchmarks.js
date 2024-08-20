@@ -166,6 +166,6 @@ export function pretty_print_benchmark(benchmark) {
     for (let value of Object.values(benchmark)) {
         string += value + ", "
     }
-    console.log(string)
+    // console.log(string)
 }
 

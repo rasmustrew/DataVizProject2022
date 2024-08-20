@@ -67,7 +67,7 @@ export default class SPC {
                 this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], gap_size)
             } else {
                 let output_ranges = mapper.get_output_space_ranges()
-                console.log(gap_size)
+                // console.log(gap_size)
                 let screen_mapper = new ScreenMapper(output_ranges, [height, 0], gap_size)
                 this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
             }
@@ -76,7 +76,7 @@ export default class SPC {
         this.x = d3.scalePoint().domain(dimensions).range([0, width])
         this.foreground;
         this.background;
-        // this.runBenchmarks();
+        this.runBenchmarks();
 
     }
 
@@ -208,13 +208,13 @@ export default class SPC {
             let brush_range = par_coords.mappers[dimension].get_output_space_ranges()[i]
             let brush_start = Math.min(brush_range[0], brush_range[1])
             let brush_end = Math.max(brush_range[0], brush_range[1])
-            console.log(dimension, i, brush_start)
+            // console.log(dimension, i, brush_start)
             let brush_overlay = _this.selectChild(".brush_overlay")
                 .attr("height", Math.floor(Math.abs(brush_range[0] - brush_range[1])))
                 .attr("y", brush_start)
             brush_overlay.call(d3.drag()
                 .on('start', (event, data) => {
-                    console.log("drag start: ", event.y)
+                    // console.log("drag start: ", event.y)
                     let new_index =  par_coords.brushes[dimension][i].length
                     let brush_field_group = _this.append("g")
                         .attr('data-i', new_index)
@@ -563,26 +563,51 @@ export default class SPC {
             .text(data.id)
     }
 
+    addDimBchmToExportList(exportDict, keyName, dim, benchmarkVal ) {
+        let dim_benchmark = {}
+        dim_benchmark['dimension'] = dim
+        dim_benchmark['value'] = benchmarkVal
+        if(exportDict[keyName] == null){
+            exportDict[keyName] = []
+        }
+        exportDict[keyName].push(dim_benchmark)
+    }
+
+    computeAvgBench(exportDict){
+        let newExport = {}
+        for (let key in exportDict) {
+            let avg = 0
+            for (let i in exportDict[key]){
+                avg += exportDict[key][i]['value']
+            }
+            avg /= (exportDict[key]).length
+            newExport[key] = avg
+        }
+        return newExport
+    }
+
     runBenchmarks() {
-        console.log("BENCHMARKS")
+        // console.log("BENCHMARKS")
         let data_per_dimension = {}
+        let benchmark_export = {}
         this.dimensions.forEach((dim) => {
             let data = this.data.map((data_point) => data_point[dim])
             data_per_dimension[dim] = data
         })
-
-        console.log("OVERPLOTTING 1D")
-        this.dimensions.forEach((dim) => {
+        // console.log("OVERPLOTTING 1D")
+            this.dimensions.forEach((dim) => {
             let data = data_per_dimension[dim]
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
             let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
             let histogram = screen_histogram_1d(data, comp_mapper, 100)
             // console.log(histogram)
             let overplotting = overplotting_1d(histogram)
-            console.log(dim, ": ", overplotting)
+            // console.log(dim, ": ", overplotting)
+            this.addDimBchmToExportList(benchmark_export, 'overplotting_1d', dim, overplotting)
+            // pretty_print_benchmark(overplotting)
         })
 
-        console.log("OVERPLOTTING 2D")
+        // console.log("OVERPLOTTING 2D")
         for (let i = 0; i < this.dimensions.length - 1; i++) {
             let dim_a = this.dimensions[i]
             let dim_b = this.dimensions[i+1]
@@ -594,9 +619,12 @@ export default class SPC {
             let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
             let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
             let overplotting = overplotting_2d(histogram_2d)
-            console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+            // console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+            let dim = `(${dim_a}, ${dim_b})`
+            this.addDimBchmToExportList(benchmark_export, 'overplotting_2d', dim, overplotting)
+            // pretty_print_benchmark(overplotting)
         }
-        console.log("LINE CROSSINGS AND AVG CROSSING ANGLE")
+        // console.log("LINE CROSSINGS AND AVG CROSSING ANGLE")
         for (let i = 0; i < this.dimensions.length - 1; i++) {
             let dim_a = this.dimensions[i]
             let dim_b = this.dimensions[i+1]
@@ -608,7 +636,12 @@ export default class SPC {
             let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
 
             let { avg_crossing_angle, number_of_line_crossings } = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, 1)
-            console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
+            // console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
+            let dim = `(${dim_a}, ${dim_b})`
+            this.addDimBchmToExportList(benchmark_export, 'line_crossing', dim, number_of_line_crossings)
+            this.addDimBchmToExportList(benchmark_export, 'avg_crossing_angle', dim, avg_crossing_angle)
+            // pretty_print_benchmark(avg_crossing_angle)
+            // pretty_print_benchmark(number_of_line_crossings)
         }
 
         // console.log("DISTORTION")
@@ -617,8 +650,21 @@ export default class SPC {
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
             let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
             let distort = distortion(data, comp_mapper)
-            console.log(dim, ": ", distort)
+            pretty_print_benchmark(distort)
+            // console.log(dim, ": ", distort)
+            this.addDimBchmToExportList(benchmark_export, 'distortion', dim, distort)
         })
+        let avgBenches = this.computeAvgBench(benchmark_export)
+        console.log(avgBenches)
+        let exp = {
+            "settings" : {},
+            "data": {}
+        }
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(avgBenches));
+        let dlAnchorElem = document.getElementById('downloadAnchorElem');
+        dlAnchorElem.setAttribute("href",     dataStr     );
+        dlAnchorElem.setAttribute("download", "scene.json");
+        // dlAnchorElem.click();
     }
 }
 
