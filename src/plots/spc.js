@@ -214,6 +214,8 @@ export default class SPC {
                 .attr("y", brush_start)
             brush_overlay.call(d3.drag()
                 .on('start', (event, data) => {
+
+                    console.log(data);
                     // console.log("drag start: ", event.y)
                     let new_index =  par_coords.brushes[dimension][i].length
                     let brush_field_group = _this.append("g")
@@ -237,8 +239,6 @@ export default class SPC {
                         .call(d3.drag()
                             // .container(_this)
                             .on('drag', (event, data) => {
-                                console.log("dragging bot")
-                                console.log(event.y)
                                 let old_y = parseInt(brush_field_bottom.attr("y"))
                                 let old_height = parseInt(brush_field.attr("height"))
                                 let new_height = old_height + event.dy
@@ -270,8 +270,6 @@ export default class SPC {
                         .call(d3.drag()
                             .container(brush_field_group)
                             .on('drag', (event, data) => {
-                                console.log("dragging top")
-                                console.log(event.y)
                                 let old_y = parseInt(brush_field_group.attr("data-y"))
                                 let new_y = old_y + event.dy
                                 let old_height = parseInt(brush_field.attr("height"))
@@ -301,8 +299,6 @@ export default class SPC {
 
                     brush_field_group.call(d3.drag()
                         .on('drag', (event, data) => {
-                            console.log("dragging whole")
-                            console.log(event.y)
                             let old_y = parseInt(brush_field_group.attr("data-y"))
                             let new_y = old_y + event.dy
                             let height = parseInt(brush_field.attr("height"))
@@ -349,13 +345,11 @@ export default class SPC {
 
                 })
                 .on('drag', (event, data) => {
-                    console.log("continuing drag", event.y)
                     let brush_min = Math.min(brush_range[0], brush_range[1])
                     let brush_max = Math.max(brush_range[0], brush_range[1])
                     let top_y = parseInt(_this.brush_field_being_built.attr("data-y"))
                     let height = event.y - top_y
                     let event_y = Math.max(event.y, brush_min)
-                    console.log(event_y)
                     if (height + top_y > brush_max) {
                         height = brush_max - top_y
                     }
@@ -537,6 +531,7 @@ export default class SPC {
         this.foreground.style("display", function(data_point) {
             if (selected_ids.length === 0) return 'none'
             if (selected_ids.includes(data_point.id)) {
+                console.log("Selected : ", data_point)
                 return null
             }
             else {
@@ -664,7 +659,7 @@ export default class SPC {
         let dlAnchorElem = document.getElementById('downloadAnchorElem');
         dlAnchorElem.setAttribute("href",     dataStr     );
         dlAnchorElem.setAttribute("download", "scene.json");
-        // dlAnchorElem.click();
+        dlAnchorElem.click();
     }
 }
 
