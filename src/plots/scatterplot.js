@@ -160,6 +160,8 @@ export default class ScatterPlot {
             .attr("y", -margin.left+30)
             .attr("x", -margin.top)
             .text(this.dimensions[1])
+
+        this.runBenchmarks()
     }
 
     make_tick_marks(base_svg, i, j, x_range, y_range, x_mapper, y_mapper) {
@@ -261,7 +263,7 @@ export default class ScatterPlot {
             data_per_dimension[dim] = data
         })
 
-        // console.log("OVERPLOTTING 2D")
+        console.log("OVERPLOTTING 2D")
         let dim_a = dimensions[0]
         let dim_b = dimensions[1]
         let data_a = data_per_dimension[dim_a]
@@ -272,15 +274,15 @@ export default class ScatterPlot {
         let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
         let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
         let overplotting = overplotting_2d(histogram_2d)
-        // console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+        console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
 
-        // console.log("DISTORTION")
+        console.log("DISTORTION")
         dimensions.forEach((dim) => {
             let data = data_per_dimension[dim]
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
             let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
             let distort = distortion(data, comp_mapper)
-            // console.log(dim, ": ", distort)
+            console.log(dim, ": ", distort)
         })
 
     }

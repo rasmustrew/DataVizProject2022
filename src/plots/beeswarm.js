@@ -85,10 +85,21 @@ export default class Beeswarm {
             .call(d3.axisBottom(x)
                 .tickValues((tile_width >= this.tick_spacing) ? ticks : [])
                 .tickFormat((tick) => tick_format.format(tick))
-            )
+            );
+        axis_x
             .selectAll("text")
             .attr("transform", "translate(-10,0)rotate(-45)")
-            .style("text-anchor", "end");
+            .style("text-anchor", "end")
+            .style("font-size", 20);
+
+        axis_x.selectAll("g.tick")
+            .filter(function(d, i) {
+                let position = ticks.indexOf(d)
+                return position == 0 || position == ticks.length - 1 ;
+            })
+            .attr("stroke-width", 5)
+            .style("font-size", 25)
+            .style("font-weight", "bold");
 
         this.circle_padding = 4
         this.circle_centers = []

@@ -19,6 +19,17 @@ import SegmentScreenMapper from "../mappings/segment_screen_mapping";
 let highlight_colour = "rgba(255, 0, 0, 0.4)"
 let standard_colour = "rgba(70, 130, 180, 0.4)"
 
+function countDecimalDigits(number) {
+    const numb = number.toString().toLocaleString('fullwide', {useGrouping:false});
+    let split = numb.toString().split('.');
+    if(split.length<2){
+        return 0
+    }
+    else {
+        return split[1].length
+    }
+}
+
 export default class SPC {
     constructor(container_ref, data, dimensions, raw_mappers, args) {
         let gap_size = args.gap_size
@@ -42,7 +53,7 @@ export default class SPC {
         container.appendChild(plot)
 
         // let buffer_size = 20;
-        let margin = {top: 24, right: 80, bottom: 16, left: 80};
+        let margin = {top: 44, right: 80, bottom: 16, left: 80};
         this.margin = margin
         let width = plot.clientWidth - margin.left - margin.right;
         this.width = width
@@ -56,7 +67,7 @@ export default class SPC {
                 this.mappers[dim] = new SegmentScreenMapper(mapper, [height, 0], gap_size)
             } else {
                 let output_ranges = mapper.get_output_space_ranges()
-                console.log(gap_size)
+                // console.log(gap_size)
                 let screen_mapper = new ScreenMapper(output_ranges, [height, 0], gap_size)
                 this.mappers[dim] = new CompositeMapper([mapper, screen_mapper])
             }
@@ -135,10 +146,10 @@ export default class SPC {
             .style("text-anchor", "middle")
             .style("font-weight", 400)
             .style("overflow", "visible")
-            .attr("y", -8)
+            .attr("y", -13)
             .text(function (dimension_name) {
                 return dimension_name;
-            });
+            })
 
         let axes = axis_groups.selectAll(".axis")
             .data(function (d) {
@@ -164,8 +175,17 @@ export default class SPC {
                 let input_scale = _this.mappers[dim].get_input_space_ranges()[index]
                 let output_scale = _this.mappers[dim].get_output_space_ranges()[index]
                 let d3_scale = d3.scaleLinear().domain(input_scale).range(output_scale)
+                // let maxPrecision = tick_values.reduce((acc, val) => {
+                //     let prec = countDecimalDigits(val);
+                //     if (prec > acc) {
+                //         acc = prec;
+                //     }
+                //     return acc;
+                // }, countDecimalDigits(tick_values[0]));
 
-                d3.select(this).call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15));
+                d3.select(this).call(d3.axisLeft().scale(d3_scale).tickValues(tick_values).tickSize(15).tickFormat(x => `${x.toFixed(countDecimalDigits(x))}`));
+                d3.select(this).call(g => g.selectAll(".tick text")
+                    .style("font-weight", "bold"));
             })
         // Add and store a brush for each axis, allows the dragging selection on each axis.
         let brush_group = axes.append("g")
@@ -188,13 +208,15 @@ export default class SPC {
             let brush_range = par_coords.mappers[dimension].get_output_space_ranges()[i]
             let brush_start = Math.min(brush_range[0], brush_range[1])
             let brush_end = Math.max(brush_range[0], brush_range[1])
-            console.log(dimension, i, brush_start)
+            // console.log(dimension, i, brush_start)
             let brush_overlay = _this.selectChild(".brush_overlay")
                 .attr("height", Math.floor(Math.abs(brush_range[0] - brush_range[1])))
                 .attr("y", brush_start)
             brush_overlay.call(d3.drag()
                 .on('start', (event, data) => {
-                    console.log("drag start: ", event.y)
+
+                    console.log(data);
+                    // console.log("drag start: ", event.y)
                     let new_index =  par_coords.brushes[dimension][i].length
                     let brush_field_group = _this.append("g")
                         .attr('data-i', new_index)
@@ -217,8 +239,6 @@ export default class SPC {
                         .call(d3.drag()
                             // .container(_this)
                             .on('drag', (event, data) => {
-                                console.log("dragging bot")
-                                console.log(event.y)
                                 let old_y = parseInt(brush_field_bottom.attr("y"))
                                 let old_height = parseInt(brush_field.attr("height"))
                                 let new_height = old_height + event.dy
@@ -250,8 +270,6 @@ export default class SPC {
                         .call(d3.drag()
                             .container(brush_field_group)
                             .on('drag', (event, data) => {
-                                console.log("dragging top")
-                                console.log(event.y)
                                 let old_y = parseInt(brush_field_group.attr("data-y"))
                                 let new_y = old_y + event.dy
                                 let old_height = parseInt(brush_field.attr("height"))
@@ -281,8 +299,6 @@ export default class SPC {
 
                     brush_field_group.call(d3.drag()
                         .on('drag', (event, data) => {
-                            console.log("dragging whole")
-                            console.log(event.y)
                             let old_y = parseInt(brush_field_group.attr("data-y"))
                             let new_y = old_y + event.dy
                             let height = parseInt(brush_field.attr("height"))
@@ -329,13 +345,11 @@ export default class SPC {
 
                 })
                 .on('drag', (event, data) => {
-                    console.log("continuing drag", event.y)
                     let brush_min = Math.min(brush_range[0], brush_range[1])
                     let brush_max = Math.max(brush_range[0], brush_range[1])
                     let top_y = parseInt(_this.brush_field_being_built.attr("data-y"))
                     let height = event.y - top_y
                     let event_y = Math.max(event.y, brush_min)
-                    console.log(event_y)
                     if (height + top_y > brush_max) {
                         height = brush_max - top_y
                     }
@@ -517,6 +531,7 @@ export default class SPC {
         this.foreground.style("display", function(data_point) {
             if (selected_ids.length === 0) return 'none'
             if (selected_ids.includes(data_point.id)) {
+                console.log("Selected : ", data_point)
                 return null
             }
             else {
@@ -543,26 +558,51 @@ export default class SPC {
             .text(data.id)
     }
 
+    addDimBchmToExportList(exportDict, keyName, dim, benchmarkVal ) {
+        let dim_benchmark = {}
+        dim_benchmark['dimension'] = dim
+        dim_benchmark['value'] = benchmarkVal
+        if(exportDict[keyName] == null){
+            exportDict[keyName] = []
+        }
+        exportDict[keyName].push(dim_benchmark)
+    }
+
+    computeAvgBench(exportDict){
+        let newExport = {}
+        for (let key in exportDict) {
+            let avg = 0
+            for (let i in exportDict[key]){
+                avg += exportDict[key][i]['value']
+            }
+            avg /= (exportDict[key]).length
+            newExport[key] = avg
+        }
+        return newExport
+    }
+
     runBenchmarks() {
-        console.log("BENCHMARKS")
+        // console.log("BENCHMARKS")
         let data_per_dimension = {}
+        let benchmark_export = {}
         this.dimensions.forEach((dim) => {
             let data = this.data.map((data_point) => data_point[dim])
             data_per_dimension[dim] = data
         })
-
-        console.log("OVERPLOTTING 1D")
-        this.dimensions.forEach((dim) => {
+        // console.log("OVERPLOTTING 1D")
+            this.dimensions.forEach((dim) => {
             let data = data_per_dimension[dim]
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
             let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
             let histogram = screen_histogram_1d(data, comp_mapper, 100)
             // console.log(histogram)
             let overplotting = overplotting_1d(histogram)
-            console.log(dim, ": ", overplotting)
+            // console.log(dim, ": ", overplotting)
+            this.addDimBchmToExportList(benchmark_export, 'overplotting_1d', dim, overplotting)
+            // pretty_print_benchmark(overplotting)
         })
 
-        console.log("OVERPLOTTING 2D")
+        // console.log("OVERPLOTTING 2D")
         for (let i = 0; i < this.dimensions.length - 1; i++) {
             let dim_a = this.dimensions[i]
             let dim_b = this.dimensions[i+1]
@@ -574,9 +614,12 @@ export default class SPC {
             let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
             let histogram_2d = screen_histogram_2d(data_a, data_b, comp_mapper_a, comp_mapper_b, 100)
             let overplotting = overplotting_2d(histogram_2d)
-            console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+            // console.log(`(${dim_a}, ${dim_b}): ${overplotting}`)
+            let dim = `(${dim_a}, ${dim_b})`
+            this.addDimBchmToExportList(benchmark_export, 'overplotting_2d', dim, overplotting)
+            // pretty_print_benchmark(overplotting)
         }
-        console.log("LINE CROSSINGS AND AVG CROSSING ANGLE")
+        // console.log("LINE CROSSINGS AND AVG CROSSING ANGLE")
         for (let i = 0; i < this.dimensions.length - 1; i++) {
             let dim_a = this.dimensions[i]
             let dim_b = this.dimensions[i+1]
@@ -588,7 +631,12 @@ export default class SPC {
             let comp_mapper_b = new CompositeMapper([this.mappers[dim_b], linear_mapper_b])
 
             let { avg_crossing_angle, number_of_line_crossings } = line_crossings(data_a, data_b, comp_mapper_a, comp_mapper_b, 1)
-            console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
+            // console.log(`(${dim_a}, ${dim_b}): (${number_of_line_crossings}, ${avg_crossing_angle})`)
+            let dim = `(${dim_a}, ${dim_b})`
+            this.addDimBchmToExportList(benchmark_export, 'line_crossing', dim, number_of_line_crossings)
+            this.addDimBchmToExportList(benchmark_export, 'avg_crossing_angle', dim, avg_crossing_angle)
+            // pretty_print_benchmark(avg_crossing_angle)
+            // pretty_print_benchmark(number_of_line_crossings)
         }
 
         // console.log("DISTORTION")
@@ -597,8 +645,21 @@ export default class SPC {
             let linear_mapper = new LinearMapper(this.mappers[dim].get_output_space_ranges(), [0, 1])
             let comp_mapper = new CompositeMapper([this.mappers[dim], linear_mapper])
             let distort = distortion(data, comp_mapper)
-            console.log(dim, ": ", distort)
+            pretty_print_benchmark(distort)
+            // console.log(dim, ": ", distort)
+            this.addDimBchmToExportList(benchmark_export, 'distortion', dim, distort)
         })
+        let avgBenches = this.computeAvgBench(benchmark_export)
+        console.log(avgBenches)
+        let exp = {
+            "settings" : {},
+            "data": {}
+        }
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(avgBenches));
+        let dlAnchorElem = document.getElementById('downloadAnchorElem');
+        dlAnchorElem.setAttribute("href",     dataStr     );
+        dlAnchorElem.setAttribute("download", "scene.json");
+        dlAnchorElem.click();
     }
 }
 
